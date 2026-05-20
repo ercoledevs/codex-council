@@ -1,6 +1,6 @@
 {
   "name": "codex-council",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Token-aware Codex council workflow for multi-agent review, critique, scoring, and synthesis.",
   "author": {
     "name": "ercoledevs",

@@ -12,10 +12,12 @@ import json
 import math
 import re
 import statistics
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 
 WEIGHTS = {
@@ -65,6 +67,9 @@ REQUIRED_REFERENCES = [
     "workflow-recipes.md",
 ]
 
+DEFAULT_REPOSITORY = "ercoledevs/codex-council"
+SEMVER_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$")
+
 
 @dataclass(frozen=True)
 class CandidateScore:
@@ -80,6 +85,37 @@ class CandidateScore:
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", value.strip().lower()).strip("-")
     return re.sub(r"-{2,}", "-", slug)[:64] or "council-session"
+
+
+def normalize_semver(value: str) -> str:
+    match = SEMVER_RE.match(value.strip())
+    if not match:
+        raise ValueError(f"Unsupported semantic version: {value}")
+    return ".".join(str(int(part)) for part in match.groups())
+
+
+def semver_tuple(value: str) -> tuple[int, int, int]:
+    return tuple(int(part) for part in normalize_semver(value).split("."))  # type: ignore[return-value]
+
+
+def compare_semver(left: str, right: str) -> int:
+    left_tuple = semver_tuple(left)
+    right_tuple = semver_tuple(right)
+    if left_tuple < right_tuple:
+        return -1
+    if left_tuple > right_tuple:
+        return 1
+    return 0
+
+
+def repository_slug(value: Optional[str]) -> str:
+    if not value:
+        return DEFAULT_REPOSITORY
+    match = re.search(r"github\.com[:/]([^/]+)/([^/#?]+)", value)
+    if not match:
+        return value.strip().removesuffix(".git") or DEFAULT_REPOSITORY
+    owner, repo = match.groups()
+    return f"{owner}/{repo.removesuffix('.git')}"
 
 
 def weighted_score(dimensions: dict[str, Any]) -> float:
@@ -398,6 +434,103 @@ def validate_plugin(root: Path, strict: bool = False) -> dict[str, Any]:
     return {"ok": not problems, "problems": problems}
 
 
+def fetch_latest_release(repository: str, timeout: float = 8.0) -> Optional[dict[str, Any]]:
+    url = f"https://api.github.com/repos/{repository}/releases/latest"
+    request = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "codex-council-update-check",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return None
+        raise RuntimeError(f"GitHub release check failed with HTTP {exc.code}") from exc
+    except urllib.error.URLError as exc:
+        raise RuntimeError(f"GitHub release check failed: {exc.reason}") from exc
+
+
+def check_update(
+    plugin_root: Path,
+    repository: Optional[str] = None,
+    timeout: float = 8.0,
+    latest_version: Optional[str] = None,
+    fetch_latest: Any = fetch_latest_release,
+) -> dict[str, Any]:
+    manifest_path = plugin_root / ".codex-plugin" / "plugin.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    local_version = normalize_semver(str(manifest["version"]))
+    repository_name = repository_slug(repository or manifest.get("repository"))
+
+    release_url = f"https://github.com/{repository_name}/releases"
+    if latest_version:
+        latest = {
+            "tag_name": latest_version,
+            "html_url": f"{release_url}/tag/{latest_version}",
+        }
+    else:
+        latest = fetch_latest(repository_name, timeout)
+        if latest is None:
+            return {
+                "status": "no_releases",
+                "update_available": False,
+                "repository": repository_name,
+                "local_version": local_version,
+                "latest_version": None,
+                "release_url": release_url,
+                "update_command": f"npx codex-marketplace add {repository_name} --plugin --global -y",
+                "project_update_command": f"npx codex-marketplace add {repository_name} --plugin --project -y",
+            }
+
+    latest_tag = str(latest.get("tag_name") or latest.get("name") or "")
+    latest_normalized = normalize_semver(latest_tag)
+    comparison = compare_semver(local_version, latest_normalized)
+    if comparison < 0:
+        status = "update_available"
+    elif comparison > 0:
+        status = "local_newer"
+    else:
+        status = "up_to_date"
+
+    return {
+        "status": status,
+        "update_available": status == "update_available",
+        "repository": repository_name,
+        "local_version": local_version,
+        "latest_version": latest_normalized,
+        "latest_tag": latest_tag,
+        "release_url": latest.get("html_url") or release_url,
+        "update_command": f"npx codex-marketplace add {repository_name} --plugin --global -y",
+        "project_update_command": f"npx codex-marketplace add {repository_name} --plugin --project -y",
+    }
+
+
+def render_update_status(result: dict[str, Any]) -> str:
+    status = result["status"]
+    if status == "update_available":
+        return (
+            f"Update available: {result['local_version']} -> {result['latest_version']}\n"
+            f"Release: {result['release_url']}\n"
+            f"Global update: {result['update_command']}\n"
+            f"Project update: {result['project_update_command']}"
+        )
+    if status == "up_to_date":
+        return f"Codex Council is up to date ({result['local_version']})."
+    if status == "local_newer":
+        return (
+            f"Local version {result['local_version']} is newer than the latest release "
+            f"{result['latest_version']}."
+        )
+    return (
+        f"No GitHub releases found for {result['repository']}.\n"
+        "Create a GitHub Release to notify watchers about new versions."
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Codex Council session and scoring utilities")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -418,6 +551,13 @@ def main() -> None:
 
     validate_session_parser = subparsers.add_parser("validate-session", help="Validate a council session folder")
     validate_session_parser.add_argument("--session", required=True)
+
+    update_parser = subparsers.add_parser("check-update", help="Check GitHub Releases for a newer plugin version")
+    update_parser.add_argument("--plugin-root", default=str(Path(__file__).resolve().parents[1]))
+    update_parser.add_argument("--repository", help="Override GitHub repository as owner/repo")
+    update_parser.add_argument("--timeout", type=float, default=8.0)
+    update_parser.add_argument("--latest-version", help="Bypass network and compare against this version")
+    update_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
 
     args = parser.parse_args()
 
@@ -451,6 +591,16 @@ def main() -> None:
         print(json.dumps(result, indent=2))
         if not result["ok"]:
             raise SystemExit(1)
+        return
+
+    if args.command == "check-update":
+        result = check_update(
+            Path(args.plugin_root).expanduser().resolve(),
+            repository=args.repository,
+            timeout=args.timeout,
+            latest_version=args.latest_version,
+        )
+        print(json.dumps(result, indent=2) if args.json else render_update_status(result))
 
 
 if __name__ == "__main__":

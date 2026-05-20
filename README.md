@@ -1,5 +1,7 @@
 # Codex Council
 
+![GitHub Release](https://img.shields.io/github/v/release/ercoledevs/codex-council?label=latest%20release)
+
 ![Codex Council cover](assets/cover.svg)
 
 Codex Council is a Codex plugin for structured multi-agent decision review.
@@ -44,6 +46,39 @@ For non-interactive installs:
 
 ```bash
 npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
+```
+
+## Update
+
+If you installed with Codex Marketplace:
+
+```bash
+npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
+```
+
+For project installs:
+
+```bash
+npx codex-marketplace add ercoledevs/codex-council --plugin --project -y
+```
+
+Then restart or reload Codex.
+
+## Stay Updated
+
+New versions are announced through GitHub Releases.
+
+To receive update notifications:
+
+1. Open https://github.com/ercoledevs/codex-council
+2. Click **Watch**
+3. Choose **Custom**
+4. Enable **Releases**
+
+You can also check manually:
+
+```bash
+python3 scripts/codex_council.py check-update
 ```
 
 ## Manual Install
@@ -134,6 +169,18 @@ Compact JSON output:
 
 ```bash
 python3 scripts/codex_council.py score --input reviews.json --compact
+```
+
+Check for newer GitHub Releases:
+
+```bash
+python3 scripts/codex_council.py check-update
+```
+
+Machine-readable update check:
+
+```bash
+python3 scripts/codex_council.py check-update --json
 ```
 
 ## Development

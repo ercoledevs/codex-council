@@ -155,6 +155,72 @@ class CodexCouncilSessionTests(unittest.TestCase):
         self.assertNotIn("\n  ", result.stdout)
         self.assertEqual(json.loads(result.stdout)["winner"], "A")
 
+    def test_check_update_reports_available_release_without_network(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest_dir = root / ".codex-plugin"
+            manifest_dir.mkdir()
+            (manifest_dir / "plugin.json").write_text(
+                json.dumps(
+                    {
+                        "name": "codex-council",
+                        "version": "0.1.0",
+                        "repository": "https://github.com/ercoledevs/codex-council",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            result = cc.check_update(
+                root,
+                fetch_latest=lambda repo, timeout: {
+                    "tag_name": "v0.2.0",
+                    "html_url": "https://github.com/ercoledevs/codex-council/releases/tag/v0.2.0",
+                },
+            )
+
+        self.assertTrue(result["update_available"])
+        self.assertEqual(result["status"], "update_available")
+        self.assertEqual(result["local_version"], "0.1.0")
+        self.assertEqual(result["latest_version"], "0.2.0")
+
+    def test_check_update_command_outputs_json(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest_dir = root / ".codex-plugin"
+            manifest_dir.mkdir()
+            (manifest_dir / "plugin.json").write_text(
+                json.dumps(
+                    {
+                        "name": "codex-council",
+                        "version": "0.1.0",
+                        "repository": "https://github.com/ercoledevs/codex-council",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "check-update",
+                    "--plugin-root",
+                    str(root),
+                    "--latest-version",
+                    "v0.1.1",
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["status"], "update_available")
+        self.assertEqual(payload["latest_version"], "0.1.1")
+
 
 if __name__ == "__main__":
     unittest.main()
