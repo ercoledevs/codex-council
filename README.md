@@ -23,13 +23,34 @@ It does not call third-party model provider APIs by itself. It relies on Codex a
 - Session scaffolding and validation
 - Plugin strict validation
 
-## Install Locally
+## Install
+
+Install directly from GitHub with the Codex Marketplace CLI:
+
+```bash
+npx codex-marketplace add ercoledevs/codex-council --plugin
+```
+
+Choose project or global scope when prompted, or pass the scope explicitly:
+
+```bash
+npx codex-marketplace add ercoledevs/codex-council --plugin --project
+npx codex-marketplace add ercoledevs/codex-council --plugin --global
+```
+
+For non-interactive installs:
+
+```bash
+npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
+```
+
+## Manual Install
 
 Clone or copy this repository into your local Codex plugin directory:
 
 ```bash
 mkdir -p ~/plugins
-git clone <repo-url> ~/plugins/codex-council
+git clone https://github.com/ercoledevs/codex-council.git ~/plugins/codex-council
 ```
 
 Add the plugin to your local marketplace file:
@@ -165,4 +186,4 @@ The implementation here is a local Codex-specific workflow and utility script. S
 
 ## License
 
-License is currently declared in the plugin manifest. Before broad public redistribution, add a repository-level `LICENSE` file matching the intended license.
+MIT. See [LICENSE](LICENSE).

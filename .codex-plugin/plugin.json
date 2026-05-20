@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "description": "Token-aware Codex council workflow for multi-agent review, critique, scoring, and synthesis.",
   "author": {
-    "name": "Local Codex Council",
+    "name": "ercoledevs",
     "email": "local@example.invalid",
-    "url": "https://github.com/gauravvij/llm_council"
+    "url": "https://github.com/ercoledevs"
   },
-  "homepage": "https://github.com/gauravvij/llm_council",
-  "repository": "https://github.com/gauravvij/llm_council",
+  "homepage": "https://github.com/ercoledevs/codex-council",
+  "repository": "https://github.com/ercoledevs/codex-council",
   "license": "MIT",
   "keywords": [
     "codex",
@@ -22,7 +22,7 @@
     "displayName": "Codex Council",
     "shortDescription": "Run token-aware multi-agent deliberation inside Codex.",
     "longDescription": "Codex Council adapts the LLM Council method to Codex-only workflows: five independent council roles, compact role outputs, anonymized review, rubric scoring, dissent capture, and chairman synthesis for implementation decisions.",
-    "developerName": "Local Codex Council",
+    "developerName": "ercoledevs",
     "category": "Productivity",
     "capabilities": [
       "Interactive",
@@ -30,7 +30,7 @@
       "Decision Support",
       "Structured Review"
     ],
-    "websiteURL": "https://github.com/gauravvij/llm_council",
+    "websiteURL": "https://github.com/ercoledevs/codex-council",
     "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
     "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
     "defaultPrompt": [
