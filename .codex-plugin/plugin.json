@@ -1,0 +1,45 @@
+{
+  "name": "codex-council",
+  "version": "0.1.0",
+  "description": "Token-aware Codex council workflow for multi-agent review, critique, scoring, and synthesis.",
+  "author": {
+    "name": "Local Codex Council",
+    "email": "local@example.invalid",
+    "url": "https://github.com/gauravvij/llm_council"
+  },
+  "homepage": "https://github.com/gauravvij/llm_council",
+  "repository": "https://github.com/gauravvij/llm_council",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "council",
+    "multi-agent",
+    "review",
+    "governance"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Council",
+    "shortDescription": "Run token-aware multi-agent deliberation inside Codex.",
+    "longDescription": "Codex Council adapts the LLM Council method to Codex-only workflows: five independent council roles, compact role outputs, anonymized review, rubric scoring, dissent capture, and chairman synthesis for implementation decisions.",
+    "developerName": "Local Codex Council",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Code Review",
+      "Decision Support",
+      "Structured Review"
+    ],
+    "websiteURL": "https://github.com/gauravvij/llm_council",
+    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
+    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
+    "defaultPrompt": [
+      "Use Codex Council to review this architecture decision.",
+      "Run a council review on my implementation plan.",
+      "Use Codex Council to review this diff for blockers."
+    ],
+    "brandColor": "#111827",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
+  }
+}

@@ -1,0 +1,5 @@
+interface:
+  display_name: "Codex Council"
+  short_description: "Token-aware council review with scoring and synthesis"
+  default_prompt: "Use $codex-council to review this decision with compact council output."
+  icon_small: "./assets/icon-small.png"

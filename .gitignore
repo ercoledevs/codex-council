@@ -1,0 +1,11 @@
+.DS_Store
+._*
+__pycache__/
+*.py[cod]
+*.tmp
+*.bak
+*~
+.codex-council/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
