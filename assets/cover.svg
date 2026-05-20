@@ -63,8 +63,8 @@
 
                     <!-- Sottotitolo / Descrizione -->
                     <text x="0" y="205" fill="#cbd5e1" font-size="26" class="text-subtitle" line-height="1.5">
-                        <tspan id="subtitle-line1" x="0" dy="0">Governance, standard architetturali</tspan>
-                        <tspan id="subtitle-line2" x="0" dy="38">e iniziative open-source collaborative.</tspan>
+                        <tspan id="subtitle-line1" x="0" dy="0">Defining architectural standards,</tspan>
+                        <tspan id="subtitle-line2" x="0" dy="38">best practices and code governance.</tspan>
                     </text>
                     
                     <!-- URL Repo (Raffinato e ALLARGATO) -->
