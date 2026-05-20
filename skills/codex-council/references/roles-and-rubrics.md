@@ -20,6 +20,8 @@ Each member returns the six SKILL.md sections only. Max 3 bullets per section.
 - Bias Auditor: verbosity, anchoring, role prestige, overconfidence, ignored dissent.
 - Implementation Gatekeeper: actionability, tests, ownership, unsafe edits, rollback.
 
+Reviewer behavior follows the council pattern: judge anonymized candidates, rank them before synthesis, and explain the ranking with concrete evidence. Do not reward a candidate for sounding senior or being longer.
+
 ## Scoring Rubric
 
 Use 1 to 10 integer or decimal scores.
@@ -48,6 +50,7 @@ Use this shape for deterministic aggregation:
   "reviews": [
     {
       "reviewer": "rubric-reviewer",
+      "ranking": ["A", "B"],
       "scores": {
         "A": {"accuracy": 8, "completeness": 7, "clarity": 8, "conciseness": 7, "relevance": 9},
         "B": {"accuracy": 7, "completeness": 8, "clarity": 7, "conciseness": 9, "relevance": 8}
@@ -58,6 +61,8 @@ Use this shape for deterministic aggregation:
   ]
 }
 ```
+
+If original council members perform reciprocal review, exclude each reviewer's own candidate. If that cannot be tracked without leaking identity or wasting context, use independent reviewer agents or local Chairman scoring.
 
 ## Decision Thresholds
 

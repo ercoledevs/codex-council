@@ -5,16 +5,17 @@ description: Use when the user asks for Codex Council, council review, multi-age
 
 # Codex Council
 
-Codex-only LLM Council. No external model APIs. Use subagents only when the user explicitly asks for council/multi-agent review.
+Codex-only adaptation of the `karpathy/llm-council` pattern: independent first opinions, anonymous peer review/ranking, then Chairman synthesis. No external model APIs. Use subagents only when the user explicitly asks for council/multi-agent review.
 
 ## Core Contract
 
 - Default to compact mode: fewer tokens, same decision gates.
-- For substantial decisions, use five isolated members, then synthesize.
+- For substantial decisions, use five isolated first-opinion members, anonymize their candidates, review/rank them, then synthesize.
 - Preserve dissent, blockers, verification, and confidence.
 - Anonymize member outputs as Candidate A-E before peer review.
-- Use rubric scoring, not popularity or verbosity.
+- Use ranking plus rubric scoring, not popularity, role prestige, or verbosity.
 - Consensus is a decision aid, not proof.
+- State clearly that Codex role diversity is not the same as multi-provider model diversity.
 
 ## Before Running
 
@@ -35,7 +36,7 @@ Codex-only LLM Council. No external model APIs. Use subagents only when the user
 ## Modes
 
 - Fast: local Chairman review for small, reversible, non-security choices.
-- Standard: five member agents, compact outputs, local Chairman review.
+- Standard: five member agents, anonymous local peer review/ranking, local Chairman synthesis.
 - Deep: five members plus three reviewer agents for security, data loss, migration, irreversible decisions, close ties, or explicit full-council request.
 
 ## Internal Competences
@@ -46,7 +47,7 @@ If external skills are not desired, use `references/competency-packs.md` instead
 
 Use `references/workflow-recipes.md` for architecture, bug/regression, plugin/skill, release gate, and token-sensitive reviews.
 
-## Stage 1: Members
+## Stage 1: Independent First Opinions
 
 For Standard/Deep mode, dispatch five agents in parallel. Put instructions first, then role output schema, then only task-specific context.
 
@@ -69,9 +70,19 @@ Each member returns compact output only:
 
 Caps: max 3 bullets per section, max 90 words per member unless a blocker needs detail. Compress wording, not roles/blockers/dissent/verification.
 
-## Stage 2: Anonymous Review
+## Stage 2: Anonymous Peer Review
 
-Strip role/agent names and label outputs Candidate A-E. Review locally unless Deep mode is needed.
+Strip role/agent names and label outputs Candidate A-E before any comparison. Review locally in Standard mode unless Deep mode is needed.
+
+Review must produce:
+
+- ranked candidate order
+- top reason for the winner
+- blocking issue summary per candidate
+- material dissent or tie note
+- rubric scores when traceability matters
+
+If using reciprocal member review, exclude self-votes when identity is known. If self-vote exclusion cannot be done cleanly, use independent reviewer agents or local Chairman review instead.
 
 Rubric weights:
 
@@ -91,9 +102,11 @@ python3 <plugin-root>/scripts/codex_council.py score --input <reviews.json>
 
 The script handles weighted scoring, z-score normalization, tie detection, and confidence. If skipped, state aggregation was manual.
 
+Treat failures like degraded council coverage: continue only if enough candidates remain to compare, disclose missing members/reviewers, and lower confidence when coverage is thin.
+
 ## Stage 4: Chairman Synthesis
 
-The main agent is Chairman. Final output must include:
+The main agent is Chairman. The Chairman does not simply announce the highest score; it compiles the strongest answer from the winning candidate, valid dissent, blockers, and verification evidence. Final output must include:
 
 - recommendation
 - confidence: high, medium, low, or blocked

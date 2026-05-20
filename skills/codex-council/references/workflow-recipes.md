@@ -34,6 +34,14 @@ Packs: Test And Regression Sentinel, Governance And Audit Officer.
 
 Prompt: "Deep Council: review release readiness, blockers, verification evidence, and rollback signals."
 
+## Jury Go/No-Go
+
+Mode: Standard unless security, migration, data loss, or compliance is involved, then Deep.
+
+Packs: Governance And Audit Officer, Test And Regression Sentinel, Contrarian Simplifier.
+
+Prompt: "Council jury: give a go/no-go decision, required blockers, dissent, confidence, and exact verification before approval."
+
 ## Token-Sensitive Review
 
 Mode: Fast or Standard compact.

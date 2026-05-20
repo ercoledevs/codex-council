@@ -4,37 +4,45 @@ Use this only for source grounding, provenance, or publication.
 
 ## Primary Open Source Reference
 
-Repository: https://github.com/gauravvij/llm_council
+Repository: https://github.com/karpathy/llm-council
+
+Public documentation: https://llm-council.dev/
 
 Attribution/audit details are intentionally omitted from routine council runs. Load source-audit notes only when publishing, redistributing, or discussing provenance.
 
-Observed summary:
+Observed summary from `karpathy/llm-council`:
 
-- Public repository: `gauravvij/llm_council`.
-- Historical HN link redirects from `abhishekgandhi-neo/llm_council`.
-- README describes async multi-LLM orchestration, synthesis/voting, transparency, retries, timeouts, graceful degradation.
-- GitHub API returned `license: null`, while the README says MIT. Do not reuse upstream code without verifying license state; this plugin uses a clean Codex-specific implementation and preserves method ideas only.
+- The project groups multiple LLM providers into an "LLM Council" through OpenRouter.
+- Stage 1 collects independent first responses from all configured models.
+- Stage 2 anonymizes candidate responses before peer review so reviewers rank work rather than provider identity.
+- Peer review asks for judgment on accuracy and insight.
+- Stage 3 uses a designated Chairman model to compile the final answer.
+- The upstream README frames the app as a simple local web app and an experimental reference, not a production governance system.
 
 ## Preserve
 
-- Parallel independent first pass: the original queries council members concurrently.
-- Synthesis judge: the original uses the first configured model as judge for synthesis.
-- Voting fallback: the original supports a simpler majority strategy.
-- Graceful degradation: failed members do not fail the whole council if at least one valid response exists.
-- Transparency: individual responses are retained alongside final synthesis.
-- Recommended size: 3 to 5 members balances quality, cost, and latency.
-- Configuration shape: the original exposes member list, strategy, retries, timeout, and API base. `max_retries` is configured and documented, but the inspected engine did not implement retry loops.
+- Parallel independent first pass: members produce first opinions before seeing other candidates.
+- Candidate inspection: keep individual member outputs available for audit instead of hiding all intermediate reasoning.
+- Anonymous peer review: strip role/agent names and use Candidate A-E labels before review.
+- Ranking plus scoring: collect preference order, rubric scores, and concrete justifications.
+- Chairman synthesis: final answer is not a raw vote; it is a synthesis that preserves blockers, dissent, and evidence gaps.
+- Failure tolerance: if some members fail, continue when enough evidence remains and disclose degraded coverage.
 
 ## Codex Adaptation
 
 Diversity comes from independent role prompts, context framing, and review rubric, not different vendors. The main Codex agent is Chairman. Deterministic aggregation is local when reviewer JSON exists.
 
+Because Codex Council does not call multiple model providers, never claim that role prompts are equivalent to true model diversity. The correct claim is narrower: role isolation and anonymous review reduce single-pass anchoring and make dissent easier to surface inside Codex.
+
 ## Broader LLM Council Design References
 
-Useful public design details:
+Useful public design details from https://llm-council.dev/:
 
+- support confidence tiers so low-risk questions do not pay for a maximal council
+- support jury-style go/no-go decisions for binary approval gates
+- use architecture decisions, code review, content validation, and complex problem solving as natural council use cases
 - anonymize responses to reduce self-preference, provider loyalty, and model recognition
-- exclude self-votes when a candidate evaluates itself
+- exclude self-votes when a candidate evaluates itself or use independent reviewers instead
 - collect rankings, numeric scores, and justifications
 - continue when some members fail
 - prefer simple normalized score averaging for 3 to 5 reviewers instead of complex voting systems

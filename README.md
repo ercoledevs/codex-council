@@ -4,7 +4,7 @@
 
 Codex Council is a Codex plugin for structured multi-agent decision review.
 
-It adapts the LLM Council pattern to a Codex-only workflow: five independent review lenses, compact outputs, optional anonymized scoring, dissent preservation, and a Chairman synthesis.
+It adapts the LLM Council pattern to a Codex-only workflow: independent first opinions, anonymized peer review, compact scoring, dissent preservation, and a Chairman synthesis.
 
 It does not call third-party model provider APIs by itself. It relies on Codex and optional Codex subagents available in your environment.
 
@@ -174,17 +174,18 @@ codex-council/
 - Council consensus is not proof.
 - This is an advisory workflow, not a legal, security, or compliance approval system.
 - Role diversity is produced by isolated Codex role prompts, not by multiple external model providers.
+- The original LLM Council pattern uses multiple LLM providers; Codex Council keeps the workflow inside Codex.
 - Deep mode should be used for sensitive, irreversible, privacy, security, migration, or data-loss decisions.
 - Validate evidence before declaring work complete.
 
 ## Provenance
 
-This project is inspired by public LLM Council work, especially:
+This project is inspired by public LLM Council work:
 
-- https://github.com/gauravvij/llm_council
+- https://github.com/karpathy/llm-council
 - https://llm-council.dev/
 
-The implementation here is a local Codex-specific workflow and utility script. See [PROVENANCE.md](PROVENANCE.md) for details.
+The original pattern asks multiple models for independent answers, anonymizes responses for peer review/ranking, then has a Chairman model synthesize the final answer. Codex Council keeps that decision shape while adapting execution to Codex roles, optional Codex subagents, and local deterministic scoring. See [PROVENANCE.md](PROVENANCE.md) for details.
 
 ## License
 
