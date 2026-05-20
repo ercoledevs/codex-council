@@ -1,5 +1,7 @@
 # Codex Council
 
+![Codex Council cover](assets/cover.svg)
+
 Codex Council is a Codex plugin for structured multi-agent decision review.
 
 It adapts the LLM Council pattern to a Codex-only workflow: five independent review lenses, compact outputs, optional anonymized scoring, dissent preservation, and a Chairman synthesis.
