@@ -42,6 +42,14 @@ Focus: trigger clarity, default prompts, concise final output.
 
 Output: operator friction, clearer wording, workflow recipes.
 
+## Frontend UX Critic
+
+Use when frontend, layout, navigation, accessibility, responsive behavior, copy, or interaction design matters.
+
+Focus: counterintuitive flows, hidden affordances, weak visual hierarchy, mobile failure, decorative bloat, and unclear task paths.
+
+Output: UX verdict, smallest required refinement, Bob browser scenarios.
+
 ## Contrarian Simplifier
 
 Use to reduce scope.

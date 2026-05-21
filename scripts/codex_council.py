@@ -29,14 +29,23 @@ WEIGHTS = {
 }
 
 ROLE_FILES = {
-    "01-principal-architect.md": "Principal Architect",
-    "02-reliability-engineer.md": "Reliability Engineer",
-    "03-security-governance-reviewer.md": "Security and Governance Reviewer",
-    "04-product-operator-advocate.md": "Product and Operator Advocate",
-    "05-contrarian-red-team.md": "Contrarian Red Team",
+    "01-ada-principal-architect.md": "Ada Lovelace - Principal Architect",
+    "02-grace-reliability-engineer.md": "Grace Hopper - Reliability Engineer",
+    "03-hypatia-security-governance.md": "Hypatia - Security and Governance Reviewer",
+    "04-florence-product-operator.md": "Florence Nightingale - Product and Operator Advocate",
+    "05-turing-contrarian-red-team.md": "Alan Turing - Contrarian Red Team",
+}
+
+FRONTEND_REVIEWER_FILES = {
+    "leonardo-ux-ui-critic.md": "Leonardo da Vinci - Brutally Honest UX/UI Critic",
+}
+
+EVIDENCE_RUNNER_FILES = {
+    "bob-browser-customer-tester.md": "Bob - Browser Customer Tester",
 }
 
 MODES = {"fast", "standard", "deep"}
+TOKEN_BUDGETS = {"compact", "balanced", "expanded"}
 
 REQUIRED_MEMBER_SECTIONS = [
     "## Recommendation",
@@ -45,6 +54,24 @@ REQUIRED_MEMBER_SECTIONS = [
     "## Non-Blocking Improvements",
     "## Verification Required",
     "## Confidence",
+]
+
+FRONTEND_REVIEWER_SECTIONS = [
+    "## UX Verdict",
+    "## Counterintuitive Risk",
+    "## User Harm",
+    "## Required Refinement",
+    "## Verification Required",
+    "## Bob Test Scenarios",
+]
+
+REQUIRED_EVIDENCE_RUNNER_SECTIONS = [
+    "## Mission",
+    "## Scenarios From Council",
+    "## Browser Checks",
+    "## Browser Evidence",
+    "## Reproducibility",
+    "## Verdict",
 ]
 
 REQUIRED_FINAL_SECTIONS = [
@@ -59,6 +86,8 @@ REQUIRED_FINAL_SECTIONS = [
 
 REQUIRED_REFERENCES = [
     "competency-packs.md",
+    "execution-protocol.md",
+    "frontend-ux-browser.md",
     "governance-preflight.md",
     "method-source-notes.md",
     "output-contract.md",
@@ -165,8 +194,18 @@ def aggregate(payload: dict[str, Any]) -> dict[str, Any]:
 
     for review in reviews:
         reviewer_scores = review.get("scores", {})
+        excluded = set(review.get("excluded_candidates", []))
+        unknown_excluded = sorted(excluded.difference(candidate_ids))
+        if unknown_excluded:
+            raise ValueError(f"Review excludes unknown candidates: {', '.join(unknown_excluded)}")
+        expected_candidate_ids = [candidate_id for candidate_id in candidate_ids if candidate_id not in excluded]
+        missing_scores = [candidate_id for candidate_id in expected_candidate_ids if candidate_id not in reviewer_scores]
+        if missing_scores:
+            reviewer = review.get("reviewer", "unknown")
+            raise ValueError(f"Review {reviewer} missing scores for candidates: {', '.join(missing_scores)}")
+
         per_reviewer_raw: dict[str, float] = {}
-        for candidate_id in candidate_ids:
+        for candidate_id in expected_candidate_ids:
             if candidate_id not in reviewer_scores:
                 continue
             score = weighted_score(reviewer_scores[candidate_id])
@@ -243,15 +282,34 @@ def aggregate(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def init_session(topic: str, root: Path, mode: str = "standard") -> Path:
+def init_session(
+    topic: str,
+    root: Path,
+    mode: str = "standard",
+    frontend_review: bool = False,
+    token_budget: str = "compact",
+) -> Path:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
+    if token_budget not in TOKEN_BUDGETS:
+        raise ValueError(f"token_budget must be one of: {', '.join(sorted(TOKEN_BUDGETS))}")
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     session_dir = root / ".codex-council" / f"{timestamp}-{slugify(topic)}"
     members_dir = session_dir / "members"
     reviews_dir = session_dir / "reviews"
+    evidence_runners_dir = session_dir / "evidence-runners"
     members_dir.mkdir(parents=True, exist_ok=False)
     reviews_dir.mkdir(parents=True, exist_ok=False)
+    if frontend_review:
+        evidence_runners_dir.mkdir(parents=True, exist_ok=False)
+
+    reviewers = ["rubric-reviewer", "bias-auditor", "implementation-gatekeeper"] if mode == "deep" else []
+    evidence_runners: list[str] = []
+    activation_tags: list[str] = []
+    if frontend_review:
+        reviewers.extend(FRONTEND_REVIEWER_FILES.values())
+        evidence_runners.extend(EVIDENCE_RUNNER_FILES.values())
+        activation_tags.append("frontend-ui-ux")
 
     (session_dir / "session.json").write_text(
         json.dumps(
@@ -262,9 +320,10 @@ def init_session(topic: str, root: Path, mode: str = "standard") -> Path:
                 "created_at": timestamp,
                 "workspace_root": str(root),
                 "roles": list(ROLE_FILES.values()),
-                "reviewers": ["rubric-reviewer", "bias-auditor", "implementation-gatekeeper"]
-                if mode == "deep"
-                else [],
+                "reviewers": reviewers,
+                "evidence_runners": evidence_runners,
+                "activation_tags": activation_tags,
+                "token_budget": token_budget,
                 "context_files": [],
                 "redaction_notes": "",
                 "verification_commands": [],
@@ -276,7 +335,10 @@ def init_session(topic: str, root: Path, mode: str = "standard") -> Path:
         encoding="utf-8",
     )
     (session_dir / "brief.md").write_text(
-        f"# Codex Council Brief\n\nTopic: {topic}\nMode: {mode}\n\n## Context\n\n## Constraints\n\n## Success Criteria\n",
+        (
+            f"# Codex Council Brief\n\nTopic: {topic}\nMode: {mode}\n"
+            f"Token Profile: {token_budget}\n\n## Context\n\n## Constraints\n\n## Success Criteria\n"
+        ),
         encoding="utf-8",
     )
     for filename, role in ROLE_FILES.items():
@@ -284,6 +346,17 @@ def init_session(topic: str, root: Path, mode: str = "standard") -> Path:
             f"# {role}\n\n" + "\n\n".join(REQUIRED_MEMBER_SECTIONS) + "\n",
             encoding="utf-8",
         )
+    if frontend_review:
+        for filename, reviewer in FRONTEND_REVIEWER_FILES.items():
+            (reviews_dir / filename).write_text(
+                f"# {reviewer}\n\n" + "\n\n".join(FRONTEND_REVIEWER_SECTIONS) + "\n",
+                encoding="utf-8",
+            )
+        for filename, runner in EVIDENCE_RUNNER_FILES.items():
+            (evidence_runners_dir / filename).write_text(
+                f"# {runner}\n\n" + "\n\n".join(REQUIRED_EVIDENCE_RUNNER_SECTIONS) + "\n",
+                encoding="utf-8",
+            )
     (reviews_dir / "reviews.example.json").write_text(
         json.dumps(
             {
@@ -320,10 +393,10 @@ def init_session(topic: str, root: Path, mode: str = "standard") -> Path:
         + "\n",
         encoding="utf-8",
     )
-    (session_dir / "final.md").write_text(
-        "# Chairman Synthesis\n\n## Recommendation\n\n## Council Result\n\n## Blocking Issues\n\n## Refinements\n\n## Implementation Shape\n\n## Verification\n\n## Audit Notes\n",
-        encoding="utf-8",
-    )
+    final_sections = REQUIRED_FINAL_SECTIONS.copy()
+    if frontend_review:
+        final_sections.insert(final_sections.index("## Audit Notes"), "## Frontend Evidence")
+    (session_dir / "final.md").write_text("# Chairman Synthesis\n\n" + "\n\n".join(final_sections) + "\n", encoding="utf-8")
     return session_dir
 
 
@@ -335,6 +408,7 @@ def _missing_sections(path: Path, required_sections: list[str]) -> list[str]:
 def validate_session(session_dir: Path) -> dict[str, Any]:
     session_dir = Path(session_dir)
     problems: list[str] = []
+    metadata: dict[str, Any] = {}
 
     metadata_path = session_dir / "session.json"
     if not metadata_path.exists():
@@ -350,6 +424,10 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
                     problems.append(f"session.json missing {key}")
             if metadata.get("mode") not in MODES:
                 problems.append("session.json mode is invalid")
+            if metadata.get("token_budget") not in TOKEN_BUDGETS:
+                problems.append("session.json token_budget is invalid")
+            if len(metadata.get("roles", [])) != len(ROLE_FILES):
+                problems.append("session.json roles must contain the five core council members")
 
     for filename in ("brief.md", "final.md"):
         path = session_dir / filename
@@ -380,6 +458,30 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             aggregate(json.loads(reviews_path.read_text(encoding="utf-8")))
         except Exception as exc:
             problems.append(f"invalid reviews example: {exc}")
+
+    if "frontend-ui-ux" in metadata.get("activation_tags", []):
+        if final_path.exists() and "## Frontend Evidence" not in final_path.read_text(encoding="utf-8"):
+            problems.append("final.md missing ## Frontend Evidence")
+        reviews_dir = session_dir / "reviews"
+        for filename in FRONTEND_REVIEWER_FILES:
+            path = reviews_dir / filename
+            if not path.exists():
+                problems.append(f"missing frontend reviewer file: {filename}")
+                continue
+            for section in _missing_sections(path, FRONTEND_REVIEWER_SECTIONS):
+                problems.append(f"{filename} missing {section}")
+
+        evidence_runners_dir = session_dir / "evidence-runners"
+        if not evidence_runners_dir.is_dir():
+            problems.append("missing evidence-runners directory")
+        else:
+            for filename in EVIDENCE_RUNNER_FILES:
+                path = evidence_runners_dir / filename
+                if not path.exists():
+                    problems.append(f"missing evidence runner file: {filename}")
+                    continue
+                for section in _missing_sections(path, REQUIRED_EVIDENCE_RUNNER_SECTIONS):
+                    problems.append(f"{filename} missing {section}")
 
     return {"ok": not problems, "problems": problems}
 
@@ -422,13 +524,27 @@ def validate_plugin(root: Path, strict: bool = False) -> dict[str, Any]:
         if not (root / "tests" / "test_codex_council.py").exists():
             problems.append("missing test suite")
         skill_text = skill_path.read_text(encoding="utf-8")
+        if len(skill_text.split()) > 700:
+            problems.append("SKILL.md exceeds compact word budget")
+        for forbidden in ("```json", "## UX Verdict\nPass, Needs Refinement, or Blocked."):
+            if forbidden in skill_text:
+                problems.append("SKILL.md contains detailed schema that belongs in references")
         for required in ("competency-packs.md", "workflow-recipes.md", "governance-preflight.md"):
             if required not in skill_text:
                 problems.append(f"SKILL.md does not reference {required}")
         token_budget_path = references_dir / "token-budget.md"
         if token_budget_path.exists():
             token_text = token_budget_path.read_text(encoding="utf-8")
-            for phrase in ("Never remove blocker reporting", "Never remove dissent", "Never skip verification"):
+            for phrase in (
+                "Never remove blocker reporting",
+                "Never remove dissent",
+                "Never skip verification",
+                "Never skip anonymization",
+                "Never let missing candidate scores pass",
+                "Never treat Bob as a voting council member",
+                "Never claim UI behavior is verified",
+                "Never let conciseness outrank accuracy",
+            ):
                 if phrase not in token_text:
                     problems.append(f"token-budget.md missing guardrail: {phrase}")
     return {"ok": not problems, "problems": problems}
@@ -539,6 +655,17 @@ def main() -> None:
     init_parser.add_argument("--topic", required=True)
     init_parser.add_argument("--root", default=".")
     init_parser.add_argument("--mode", choices=sorted(MODES), default="standard")
+    init_parser.add_argument(
+        "--frontend-review",
+        action="store_true",
+        help="Add Leonardo UX/UI review gate and Bob browser evidence runner",
+    )
+    init_parser.add_argument(
+        "--token-budget",
+        choices=sorted(TOKEN_BUDGETS),
+        default="compact",
+        help="Token profile for session scaffolding",
+    )
 
     score_parser = subparsers.add_parser("score", help="Aggregate reviewer JSON")
     score_parser.add_argument("--input", required=True)
@@ -562,7 +689,13 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "init":
-        path = init_session(args.topic, Path(args.root).expanduser().resolve(), mode=args.mode)
+        path = init_session(
+            args.topic,
+            Path(args.root).expanduser().resolve(),
+            mode=args.mode,
+            frontend_review=args.frontend_review,
+            token_budget=args.token_budget,
+        )
         print(path)
         return
 

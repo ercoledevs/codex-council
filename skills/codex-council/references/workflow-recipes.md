@@ -26,6 +26,18 @@ Packs: Implementation Strategist, Operator UX Reviewer, Governance And Audit Off
 
 Prompt: "Council review this plugin change for packaging, usability, provenance, and validation."
 
+## Frontend Or UX Review
+
+Mode: Standard with `--frontend-review`; Deep if the change affects checkout, auth, payments, permissions, destructive actions, accessibility-critical flows, or production release.
+
+Optional reviewer: Leonardo da Vinci - Brutally Honest UX/UI Critic.
+
+Evidence runner: Bob - Browser Customer Tester, only when a runnable app, prototype, or local route exists.
+
+Packs: Operator UX Reviewer, Test And Regression Sentinel, Contrarian Simplifier.
+
+Prompt: "Council frontend review this change. Activate Leonardo for brutal UX/UI critique and have Bob verify council-supplied browser cases before Chairman synthesis."
+
 ## Release Or Completion Gate
 
 Mode: Deep for irreversible, migration, security, or data-loss risk.

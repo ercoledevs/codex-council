@@ -64,8 +64,15 @@ Codex Council intentionally avoids:
 
 Public OpenAI guidance used for this plugin:
 
-- Put instructions first and use clear output formats.
-- Reduce fluffy wording.
-- Control response length with explicit shape/length instructions.
-- Reduce output tokens first; output reduction usually improves latency more than input trimming.
-- Filter context and keep stable prompt prefixes before dynamic project context.
+- Prompt caching: https://platform.openai.com/docs/guides/prompt-caching
+- Prompting: https://platform.openai.com/docs/guides/prompting
+- Latency optimization: https://platform.openai.com/docs/guides/latency-optimization
+- Model verbosity/reasoning controls: https://platform.openai.com/docs/guides/latest-model
+
+Applied tactics:
+
+- Keep stable instructions first and variable project context last.
+- Use explicit output shapes and caps.
+- Reduce output tokens first while preserving blockers, dissent, confidence, and verification.
+- Load references lazily instead of putting every schema into `SKILL.md`.
+- Escalate reasoning/profile only for risk, ambiguity, or irreversible work.

@@ -6,10 +6,16 @@ import unittest
 from pathlib import Path
 
 from scripts import codex_council as cc
-from scripts.codex_council import aggregate, init_session, validate_plugin, weighted_score
+from scripts.codex_council import WEIGHTS, aggregate, init_session, validate_plugin, weighted_score
 
 
 class CodexCouncilScoringTests(unittest.TestCase):
+    def test_weight_invariants_keep_conciseness_below_correctness(self):
+        self.assertAlmostEqual(sum(WEIGHTS.values()), 1.0)
+        self.assertGreater(WEIGHTS["accuracy"], WEIGHTS["conciseness"])
+        self.assertGreater(WEIGHTS["completeness"], WEIGHTS["conciseness"])
+        self.assertGreater(WEIGHTS["clarity"], WEIGHTS["conciseness"])
+
     def test_weighted_score_applies_accuracy_ceiling(self):
         score = weighted_score(
             {
@@ -88,17 +94,64 @@ class CodexCouncilScoringTests(unittest.TestCase):
         self.assertEqual(result["confidence"], "blocked")
         self.assertTrue(result["ranking"][0]["blocked"])
 
+    def test_aggregate_rejects_missing_candidate_scores(self):
+        payload = {
+            "candidates": [{"id": "A"}, {"id": "B"}],
+            "reviews": [
+                {
+                    "reviewer": "compact-reviewer",
+                    "scores": {
+                        "A": {"accuracy": 8, "completeness": 8, "clarity": 8, "conciseness": 8, "relevance": 8}
+                    },
+                    "blocking_issues": {"A": []},
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "missing scores"):
+            aggregate(payload)
+
 
 class CodexCouncilSessionTests(unittest.TestCase):
     def test_init_session_creates_expected_files(self):
         with tempfile.TemporaryDirectory() as tmp:
             session = init_session("Architecture Review", Path(tmp))
             self.assertTrue((session / "brief.md").exists())
-            member = session / "members" / "01-principal-architect.md"
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["token_budget"], "compact")
+            self.assertIn("Token Profile: compact", (session / "brief.md").read_text(encoding="utf-8"))
+            member = session / "members" / "01-ada-principal-architect.md"
             self.assertTrue(member.exists())
             self.assertIn("## Non-Blocking Improvements", member.read_text(encoding="utf-8"))
+            self.assertFalse((session / "reviews" / "leonardo-ux-ui-critic.md").exists())
+            self.assertFalse((session / "evidence-runners" / "bob-browser-customer-tester.md").exists())
             self.assertTrue((session / "reviews" / "reviews.example.json").exists())
             json.loads((session / "reviews" / "reviews.example.json").read_text(encoding="utf-8"))
+
+    def test_init_session_frontend_review_adds_leonardo_and_bob(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session("Frontend Modal Review", Path(tmp), frontend_review=True)
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(metadata["roles"]), 5)
+            self.assertIn("Leonardo da Vinci - Brutally Honest UX/UI Critic", metadata["reviewers"])
+            self.assertIn("Bob - Browser Customer Tester", metadata["evidence_runners"])
+            self.assertIn("frontend-ui-ux", metadata["activation_tags"])
+
+            ux_reviewer = session / "reviews" / "leonardo-ux-ui-critic.md"
+            self.assertTrue(ux_reviewer.exists())
+            self.assertIn("## Counterintuitive Risk", ux_reviewer.read_text(encoding="utf-8"))
+
+            bob_runner = session / "evidence-runners" / "bob-browser-customer-tester.md"
+            self.assertTrue(bob_runner.exists())
+            bob_text = bob_runner.read_text(encoding="utf-8")
+            self.assertIn("## Scenarios From Council", bob_text)
+            self.assertIn("## Browser Evidence", bob_text)
+            self.assertIn("## Frontend Evidence", (session / "final.md").read_text(encoding="utf-8"))
+            self.assertTrue(cc.validate_session(session)["ok"])
+
+    def test_init_session_rejects_invalid_token_budget(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            with self.assertRaisesRegex(ValueError, "token_budget"):
+                init_session("Bad Budget", Path(tmp), token_budget="verbose")
 
     def test_validate_plugin_accepts_current_layout(self):
         plugin_root = Path(__file__).resolve().parents[1]
@@ -110,6 +163,13 @@ class CodexCouncilSessionTests(unittest.TestCase):
         result = validate_plugin(plugin_root, strict=True)
         self.assertTrue(result["ok"], result["problems"])
         self.assertTrue((plugin_root / "README.md").exists())
+
+    def test_skill_body_stays_compact(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        skill_text = (plugin_root / "skills" / "codex-council" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(skill_text.split()), 700)
+        self.assertNotIn("```json", skill_text)
+        self.assertNotIn("## UX Verdict\nPass, Needs Refinement, or Blocked.", skill_text)
 
     def test_init_session_writes_mode_and_audit_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:

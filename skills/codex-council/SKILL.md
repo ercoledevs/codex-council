@@ -1,121 +1,79 @@
 ---
 name: codex-council
-description: Use when the user asks for Codex Council, council review, multi-agent deliberation, architecture decision review, implementation judgment, or a 5-member Codex agent council.
+description: Use when the user asks for Codex Council, council review, multi-agent deliberation, architecture decision review, implementation judgment, frontend/UI/UX council review, or a 5-member Codex agent council.
 ---
 
 # Codex Council
 
-Codex-only adaptation of the `karpathy/llm-council` pattern: independent first opinions, anonymous peer review/ranking, then Chairman synthesis. No external model APIs. Use subagents only when the user explicitly asks for council/multi-agent review.
+Token-efficient Codex adaptation of `karpathy/llm-council`: independent first opinions, anonymous peer review/ranking, optional browser evidence, then Chairman synthesis. No external model APIs.
 
-## Core Contract
+## Non-Negotiables
 
-- Default to compact mode: fewer tokens, same decision gates.
-- For substantial decisions, use five isolated first-opinion members, anonymize their candidates, review/rank them, then synthesize.
-- Preserve dissent, blockers, verification, and confidence.
-- Anonymize member outputs as Candidate A-E before peer review.
-- Use ranking plus rubric scoring, not popularity, role prestige, or verbosity.
-- Consensus is a decision aid, not proof.
-- State clearly that Codex role diversity is not the same as multi-provider model diversity.
+- Preserve blockers, dissent, verification, confidence, and anonymized Candidate A-E review.
+- Use rubric scoring, not popularity, persona prestige, or verbosity.
+- State that Codex role diversity is not true multi-provider model diversity.
+- Bob is never a council member, candidate, or voter.
+- Never claim UI behavior is verified without Bob or equivalent browser evidence.
+- Use historical persona names in prompts/status; UI nicknames are incidental.
 
-## Before Running
+## Token Router
 
-1. If the user did not clearly request council/parallel review, ask before spawning agents.
-2. Snapshot only relevant context: `pwd`, `git status --short`, touched files/diff/tests. Send agents filtered context only.
-3. Load references only when needed:
-   - `references/roles-and-rubrics.md`: exact role prompts, scoring JSON.
-   - `references/output-contract.md`: final synthesis format.
-   - `references/token-budget.md`: token-saving modes and limits.
-   - `references/competency-packs.md`: internal competences when external skills are not desired.
-   - `references/workflow-recipes.md`: task-to-mode recipes.
-   - `references/governance-preflight.md`: audit/privacy/session checklist.
-   - `references/method-source-notes.md`: attribution/source grounding.
-4. For durable audit, run:
-   - `python3 <plugin-root>/scripts/codex_council.py init --topic "<topic>" --root <workspace> --mode standard`
-   - Resolve `<plugin-root>` to the installed `codex-council` plugin directory.
+Default profile is `compact`. Escalate only when risk requires it.
 
-## Modes
+| Need | Action |
+| --- | --- |
+| small reversible decision | Fast local Chairman review |
+| meaningful implementation/architecture decision | Standard five-member council |
+| security, data loss, migration, irreversible, close tie | Deep reviewers |
+| frontend/UI/UX/browser behavior | add `--frontend-review` |
+| audit trail needed | scaffold session with the CLI |
 
-- Fast: local Chairman review for small, reversible, non-security choices.
-- Standard: five member agents, anonymous local peer review/ranking, local Chairman synthesis.
-- Deep: five members plus three reviewer agents for security, data loss, migration, irreversible decisions, close ties, or explicit full-council request.
-
-## Internal Competences
-
-If external skills are not desired, use `references/competency-packs.md` instead of invoking other skills. Treat packs as lenses inside Council, not standalone skills.
-
-## Workflow Recipes
-
-Use `references/workflow-recipes.md` for architecture, bug/regression, plugin/skill, release gate, and token-sensitive reviews.
-
-## Stage 1: Independent First Opinions
-
-For Standard/Deep mode, dispatch five agents in parallel. Put instructions first, then role output schema, then only task-specific context.
-
-- Principal Architect: boundaries, integration, maintainability.
-- Reliability Engineer: failures, tests, rollback, observability.
-- Security/Governance: permissions, privacy, provenance, policy.
-- Product/Operator: workflow, usability, docs, adoption.
-- Contrarian Red Team: assumptions, simpler alternatives, overengineering.
-
-Each member returns compact output only:
-
-```markdown
-## Recommendation
-## Rationale
-## Blocking Issues
-## Non-Blocking Improvements
-## Verification Required
-## Confidence
-```
-
-Caps: max 3 bullets per section, max 90 words per member unless a blocker needs detail. Compress wording, not roles/blockers/dissent/verification.
-
-## Stage 2: Anonymous Peer Review
-
-Strip role/agent names and label outputs Candidate A-E before any comparison. Review locally in Standard mode unless Deep mode is needed.
-
-Review must produce:
-
-- ranked candidate order
-- top reason for the winner
-- blocking issue summary per candidate
-- material dissent or tie note
-- rubric scores when traceability matters
-
-If using reciprocal member review, exclude self-votes when identity is known. If self-vote exclusion cannot be done cleanly, use independent reviewer agents or local Chairman review instead.
-
-Rubric weights:
-
-- accuracy 0.35
-- completeness 0.20
-- clarity 0.20
-- conciseness 0.15
-- relevance 0.10
-
-## Stage 3: Deterministic Aggregation
-
-For traceable scoring, save reviewer JSON and run:
+Session scaffold:
 
 ```bash
-python3 <plugin-root>/scripts/codex_council.py score --input <reviews.json>
+python3 <plugin-root>/scripts/codex_council.py init --topic "<topic>" --root <workspace> --mode standard --token-budget compact
 ```
 
-The script handles weighted scoring, z-score normalization, tie detection, and confidence. If skipped, state aggregation was manual.
+Add `--frontend-review` only for frontend, UX, accessibility, browser behavior, overlays, or user-facing interaction work.
 
-Treat failures like degraded council coverage: continue only if enough candidates remain to compare, disclose missing members/reviewers, and lower confidence when coverage is thin.
+## Reference Loading
 
-## Stage 4: Chairman Synthesis
+Load the smallest reference set that can answer the task:
 
-The main agent is Chairman. The Chairman does not simply announce the highest score; it compiles the strongest answer from the winning candidate, valid dissent, blockers, and verification evidence. Final output must include:
+- `references/execution-protocol.md`: stage order and dispatch shape.
+- `references/roles-and-rubrics.md`: role lenses, reviewer rubric, scoring JSON.
+- `references/token-budget.md`: profiles, caps, pruning, cache-friendly prompt shape.
+- `references/frontend-ux-browser.md`: Leonardo/Bob frontend gate.
+- `references/workflow-recipes.md`: mode selection by task type.
+- `references/output-contract.md`: formal final report.
+- `references/competency-packs.md`: internal packs when external skills are not desired.
+- `references/governance-preflight.md`: privacy/provenance/distribution checks.
+- `references/method-source-notes.md`: attribution/source grounding.
 
-- recommendation
-- confidence: high, medium, low, or blocked
-- blockers vs refinements
-- preserved dissent
-- implementation/verification steps
+## Minimal Flow
 
-Default final length: 8-14 bullets. Expand only if the user asks or blockers require it.
+1. Snapshot only relevant context: request, constraints, changed files/diff, expected tests.
+2. Dispatch five first-opinion agents only when council review is explicitly requested.
+3. Start each dispatch prompt with `You are <persona> - <role> for Codex Council`.
+4. Compress member outputs, but keep concrete blockers and verification details.
+5. Strip identities, label Candidate A-E, review/rank with rubric.
+6. If frontend gate is active, run Leonardo after anonymization and Bob before synthesis when a runnable UI exists.
+7. Aggregate with `scripts/codex_council.py score` when reviewer JSON exists.
+8. Chairman synthesizes recommendation, confidence, blockers/refinements, dissent, and verification.
 
-## Output
+## Core Personas
 
-Follow `references/output-contract.md` when a formal report is needed. For normal chat, keep the compact final shape above.
+- Ada Lovelace - Principal Architect
+- Grace Hopper - Reliability Engineer
+- Hypatia - Security and Governance Reviewer
+- Florence Nightingale - Product and Operator Advocate
+- Alan Turing - Contrarian Red Team
+
+Optional frontend gate:
+
+- Leonardo da Vinci - Brutally Honest UX/UI Critic: reviewer/refinement gate.
+- Bob - Browser Customer Tester: browser evidence runner only.
+
+## Output Rule
+
+Normal chat final: 8-14 bullets. Formal report: use `output-contract.md`. Expand only for blockers, evidence, or explicit user request.

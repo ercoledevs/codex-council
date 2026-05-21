@@ -14,15 +14,19 @@ It does not call third-party model provider APIs by itself. It relies on Codex a
 
 - A Codex skill: `$codex-council`
 - Five council roles:
-  - Principal Architect
-  - Reliability Engineer
-  - Security and Governance Reviewer
-  - Product and Operator Advocate
-  - Contrarian Red Team
+  - Ada Lovelace - Principal Architect
+  - Grace Hopper - Reliability Engineer
+  - Hypatia - Security and Governance Reviewer
+  - Florence Nightingale - Product and Operator Advocate
+  - Alan Turing - Contrarian Red Team
+- Optional frontend/UX gate:
+  - Leonardo da Vinci - Brutally Honest UX/UI Critic
+  - Bob - Browser Customer Tester, an evidence runner rather than a voting council member
 - Internal competency packs for use without external skills
 - Workflow recipes for common review situations
 - Governance preflight checklist
 - Token-budget guidance
+- Token profiles: `compact`, `balanced`, and `expanded`
 - Deterministic reviewer-score aggregation
 - Session scaffolding and validation
 - Plugin strict validation
@@ -131,11 +135,17 @@ Council review this implementation plan for blockers, dissent, and verification.
 Deep Council: review this migration for security, rollback, and data-loss risk.
 ```
 
+```text
+Frontend Council: review this modal flow with Leonardo and have Bob verify browser interaction cases.
+```
+
 ## Modes
 
 - `fast`: local Chairman review for small, reversible, low-risk decisions
-- `standard`: five council members with compact outputs and local synthesis
+- `standard`: five council members with compact outputs, anonymous review/ranking, and local synthesis
 - `deep`: five members plus additional reviewer scrutiny for security, data loss, migrations, irreversible changes, close ties, or explicit full-council requests
+- `--frontend-review`: optional flag for UI/UX work; adds Leonardo as UX reviewer and Bob as browser evidence runner
+- `--token-budget`: defaults to `compact`; use `balanced` or `expanded` only when blockers, audit, or irreversible risk require more detail
 
 ## CLI
 
@@ -150,7 +160,13 @@ python3 scripts/codex_council.py validate --plugin-root . --strict
 Create a traceable council session:
 
 ```bash
-python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard
+python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact
+```
+
+Create a frontend/UX session with Leonardo and Bob:
+
+```bash
+python3 scripts/codex_council.py init --topic "Frontend Modal Review" --root . --mode standard --token-budget compact --frontend-review
 ```
 
 Validate a generated session:
@@ -222,6 +238,7 @@ codex-council/
 - This is an advisory workflow, not a legal, security, or compliance approval system.
 - Role diversity is produced by isolated Codex role prompts, not by multiple external model providers.
 - The original LLM Council pattern uses multiple LLM providers; Codex Council keeps the workflow inside Codex.
+- Leonardo and Bob activate only for frontend/UI/UX work. Bob provides browser evidence and does not vote.
 - Deep mode should be used for sensitive, irreversible, privacy, security, migration, or data-loss decisions.
 - Validate evidence before declaring work complete.
 

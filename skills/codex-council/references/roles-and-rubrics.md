@@ -6,21 +6,37 @@ Use this file before dispatching Codex Council agents.
 
 | Role | Focus |
 | --- | --- |
-| Principal Architect | boundaries, integration, maintainability, migration risk |
-| Reliability Engineer | failure modes, tests, rollback, observability |
-| Security/Governance | secrets, permissions, privacy, provenance, policy |
-| Product/Operator | workflow fit, docs, adoption, operational friction |
-| Contrarian Red Team | hidden assumptions, simpler alternatives, overengineering |
+| Ada Lovelace - Principal Architect | boundaries, integration, maintainability, migration risk |
+| Grace Hopper - Reliability Engineer | failure modes, tests, rollback, observability |
+| Hypatia - Security/Governance | secrets, permissions, privacy, provenance, policy |
+| Florence Nightingale - Product/Operator | workflow fit, docs, adoption, operational friction |
+| Alan Turing - Contrarian Red Team | hidden assumptions, simpler alternatives, overengineering |
 
 Each member returns the six SKILL.md sections only. Max 3 bullets per section.
+
+When spawning agents, put the persona name at the start of the task prompt and preserve it in status summaries. The UI may assign arbitrary nicknames; the council identity is the persona written in the prompt and generated artifacts.
 
 ## Reviewer Roles
 
 - Rubric Reviewer: strict scoring against the weighted rubric.
 - Bias Auditor: verbosity, anchoring, role prestige, overconfidence, ignored dissent.
 - Implementation Gatekeeper: actionability, tests, ownership, unsafe edits, rollback.
+- Leonardo da Vinci - Brutally Honest UX/UI Critic: optional frontend reviewer for counterintuitive UI, visual hierarchy, accessibility, responsive behavior, and interaction friction.
 
 Reviewer behavior follows the council pattern: judge anonymized candidates, rank them before synthesis, and explain the ranking with concrete evidence. Do not reward a candidate for sounding senior or being longer.
+
+Leonardo activates only for frontend/UI/UX work. He does not add a permanent scoring dimension. His findings affect existing dimensions:
+
+- clarity: unclear hierarchy, hidden affordances, confusing copy
+- relevance: decorative or theatrical UI that does not serve the workflow
+- completeness: missing states, mobile behavior, accessibility, or error paths
+- accuracy: false UX assumptions such as "users will discover this gesture" without affordance
+
+A Leonardo blocker lowers final confidence even if technical scores are high.
+
+## Evidence Runner
+
+Bob - Browser Customer Tester is not a council member and does not score candidates. Bob runs browser/in-app-browser checks for scenarios supplied by the council, then reports pass, fail, or not verified evidence for Chairman synthesis.
 
 ## Scoring Rubric
 
