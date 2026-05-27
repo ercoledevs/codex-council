@@ -4,13 +4,14 @@ Use this for the full council stage order. Keep `SKILL.md` as the routing kernel
 
 ## Stage 1: Independent First Opinions
 
-Dispatch five agents in parallel for Standard/Deep mode:
+Dispatch six agents in parallel for Standard/Deep mode:
 
 - Ada Lovelace - Principal Architect
 - Grace Hopper - Reliability Engineer
 - Hypatia - Security and Governance Reviewer
 - Florence Nightingale - Product and Operator Advocate
 - Alan Turing - Contrarian Red Team
+- Seymour Cray - Performance Engineer
 
 Put instructions first, then output schema, then task-specific context. Each dispatch prompt starts with:
 
@@ -33,7 +34,7 @@ Compact cap: 90 words. Balanced cap: 140 words. Expanded cap: only when blockers
 
 ## Stage 2: Anonymous Review
 
-Strip role/agent names and label outputs Candidate A-E. Review locally in Standard mode unless Deep mode is needed.
+Strip role/agent names and label outputs Candidate A-F. Review locally in Standard mode unless Deep mode is needed.
 
 Required review output:
 
@@ -42,6 +43,7 @@ Required review output:
 - blocking issues per candidate
 - material dissent or tie note
 - rubric scores when traceability matters
+- performance impact coverage and missing measurements
 
 If reciprocal member review is used, exclude self-votes. If self-vote exclusion is unclear, use independent reviewers or local Chairman review.
 
@@ -54,6 +56,8 @@ python3 <plugin-root>/scripts/codex_council.py score --input <reviews.json>
 ```
 
 The script requires every non-excluded reviewer to score every candidate. Missing scores are invalid coverage, not a token-saving shortcut.
+
+Standard scaffold includes `performance-impact-reviewer` and `coverage-integrator`. Deep mode adds rubric, bias, and implementation reviewers.
 
 ## Stage 4: Optional Frontend Evidence
 

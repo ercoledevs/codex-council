@@ -6,7 +6,7 @@ Use this when a council review touches frontend code, UI/UX, visual design, inte
 
 Leonardo is an optional reviewer/gate after candidate anonymization. Bob is a browser evidence runner between peer review and Chairman synthesis.
 
-Neither changes the five core council members. Bob never votes.
+Neither changes the six core council members. Bob never votes.
 
 ## Leonardo: Brutally Honest UX/UI Critic
 

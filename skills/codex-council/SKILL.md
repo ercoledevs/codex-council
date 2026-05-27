@@ -1,6 +1,6 @@
 ---
 name: codex-council
-description: Use when the user asks for Codex Council, council review, multi-agent deliberation, architecture decision review, implementation judgment, frontend/UI/UX council review, or a 5-member Codex agent council.
+description: Use when the user asks for Codex Council, council review, multi-agent deliberation, architecture decision review, performance impact review, implementation judgment, frontend/UI/UX council review, or a 6-member Codex agent council.
 ---
 
 # Codex Council
@@ -9,7 +9,7 @@ Token-efficient Codex adaptation of `karpathy/llm-council`: independent first op
 
 ## Non-Negotiables
 
-- Preserve blockers, dissent, verification, confidence, and anonymized Candidate A-E review.
+- Preserve blockers, dissent, verification, confidence, and anonymized Candidate A-F review.
 - Use rubric scoring, not popularity, persona prestige, or verbosity.
 - State that Codex role diversity is not true multi-provider model diversity.
 - Bob is never a council member, candidate, or voter.
@@ -23,7 +23,7 @@ Default profile is `compact`. Escalate only when risk requires it.
 | Need | Action |
 | --- | --- |
 | small reversible decision | Fast local Chairman review |
-| meaningful implementation/architecture decision | Standard five-member council |
+| meaningful implementation/architecture/performance decision | Standard six-member council |
 | security, data loss, migration, irreversible, close tie | Deep reviewers |
 | frontend/UI/UX/browser behavior | add `--frontend-review` |
 | audit trail needed | scaffold session with the CLI |
@@ -53,10 +53,10 @@ Load the smallest reference set that can answer the task:
 ## Minimal Flow
 
 1. Snapshot only relevant context: request, constraints, changed files/diff, expected tests.
-2. Dispatch five first-opinion agents only when council review is explicitly requested.
+2. Dispatch six first-opinion agents only when council review is explicitly requested.
 3. Start each dispatch prompt with `You are <persona> - <role> for Codex Council`.
 4. Compress member outputs, but keep concrete blockers and verification details.
-5. Strip identities, label Candidate A-E, review/rank with rubric.
+5. Strip identities, label Candidate A-F, review/rank with rubric.
 6. If frontend gate is active, run Leonardo after anonymization and Bob before synthesis when a runnable UI exists.
 7. Aggregate with `scripts/codex_council.py score` when reviewer JSON exists.
 8. Chairman synthesizes recommendation, confidence, blockers/refinements, dissent, and verification.
@@ -68,6 +68,7 @@ Load the smallest reference set that can answer the task:
 - Hypatia - Security and Governance Reviewer
 - Florence Nightingale - Product and Operator Advocate
 - Alan Turing - Contrarian Red Team
+- Seymour Cray - Performance Engineer
 
 Optional frontend gate:
 

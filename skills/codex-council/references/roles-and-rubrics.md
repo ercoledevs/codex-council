@@ -11,8 +11,11 @@ Use this file before dispatching Codex Council agents.
 | Hypatia - Security/Governance | secrets, permissions, privacy, provenance, policy |
 | Florence Nightingale - Product/Operator | workflow fit, docs, adoption, operational friction |
 | Alan Turing - Contrarian Red Team | hidden assumptions, simpler alternatives, overengineering |
+| Seymour Cray - Performance Engineer | latency, throughput, memory, cost, scalability, measurement |
 
 Each member returns the six SKILL.md sections only. Max 3 bullets per section.
+
+Seymour also reports `Performance Impact` and `Measurement Required` in scaffolded sessions. Treat performance claims as unverified unless they include workload, baseline, and measurement plan.
 
 When spawning agents, put the persona name at the start of the task prompt and preserve it in status summaries. The UI may assign arbitrary nicknames; the council identity is the persona written in the prompt and generated artifacts.
 
@@ -21,6 +24,8 @@ When spawning agents, put the persona name at the start of the task prompt and p
 - Rubric Reviewer: strict scoring against the weighted rubric.
 - Bias Auditor: verbosity, anchoring, role prestige, overconfidence, ignored dissent.
 - Implementation Gatekeeper: actionability, tests, ownership, unsafe edits, rollback.
+- Performance Impact Reviewer: latency, throughput, memory, CPU, I/O, database/query cost, cache behavior, startup/build time, concurrency, and operational cost.
+- Coverage Integrator: checks that every council lens, blocker, dissent, performance concern, UX concern, and verification gap reaches Chairman synthesis.
 - Leonardo da Vinci - Brutally Honest UX/UI Critic: optional frontend reviewer for counterintuitive UI, visual hierarchy, accessibility, responsive behavior, and interaction friction.
 
 Reviewer behavior follows the council pattern: judge anonymized candidates, rank them before synthesis, and explain the ranking with concrete evidence. Do not reward a candidate for sounding senior or being longer.
@@ -33,6 +38,8 @@ Leonardo activates only for frontend/UI/UX work. He does not add a permanent sco
 - accuracy: false UX assumptions such as "users will discover this gesture" without affordance
 
 A Leonardo blocker lowers final confidence even if technical scores are high.
+
+A performance blocker lowers final confidence when a proposal can cause timeout, outage, cost blowup, UI jank, memory exhaustion, data backlog, missed SLA, or relies on an unmeasured performance claim central to approval.
 
 ## Evidence Runner
 

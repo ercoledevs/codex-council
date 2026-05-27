@@ -18,6 +18,14 @@ Focus: missing tests, edge cases, rollback, smoke checks.
 
 Output: blocking regression risks, required tests, minimal verification.
 
+## Performance Impact Analyst
+
+Use when latency, throughput, memory, CPU, I/O, database/query cost, cache behavior, startup/build time, concurrency, token/runtime cost, or scalability can change the decision.
+
+Focus: performance claims, workload assumptions, baseline vs change, measurement gaps, degradation under contention.
+
+Output: performance impact, blocker threshold, required benchmark or profiling evidence.
+
 ## Token And Context Optimizer
 
 Use when the run may get expensive or verbose.

@@ -14,7 +14,7 @@ Escalate profile, not every stage. A compact run may still expand one blocker.
 
 ## Per-Agent Caps
 
-- Member: 90 words compact, 140 balanced, blocker-only expansion.
+- Member: 90 words compact, 140 balanced, blocker-only expansion. Seymour may spend the extra words only on performance blockers or measurements.
 - Reviewer: 120 words compact, 180 balanced.
 - Leonardo: 120 words unless UX is blocked.
 - Bob: one compact evidence record per browser case; summarize DOM/screenshot artifacts by path.
@@ -54,6 +54,7 @@ This mirrors OpenAI prompt-caching guidance: exact static prefixes improve cache
 Load the smallest reference set that can preserve correctness. Do not force "one file only" when a frontend or governance run needs multiple contracts.
 
 - Standard architecture: `execution-protocol.md`, `roles-and-rubrics.md`.
+- Performance-sensitive: add `roles-and-rubrics.md` only; Seymour and the performance reviewer are already in the core protocol.
 - Frontend: add `frontend-ux-browser.md`.
 - Formal final: add `output-contract.md`.
 - Distribution/privacy: add `governance-preflight.md` and `method-source-notes.md`.

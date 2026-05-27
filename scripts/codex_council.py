@@ -34,7 +34,11 @@ ROLE_FILES = {
     "03-hypatia-security-governance.md": "Hypatia - Security and Governance Reviewer",
     "04-florence-product-operator.md": "Florence Nightingale - Product and Operator Advocate",
     "05-turing-contrarian-red-team.md": "Alan Turing - Contrarian Red Team",
+    "06-seymour-performance-engineer.md": "Seymour Cray - Performance Engineer",
 }
+
+BASE_REVIEWERS = ["performance-impact-reviewer", "coverage-integrator"]
+DEEP_REVIEWERS = ["rubric-reviewer", "bias-auditor", "implementation-gatekeeper"]
 
 FRONTEND_REVIEWER_FILES = {
     "leonardo-ux-ui-critic.md": "Leonardo da Vinci - Brutally Honest UX/UI Critic",
@@ -54,6 +58,11 @@ REQUIRED_MEMBER_SECTIONS = [
     "## Non-Blocking Improvements",
     "## Verification Required",
     "## Confidence",
+]
+
+PERFORMANCE_MEMBER_EXTRA_SECTIONS = [
+    "## Performance Impact",
+    "## Measurement Required",
 ]
 
 FRONTEND_REVIEWER_SECTIONS = [
@@ -303,7 +312,9 @@ def init_session(
     if frontend_review:
         evidence_runners_dir.mkdir(parents=True, exist_ok=False)
 
-    reviewers = ["rubric-reviewer", "bias-auditor", "implementation-gatekeeper"] if mode == "deep" else []
+    reviewers = BASE_REVIEWERS.copy()
+    if mode == "deep":
+        reviewers = DEEP_REVIEWERS + reviewers
     evidence_runners: list[str] = []
     activation_tags: list[str] = []
     if frontend_review:
@@ -342,10 +353,21 @@ def init_session(
         encoding="utf-8",
     )
     for filename, role in ROLE_FILES.items():
+        sections = REQUIRED_MEMBER_SECTIONS.copy()
+        if filename == "06-seymour-performance-engineer.md":
+            sections.extend(PERFORMANCE_MEMBER_EXTRA_SECTIONS)
         (members_dir / filename).write_text(
-            f"# {role}\n\n" + "\n\n".join(REQUIRED_MEMBER_SECTIONS) + "\n",
+            f"# {role}\n\n" + "\n\n".join(sections) + "\n",
             encoding="utf-8",
         )
+    (reviews_dir / "performance-impact-reviewer.md").write_text(
+        "# Performance Impact Reviewer\n\n## Ranking\n\n## Performance Blockers\n\n## Missing Measurements\n\n## Verification Required\n",
+        encoding="utf-8",
+    )
+    (reviews_dir / "coverage-integrator.md").write_text(
+        "# Coverage Integrator\n\n## Covered Perspectives\n\n## Missing Perspectives\n\n## Cross-Council Conflicts\n\n## Chairman Inputs\n",
+        encoding="utf-8",
+    )
     if frontend_review:
         for filename, reviewer in FRONTEND_REVIEWER_FILES.items():
             (reviews_dir / filename).write_text(
@@ -427,7 +449,7 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             if metadata.get("token_budget") not in TOKEN_BUDGETS:
                 problems.append("session.json token_budget is invalid")
             if len(metadata.get("roles", [])) != len(ROLE_FILES):
-                problems.append("session.json roles must contain the five core council members")
+                problems.append(f"session.json roles must contain the {len(ROLE_FILES)} core council members")
 
     for filename in ("brief.md", "final.md"):
         path = session_dir / filename
@@ -449,6 +471,9 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
                 continue
             for section in _missing_sections(path, REQUIRED_MEMBER_SECTIONS):
                 problems.append(f"{filename} missing {section}")
+            if filename == "06-seymour-performance-engineer.md":
+                for section in _missing_sections(path, PERFORMANCE_MEMBER_EXTRA_SECTIONS):
+                    problems.append(f"{filename} missing {section}")
 
     reviews_path = session_dir / "reviews" / "reviews.example.json"
     if not reviews_path.exists():
@@ -458,6 +483,11 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             aggregate(json.loads(reviews_path.read_text(encoding="utf-8")))
         except Exception as exc:
             problems.append(f"invalid reviews example: {exc}")
+
+    for filename in ("performance-impact-reviewer.md", "coverage-integrator.md"):
+        path = session_dir / "reviews" / filename
+        if not path.exists():
+            problems.append(f"missing reviewer file: {filename}")
 
     if "frontend-ui-ux" in metadata.get("activation_tags", []):
         if final_path.exists() and "## Frontend Evidence" not in final_path.read_text(encoding="utf-8"):

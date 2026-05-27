@@ -23,7 +23,7 @@ Observed summary from `karpathy/llm-council`:
 
 - Parallel independent first pass: members produce first opinions before seeing other candidates.
 - Candidate inspection: keep individual member outputs available for audit instead of hiding all intermediate reasoning.
-- Anonymous peer review: strip role/agent names and use Candidate A-E labels before review.
+- Anonymous peer review: strip role/agent names and use Candidate A-F labels before review.
 - Ranking plus scoring: collect preference order, rubric scores, and concrete justifications.
 - Chairman synthesis: final answer is not a raw vote; it is a synthesis that preserves blockers, dissent, and evidence gaps.
 - Failure tolerance: if some members fail, continue when enough evidence remains and disclose degraded coverage.

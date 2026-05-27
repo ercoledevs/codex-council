@@ -110,6 +110,40 @@ class CodexCouncilScoringTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "missing scores"):
             aggregate(payload)
 
+    def test_aggregate_supports_six_candidate_council(self):
+        candidates = [{"id": candidate_id} for candidate_id in "ABCDEF"]
+        scores = {
+            candidate_id: {
+                "accuracy": 9 if candidate_id == "F" else 7,
+                "completeness": 8,
+                "clarity": 8,
+                "conciseness": 7,
+                "relevance": 8,
+            }
+            for candidate_id in "ABCDEF"
+        }
+        payload = {
+            "candidates": candidates,
+            "reviews": [
+                {"reviewer": "rubric-reviewer", "scores": scores, "blocking_issues": {candidate_id: [] for candidate_id in "ABCDEF"}},
+                {
+                    "reviewer": "performance-impact-reviewer",
+                    "scores": {
+                        candidate_id: {
+                            **scores[candidate_id],
+                            "accuracy": 10 if candidate_id == "F" else scores[candidate_id]["accuracy"],
+                        }
+                        for candidate_id in "ABCDEF"
+                    },
+                    "blocking_issues": {candidate_id: [] for candidate_id in "ABCDEF"},
+                },
+            ],
+        }
+        result = aggregate(payload)
+        self.assertEqual(result["winner"], "F")
+        self.assertEqual([item["candidate_id"] for item in result["ranking"]], ["F", "A", "B", "C", "D", "E"])
+        self.assertTrue(all(item["review_count"] == 2 for item in result["ranking"]))
+
 
 class CodexCouncilSessionTests(unittest.TestCase):
     def test_init_session_creates_expected_files(self):
@@ -118,10 +152,19 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertTrue((session / "brief.md").exists())
             metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
             self.assertEqual(metadata["token_budget"], "compact")
+            self.assertEqual(len(metadata["roles"]), 6)
+            self.assertIn("Seymour Cray - Performance Engineer", metadata["roles"])
+            self.assertIn("performance-impact-reviewer", metadata["reviewers"])
+            self.assertIn("coverage-integrator", metadata["reviewers"])
             self.assertIn("Token Profile: compact", (session / "brief.md").read_text(encoding="utf-8"))
             member = session / "members" / "01-ada-principal-architect.md"
             self.assertTrue(member.exists())
             self.assertIn("## Non-Blocking Improvements", member.read_text(encoding="utf-8"))
+            performance_member = session / "members" / "06-seymour-performance-engineer.md"
+            self.assertTrue(performance_member.exists())
+            self.assertIn("## Performance Impact", performance_member.read_text(encoding="utf-8"))
+            self.assertTrue((session / "reviews" / "performance-impact-reviewer.md").exists())
+            self.assertTrue((session / "reviews" / "coverage-integrator.md").exists())
             self.assertFalse((session / "reviews" / "leonardo-ux-ui-critic.md").exists())
             self.assertFalse((session / "evidence-runners" / "bob-browser-customer-tester.md").exists())
             self.assertTrue((session / "reviews" / "reviews.example.json").exists())
@@ -131,7 +174,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             session = init_session("Frontend Modal Review", Path(tmp), frontend_review=True)
             metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
-            self.assertEqual(len(metadata["roles"]), 5)
+            self.assertEqual(len(metadata["roles"]), 6)
             self.assertIn("Leonardo da Vinci - Brutally Honest UX/UI Critic", metadata["reviewers"])
             self.assertIn("Bob - Browser Customer Tester", metadata["evidence_runners"])
             self.assertIn("frontend-ui-ux", metadata["activation_tags"])
@@ -171,6 +214,21 @@ class CodexCouncilSessionTests(unittest.TestCase):
         self.assertNotIn("```json", skill_text)
         self.assertNotIn("## UX Verdict\nPass, Needs Refinement, or Blocked.", skill_text)
 
+    def test_docs_do_not_retain_five_member_contract(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        docs = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in [
+                plugin_root / "README.md",
+                plugin_root / "skills" / "codex-council" / "SKILL.md",
+                plugin_root / "skills" / "codex-council" / "references" / "execution-protocol.md",
+                plugin_root / "skills" / "codex-council" / "references" / "frontend-ux-browser.md",
+            ]
+        )
+        self.assertNotIn("five council", docs.lower())
+        self.assertNotIn("five-member", docs.lower())
+        self.assertNotIn("Candidate A-E", docs)
+
     def test_init_session_writes_mode_and_audit_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
             session = init_session("Governance Review", Path(tmp), mode="deep")
@@ -178,8 +236,18 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertEqual(metadata["mode"], "deep")
             self.assertEqual(metadata["topic"], "Governance Review")
             self.assertEqual(metadata["status"], "scaffolded")
-            self.assertEqual(len(metadata["roles"]), 5)
+            self.assertEqual(len(metadata["roles"]), 6)
             self.assertIn("redaction_notes", metadata)
+
+    def test_deep_session_adds_expanded_reviewer_set(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session("Deep Performance Review", Path(tmp), mode="deep")
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertEqual(len(metadata["reviewers"]), 5)
+            self.assertIn("bias-auditor", metadata["reviewers"])
+            self.assertIn("implementation-gatekeeper", metadata["reviewers"])
+            self.assertIn("performance-impact-reviewer", metadata["reviewers"])
+            self.assertIn("coverage-integrator", metadata["reviewers"])
 
     def test_validate_session_accepts_scaffolded_session(self):
         with tempfile.TemporaryDirectory() as tmp:

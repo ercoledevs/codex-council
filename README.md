@@ -13,12 +13,13 @@ It does not call third-party model provider APIs by itself. It relies on Codex a
 ## What It Provides
 
 - A Codex skill: `$codex-council`
-- Five council roles:
+- Six council roles:
   - Ada Lovelace - Principal Architect
   - Grace Hopper - Reliability Engineer
   - Hypatia - Security and Governance Reviewer
   - Florence Nightingale - Product and Operator Advocate
   - Alan Turing - Contrarian Red Team
+  - Seymour Cray - Performance Engineer
 - Optional frontend/UX gate:
   - Leonardo da Vinci - Brutally Honest UX/UI Critic
   - Bob - Browser Customer Tester, an evidence runner rather than a voting council member
@@ -27,6 +28,7 @@ It does not call third-party model provider APIs by itself. It relies on Codex a
 - Governance preflight checklist
 - Token-budget guidance
 - Token profiles: `compact`, `balanced`, and `expanded`
+- Performance impact review for latency, throughput, memory, cost, and scalability
 - Deterministic reviewer-score aggregation
 - Session scaffolding and validation
 - Plugin strict validation
@@ -142,8 +144,8 @@ Frontend Council: review this modal flow with Leonardo and have Bob verify brows
 ## Modes
 
 - `fast`: local Chairman review for small, reversible, low-risk decisions
-- `standard`: five council members with compact outputs, anonymous review/ranking, and local synthesis
-- `deep`: five members plus additional reviewer scrutiny for security, data loss, migrations, irreversible changes, close ties, or explicit full-council requests
+- `standard`: six council members with compact outputs, anonymous review/ranking, performance coverage, and local synthesis
+- `deep`: six members plus additional reviewer scrutiny for security, data loss, migrations, irreversible changes, close ties, or explicit full-council requests
 - `--frontend-review`: optional flag for UI/UX work; adds Leonardo as UX reviewer and Bob as browser evidence runner
 - `--token-budget`: defaults to `compact`; use `balanced` or `expanded` only when blockers, audit, or irreversible risk require more detail
 

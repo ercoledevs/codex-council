@@ -22,9 +22,17 @@ Prompt: "Council review this bugfix plan for root-cause evidence and regression 
 
 Mode: Standard.
 
-Packs: Implementation Strategist, Operator UX Reviewer, Governance And Audit Officer.
+Packs: Implementation Strategist, Operator UX Reviewer, Governance And Audit Officer, Performance Impact Analyst.
 
-Prompt: "Council review this plugin change for packaging, usability, provenance, and validation."
+Prompt: "Council review this plugin change for packaging, usability, provenance, performance impact, and validation."
+
+## Performance-Sensitive Change
+
+Mode: Standard. Deep if performance risk can cause outage, timeout, data backlog, cost blowup, missed SLA, or user-visible latency/jank.
+
+Packs: Performance Impact Analyst, Test And Regression Sentinel, Contrarian Simplifier.
+
+Prompt: "Council review this change for latency, throughput, memory, cost, scaling limits, benchmark evidence, and safer performance alternatives."
 
 ## Frontend Or UX Review
 
