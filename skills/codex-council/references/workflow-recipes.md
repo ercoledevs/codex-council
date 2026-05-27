@@ -69,3 +69,9 @@ Mode: Fast or Standard compact.
 Packs: Token And Context Optimizer, Contrarian Simplifier.
 
 Prompt: "Council review this using compact output. Preserve blockers, dissent, and verification."
+
+## Session Closeout Stats
+
+Mode: Any scaffolded session.
+
+Prompt: "Generate Codex Council session stats. Use estimated artifact tokens only and do not imply actual Codex token usage."

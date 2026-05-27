@@ -1,6 +1,6 @@
 {
   "name": "codex-council",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Token-aware Codex council workflow for multi-agent review, performance analysis, UX critique, browser evidence, scoring, and synthesis.",
   "author": {
     "name": "ercoledevs",
@@ -21,7 +21,7 @@
   "interface": {
     "displayName": "Codex Council",
     "shortDescription": "Run token-aware multi-agent deliberation inside Codex.",
-    "longDescription": "Codex Council adapts the LLM Council method to Codex-only workflows: six historically named council roles, compact role outputs, performance impact analysis, optional frontend UX critique, browser evidence with Bob, anonymized review, rubric scoring, dissent capture, and chairman synthesis for implementation decisions.",
+    "longDescription": "Codex Council adapts the LLM Council method to Codex-only workflows: six historically named council roles, compact role outputs, performance impact analysis, optional frontend UX critique, browser evidence with Bob, anonymized review, rubric scoring, dissent capture, optional ASCII session banner, estimated artifact-token stats, and chairman synthesis for implementation decisions.",
     "developerName": "ercoledevs",
     "category": "Productivity",
     "capabilities": [

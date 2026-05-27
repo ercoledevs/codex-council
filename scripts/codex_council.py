@@ -50,6 +50,9 @@ EVIDENCE_RUNNER_FILES = {
 
 MODES = {"fast", "standard", "deep"}
 TOKEN_BUDGETS = {"compact", "balanced", "expanded"}
+TEXT_ARTIFACT_SUFFIXES = {".json", ".md", ".txt"}
+GENERATED_STATS_FILES = {"stats.json", "stats.md"}
+TOKEN_ESTIMATE_CHARS_PER_TOKEN = 4
 
 REQUIRED_MEMBER_SECTIONS = [
     "## Recommendation",
@@ -291,6 +294,179 @@ def aggregate(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def session_reviewers(mode: str, frontend_review: bool = False) -> list[str]:
+    reviewers = BASE_REVIEWERS.copy()
+    if mode == "deep":
+        reviewers = DEEP_REVIEWERS + reviewers
+    if frontend_review:
+        reviewers.extend(FRONTEND_REVIEWER_FILES.values())
+    return reviewers
+
+
+def session_evidence_runners(frontend_review: bool = False) -> list[str]:
+    if not frontend_review:
+        return []
+    return list(EVIDENCE_RUNNER_FILES.values())
+
+
+def render_council_banner(mode: str, token_budget: str, frontend_review: bool = False) -> str:
+    reviewers = len(session_reviewers(mode, frontend_review))
+    runners = len(session_evidence_runners(frontend_review))
+    gates = "performance"
+    if frontend_review:
+        gates += " + UX + Bob"
+    width = 76
+    border = "+" + "-" * (width - 2) + "+"
+
+    def row(text: str = "") -> str:
+        return f"| {text[: width - 4]:<{width - 4}} |"
+
+    return "\n".join(
+        [
+            border,
+            row("CODEX COUNCIL".center(width - 4)),
+            row("     [Ada]      [Grace]    [Hypatia]    [Seymour]"),
+            row("         \\         |          |          /"),
+            row("            .-------------------------------."),
+            row(" [Turing] --|  council table: judge methods |-- [Florence]"),
+            row("            '-------------------------------'"),
+            row("method: first opinions -> anonymous review -> synthesis"),
+            row(f"mode: {mode} | budget: {token_budget} | roles: {len(ROLE_FILES)} | reviewers: {reviewers}"),
+            row(f"gates: {gates} | runners: {runners}"),
+            border,
+        ]
+    )
+
+
+def estimate_tokens(characters: int) -> int:
+    if characters <= 0:
+        return 0
+    return math.ceil(characters / TOKEN_ESTIMATE_CHARS_PER_TOKEN)
+
+
+def _read_json_object(path: Path) -> dict[str, Any]:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _session_artifacts(session_dir: Path) -> list[Path]:
+    artifacts: list[Path] = []
+    for path in sorted(session_dir.rglob("*")):
+        if not path.is_file():
+            continue
+        if path.name in GENERATED_STATS_FILES:
+            continue
+        if path.suffix.lower() in TEXT_ARTIFACT_SUFFIXES:
+            artifacts.append(path)
+    return artifacts
+
+
+def collect_session_stats(session_dir: Path) -> dict[str, Any]:
+    session_dir = Path(session_dir)
+    metadata = _read_json_object(session_dir / "session.json")
+    validation = validate_session(session_dir)
+    file_breakdown: list[dict[str, Any]] = []
+    total_characters = 0
+    total_words = 0
+
+    for path in _session_artifacts(session_dir):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        characters = len(text)
+        words = len(re.findall(r"\S+", text))
+        total_characters += characters
+        total_words += words
+        file_breakdown.append(
+            {
+                "path": path.relative_to(session_dir).as_posix(),
+                "characters": characters,
+                "words": words,
+                "estimated_tokens": estimate_tokens(characters),
+            }
+        )
+
+    top_artifacts = sorted(file_breakdown, key=lambda item: item["estimated_tokens"], reverse=True)[:5]
+    return {
+        "session": {
+            "id": session_dir.name,
+            "mode": metadata.get("mode", "unknown"),
+            "status": metadata.get("status", "unknown"),
+            "final_state": metadata.get("final_state", "unknown"),
+            "token_budget": metadata.get("token_budget", "unknown"),
+            "frontend_review": "frontend-ui-ux" in metadata.get("activation_tags", []),
+        },
+        "counts": {
+            "roles": len(metadata.get("roles", [])),
+            "reviewers": len(metadata.get("reviewers", [])),
+            "evidence_runners": len(metadata.get("evidence_runners", [])),
+            "artifact_files": len(file_breakdown),
+            "member_files": len(list((session_dir / "members").glob("*.md"))) if (session_dir / "members").is_dir() else 0,
+            "review_files": len(list((session_dir / "reviews").glob("*.md"))) if (session_dir / "reviews").is_dir() else 0,
+            "evidence_files": (
+                len(list((session_dir / "evidence-runners").glob("*.md")))
+                if (session_dir / "evidence-runners").is_dir()
+                else 0
+            ),
+        },
+        "estimated_artifact_usage": {
+            "label": "estimated artifact tokens",
+            "source": "local session artifact text only",
+            "method": f"ceil(total_characters / {TOKEN_ESTIMATE_CHARS_PER_TOKEN})",
+            "characters": total_characters,
+            "words": total_words,
+            "estimated_tokens": estimate_tokens(total_characters),
+            "is_actual_codex_usage": False,
+            "limitation": "Not actual Codex token usage, billing telemetry, hidden prompt overhead, or tool-call accounting.",
+        },
+        "top_artifacts": top_artifacts,
+        "file_breakdown": file_breakdown,
+        "validation": validation,
+    }
+
+
+def render_session_stats(stats: dict[str, Any]) -> str:
+    session = stats["session"]
+    counts = stats["counts"]
+    usage = stats["estimated_artifact_usage"]
+    validation = stats["validation"]
+    lines = [
+        "# Codex Council Session Stats",
+        "",
+        "Token numbers are estimated from local session artifacts only; they are not actual Codex usage or billing telemetry.",
+        "",
+        f"- Mode: {session['mode']}",
+        f"- Token profile: {session['token_budget']}",
+        f"- Status: {session['status']} -> {session['final_state']}",
+        f"- Frontend gate: {'active' if session['frontend_review'] else 'inactive'}",
+        f"- Roles: {counts['roles']}",
+        f"- Reviewers: {counts['reviewers']}",
+        f"- Evidence runners: {counts['evidence_runners']}",
+        f"- Artifact files counted: {counts['artifact_files']}",
+        f"- Text counted: {usage['characters']} characters, {usage['words']} words",
+        f"- Estimated artifact tokens: {usage['estimated_tokens']}",
+        f"- Validation: {'ok' if validation['ok'] else 'problems found'}",
+    ]
+    if stats["top_artifacts"]:
+        lines.extend(["", "## Largest Artifacts"])
+        for artifact in stats["top_artifacts"]:
+            lines.append(
+                f"- {artifact['path']}: {artifact['estimated_tokens']} estimated tokens"
+            )
+    if not validation["ok"]:
+        lines.extend(["", "## Validation Problems"])
+        lines.extend(f"- {problem}" for problem in validation["problems"])
+    return "\n".join(lines)
+
+
+def write_session_stats(session_dir: Path, stats: dict[str, Any]) -> None:
+    (session_dir / "stats.json").write_text(json.dumps(stats, indent=2) + "\n", encoding="utf-8")
+    (session_dir / "stats.md").write_text(render_session_stats(stats) + "\n", encoding="utf-8")
+
+
 def init_session(
     topic: str,
     root: Path,
@@ -312,14 +488,10 @@ def init_session(
     if frontend_review:
         evidence_runners_dir.mkdir(parents=True, exist_ok=False)
 
-    reviewers = BASE_REVIEWERS.copy()
-    if mode == "deep":
-        reviewers = DEEP_REVIEWERS + reviewers
-    evidence_runners: list[str] = []
+    reviewers = session_reviewers(mode, frontend_review)
+    evidence_runners = session_evidence_runners(frontend_review)
     activation_tags: list[str] = []
     if frontend_review:
-        reviewers.extend(FRONTEND_REVIEWER_FILES.values())
-        evidence_runners.extend(EVIDENCE_RUNNER_FILES.values())
         activation_tags.append("frontend-ui-ux")
 
     (session_dir / "session.json").write_text(
@@ -696,6 +868,11 @@ def main() -> None:
         default="compact",
         help="Token profile for session scaffolding",
     )
+    init_parser.add_argument(
+        "--banner",
+        action="store_true",
+        help="Print a compact ASCII council table before the created session path",
+    )
 
     score_parser = subparsers.add_parser("score", help="Aggregate reviewer JSON")
     score_parser.add_argument("--input", required=True)
@@ -708,6 +885,14 @@ def main() -> None:
 
     validate_session_parser = subparsers.add_parser("validate-session", help="Validate a council session folder")
     validate_session_parser.add_argument("--session", required=True)
+
+    stats_parser = subparsers.add_parser(
+        "stats",
+        help="Report estimated session artifact tokens and useful session statistics",
+    )
+    stats_parser.add_argument("--session", required=True)
+    stats_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+    stats_parser.add_argument("--write", action="store_true", help="Write stats.json and stats.md into the session")
 
     update_parser = subparsers.add_parser("check-update", help="Check GitHub Releases for a newer plugin version")
     update_parser.add_argument("--plugin-root", default=str(Path(__file__).resolve().parents[1]))
@@ -726,6 +911,8 @@ def main() -> None:
             frontend_review=args.frontend_review,
             token_budget=args.token_budget,
         )
+        if args.banner:
+            print(render_council_banner(args.mode, args.token_budget, args.frontend_review))
         print(path)
         return
 
@@ -754,6 +941,14 @@ def main() -> None:
         print(json.dumps(result, indent=2))
         if not result["ok"]:
             raise SystemExit(1)
+        return
+
+    if args.command == "stats":
+        session_dir = Path(args.session).expanduser().resolve()
+        result = collect_session_stats(session_dir)
+        if args.write:
+            write_session_stats(session_dir, result)
+        print(json.dumps(result, indent=2) if args.json else render_session_stats(result))
         return
 
     if args.command == "check-update":

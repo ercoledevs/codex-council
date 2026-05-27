@@ -214,6 +214,14 @@ class CodexCouncilSessionTests(unittest.TestCase):
         self.assertNotIn("```json", skill_text)
         self.assertNotIn("## UX Verdict\nPass, Needs Refinement, or Blocked.", skill_text)
 
+    def test_skill_requires_chat_visible_banner_and_stats(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        skill_text = (plugin_root / "skills" / "codex-council" / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("paste the ASCII banner directly in chat", skill_text)
+        self.assertIn("Do not rely on hidden shell stdout", skill_text)
+        self.assertIn("persist compact artifacts", skill_text)
+        self.assertIn("relay them in chat", skill_text)
+
     def test_docs_do_not_retain_five_member_contract(self):
         plugin_root = Path(__file__).resolve().parents[1]
         docs = "\n".join(
@@ -254,6 +262,86 @@ class CodexCouncilSessionTests(unittest.TestCase):
             session = init_session("Session Validation", Path(tmp), mode="standard")
             result = cc.validate_session(session)
             self.assertTrue(result["ok"], result["problems"])
+
+    def test_init_command_banner_is_opt_in_and_ascii(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            no_banner = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "init",
+                    "--topic",
+                    "No Banner",
+                    "--root",
+                    tmp,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotIn("CODEX COUNCIL", no_banner.stdout)
+            self.assertTrue(Path(no_banner.stdout.strip()).exists())
+
+            with_banner = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "init",
+                    "--topic",
+                    "With Banner",
+                    "--root",
+                    tmp,
+                    "--banner",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertIn("CODEX COUNCIL", with_banner.stdout)
+            self.assertTrue(all(ord(character) < 128 for character in with_banner.stdout))
+            self.assertTrue(Path(with_banner.stdout.strip().splitlines()[-1]).exists())
+
+    def test_session_stats_are_estimated_and_privacy_scoped(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session("Stats Review", Path(tmp), frontend_review=True)
+            stats = cc.collect_session_stats(session)
+            rendered = cc.render_session_stats(stats)
+            serialized = json.dumps(stats)
+
+        self.assertEqual(stats["estimated_artifact_usage"]["label"], "estimated artifact tokens")
+        self.assertFalse(stats["estimated_artifact_usage"]["is_actual_codex_usage"])
+        self.assertGreater(stats["estimated_artifact_usage"]["estimated_tokens"], 0)
+        self.assertIn("not actual Codex usage", rendered)
+        self.assertNotIn(tmp, serialized)
+        self.assertTrue(stats["validation"]["ok"], stats["validation"]["problems"])
+
+    def test_stats_command_writes_reports_and_json(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session("Stats Command", Path(tmp))
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "stats",
+                    "--session",
+                    str(session),
+                    "--write",
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            payload = json.loads(result.stdout)
+            self.assertTrue((session / "stats.json").exists())
+            self.assertTrue((session / "stats.md").exists())
+
+        self.assertEqual(payload["estimated_artifact_usage"]["label"], "estimated artifact tokens")
+        self.assertFalse(payload["estimated_artifact_usage"]["is_actual_codex_usage"])
 
     def test_score_command_supports_compact_json(self):
         plugin_root = Path(__file__).resolve().parents[1]

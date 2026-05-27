@@ -37,6 +37,7 @@ Exclude:
 - repeated role descriptions
 - previous candidates once summarized
 - Bob browser transcripts when pass/fail evidence summary is enough
+- session stats unless the user requests a closing report
 
 ## Cache-Friendly Shape
 
@@ -77,3 +78,4 @@ Load the smallest reference set that can preserve correctness. Do not force "one
 - Reduce output tokens first: shorter answers usually reduce cost and latency without weakening evidence if blockers are preserved.
 - Use lower reasoning/effort only for low-risk Fast mode; raise effort/profile for blockers and irreversible work.
 - Use structured outputs and concise schemas when traceability matters.
+- Use `stats --session <dir>` for closing metrics instead of pasting transcripts; report only estimated artifact tokens and local counts.

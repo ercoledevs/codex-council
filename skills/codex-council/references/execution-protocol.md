@@ -2,6 +2,12 @@
 
 Use this for the full council stage order. Keep `SKILL.md` as the routing kernel.
 
+## Stage 0: Optional Session Start
+
+For chat council runs, paste the compact ASCII council table directly in chat before dispatching agents. Do not hide the only visible banner in shell stdout, because the user may never see it.
+
+For direct terminal scaffold runs, add `--banner` to print the same table in stdout. Do not use it in automation that expects path-only stdout.
+
 ## Stage 1: Independent First Opinions
 
 Dispatch six agents in parallel for Standard/Deep mode:
@@ -79,3 +85,17 @@ Final output includes:
 - blockers vs refinements
 - preserved dissent
 - implementation/verification steps
+
+## Stage 6: Optional Session Stats
+
+When the user wants a closing report, run:
+
+```bash
+python3 <plugin-root>/scripts/codex_council.py stats --session <session-dir>
+```
+
+Use `--write` to persist `stats.json` and `stats.md`. Token numbers are estimated from local session artifacts only; they are not actual Codex usage, billing telemetry, hidden prompt overhead, or tool-call accounting.
+
+When working in chat, summarize the stats in the final message instead of leaving them only in stdout or files.
+
+Stats only count session artifacts on disk. If member/reviewer/final outputs stayed only in chat, say the report is scaffold-only. For a real closeout, persist compact member outputs, reviewer notes, and Chairman synthesis into the generated files before running stats.

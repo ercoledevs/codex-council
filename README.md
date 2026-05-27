@@ -31,6 +31,8 @@ It does not call third-party model provider APIs by itself. It relies on Codex a
 - Performance impact review for latency, throughput, memory, cost, and scalability
 - Deterministic reviewer-score aggregation
 - Session scaffolding and validation
+- Optional ASCII council-table banner for human-visible session starts
+- End-of-session stats with estimated artifact tokens and useful session counts
 - Plugin strict validation
 
 ## Install
@@ -148,6 +150,8 @@ Frontend Council: review this modal flow with Leonardo and have Bob verify brows
 - `deep`: six members plus additional reviewer scrutiny for security, data loss, migrations, irreversible changes, close ties, or explicit full-council requests
 - `--frontend-review`: optional flag for UI/UX work; adds Leonardo as UX reviewer and Bob as browser evidence runner
 - `--token-budget`: defaults to `compact`; use `balanced` or `expanded` only when blockers, audit, or irreversible risk require more detail
+- Chat-visible banner: when Codex runs the council in chat, it should paste the ASCII table in the conversation before dispatch
+- `--banner`: optional terminal-only ASCII council table for direct CLI users; omit it for scripts that need path-only output
 
 ## CLI
 
@@ -163,6 +167,12 @@ Create a traceable council session:
 
 ```bash
 python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact
+```
+
+Create a terminal session with the ASCII council table banner:
+
+```bash
+python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --banner
 ```
 
 Create a frontend/UX session with Leonardo and Bob:
@@ -188,6 +198,24 @@ Compact JSON output:
 ```bash
 python3 scripts/codex_council.py score --input reviews.json --compact
 ```
+
+Report end-of-session stats:
+
+```bash
+python3 scripts/codex_council.py stats --session .codex-council/<session>
+```
+
+Write reusable `stats.json` and `stats.md` artifacts:
+
+```bash
+python3 scripts/codex_council.py stats --session .codex-council/<session> --write
+```
+
+Stats include useful local counts and estimated artifact tokens. They are calculated from session files and are not actual Codex token usage, billing telemetry, hidden prompt overhead, or tool-call accounting.
+
+When Codex runs the council from chat, the useful stats should be summarized back into the conversation; the files are only durable artifacts.
+
+Stats count only files inside the session directory. For a full closeout report, persist compact member outputs, reviewer notes, and the Chairman synthesis into the generated session files before running `stats`. If those outputs stayed only in chat, treat the report as scaffold-only.
 
 Check for newer GitHub Releases:
 
