@@ -1,9 +1,11 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts import codex_council as cc
 from scripts.codex_council import WEIGHTS, aggregate, init_session, validate_plugin, weighted_score
@@ -146,17 +148,44 @@ class CodexCouncilScoringTests(unittest.TestCase):
 
 
 class CodexCouncilSessionTests(unittest.TestCase):
+    def test_default_session_storage_is_plugin_local_not_workspace(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        self.assertEqual(cc.session_storage_root(), plugin_root / ".codex-council" / "sessions")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            workspace = Path(tmp) / "workspace"
+            state_root = Path(tmp) / "plugin-state"
+            workspace.mkdir()
+            with patch.dict(os.environ, {"CODEX_COUNCIL_STATE_ROOT": str(state_root)}, clear=False):
+                session = init_session("Shared Estimate Storage", workspace)
+
+            self.assertTrue(str(session).startswith(str(state_root / "sessions")))
+            self.assertFalse((workspace / ".codex-council").exists())
+
     def test_init_session_creates_expected_files(self):
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Architecture Review", Path(tmp))
+            session = init_session("Architecture Review", Path(tmp), session_root=Path(tmp) / "state")
             self.assertTrue((session / "brief.md").exists())
             metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["workspace_root"], str(Path(tmp)))
+            self.assertTrue(str(session).startswith(str(Path(tmp) / "state")))
             self.assertEqual(metadata["token_budget"], "compact")
             self.assertEqual(len(metadata["roles"]), 6)
             self.assertIn("Seymour Cray - Performance Engineer", metadata["roles"])
             self.assertIn("performance-impact-reviewer", metadata["reviewers"])
             self.assertIn("coverage-integrator", metadata["reviewers"])
+            self.assertEqual(metadata["session_type"], "general")
+            self.assertEqual(metadata["synthesis_contract"], "separate_synthesis_pass")
+            self.assertIn("dispatched 6 members, 2 reviewers", metadata["dispatch_line"])
             self.assertIn("Token Profile: compact", (session / "brief.md").read_text(encoding="utf-8"))
+            self.assertTrue((session / "preflight-estimate.json").exists())
+            self.assertTrue((session / "preflight-estimate.md").exists())
+            self.assertTrue((session / "prompts" / "members" / "01-ada.md").exists())
+            self.assertTrue((session / "prompts" / "reviewers" / "performance-impact-reviewer.md").exists())
+            self.assertTrue((session / "prompts" / "chairman-synthesis.md").exists())
+            self.assertTrue((session / "prompts" / "synthesis-inputs.json").exists())
+            manifest = json.loads((session / "prompts" / "synthesis-inputs.json").read_text(encoding="utf-8"))
+            self.assertEqual(manifest["contract"], "separate_synthesis_pass")
             member = session / "members" / "01-ada-principal-architect.md"
             self.assertTrue(member.exists())
             self.assertIn("## Non-Blocking Improvements", member.read_text(encoding="utf-8"))
@@ -169,10 +198,52 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertFalse((session / "evidence-runners" / "bob-browser-customer-tester.md").exists())
             self.assertTrue((session / "reviews" / "reviews.example.json").exists())
             json.loads((session / "reviews" / "reviews.example.json").read_text(encoding="utf-8"))
+            log_path = Path(tmp) / "state" / "invocations.jsonl"
+            self.assertTrue(log_path.exists())
+            log_entry = json.loads(log_path.read_text(encoding="utf-8").splitlines()[-1])
+            self.assertNotIn("workspace_root", log_entry)
+            self.assertNotIn(str(Path(tmp)), json.dumps(log_entry))
+
+    def test_skill_review_session_uses_three_lens_panel(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session(
+                "Skill Review",
+                Path(tmp),
+                session_type="skill",
+                session_root=Path(tmp) / "state",
+            )
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertTrue(metadata["skill_review"])
+            self.assertEqual(metadata["session_type"], "skill")
+            self.assertEqual(len(metadata["roles"]), 3)
+            self.assertEqual(metadata["reviewers"], [])
+            self.assertTrue((session / "members" / "01-ada-skill-engineer.md").exists())
+            prompt = (session / "prompts" / "members" / "02-florence-ux-for-tools.md").read_text(encoding="utf-8")
+            self.assertIn("UX-for-Tools", prompt)
+            self.assertTrue(cc.validate_session(session)["ok"])
+
+    def test_session_type_router_updates_prompt_and_frontend_gate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session(
+                "Frontend Type",
+                Path(tmp),
+                session_type="frontend",
+                session_root=Path(tmp) / "state",
+            )
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertIn("frontend-ui-ux", metadata["activation_tags"])
+            prompt = (session / "prompts" / "chairman-synthesis.md").read_text(encoding="utf-8")
+            self.assertIn("Type: frontend", prompt)
+            self.assertIn("UX verdict", prompt)
+
+    def test_meta_reference_guard_classifies_trigger_text(self):
+        self.assertEqual(cc.classify_council_invocation("usa Codex Council per valutare questa scelta"), "invoke")
+        self.assertEqual(cc.classify_council_invocation("mi spieghi come funziona il council?"), "meta")
+        self.assertEqual(cc.classify_council_invocation("council"), "unclear")
 
     def test_init_session_frontend_review_adds_leonardo_and_bob(self):
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Frontend Modal Review", Path(tmp), frontend_review=True)
+            session = init_session("Frontend Modal Review", Path(tmp), frontend_review=True, session_root=Path(tmp) / "state")
             metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
             self.assertEqual(len(metadata["roles"]), 6)
             self.assertIn("Leonardo da Vinci - Brutally Honest UX/UI Critic", metadata["reviewers"])
@@ -194,7 +265,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
     def test_init_session_rejects_invalid_token_budget(self):
         with tempfile.TemporaryDirectory() as tmp:
             with self.assertRaisesRegex(ValueError, "token_budget"):
-                init_session("Bad Budget", Path(tmp), token_budget="verbose")
+                init_session("Bad Budget", Path(tmp), token_budget="verbose", session_root=Path(tmp) / "state")
 
     def test_validate_plugin_accepts_current_layout(self):
         plugin_root = Path(__file__).resolve().parents[1]
@@ -207,6 +278,23 @@ class CodexCouncilSessionTests(unittest.TestCase):
         self.assertTrue(result["ok"], result["problems"])
         self.assertTrue((plugin_root / "README.md").exists())
 
+    def test_runtime_contract_fails_fast_on_missing_reference(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".codex-plugin").mkdir()
+            (root / ".codex-plugin" / "plugin.json").write_text("{}", encoding="utf-8")
+            (root / "scripts").mkdir()
+            (root / "scripts" / "codex_council.py").write_text("", encoding="utf-8")
+            skill_dir = root / "skills" / "codex-council"
+            (skill_dir / "references").mkdir(parents=True)
+            (skill_dir / "agents").mkdir()
+            (skill_dir / "SKILL.md").write_text("", encoding="utf-8")
+            (skill_dir / "agents" / "openai.yaml").write_text("", encoding="utf-8")
+
+            problems = cc.validate_runtime_contract(root)
+
+        self.assertTrue(any("missing reference" in problem or "missing runtime file" in problem for problem in problems))
+
     def test_skill_body_stays_compact(self):
         plugin_root = Path(__file__).resolve().parents[1]
         skill_text = (plugin_root / "skills" / "codex-council" / "SKILL.md").read_text(encoding="utf-8")
@@ -217,10 +305,15 @@ class CodexCouncilSessionTests(unittest.TestCase):
     def test_skill_requires_chat_visible_banner_and_stats(self):
         plugin_root = Path(__file__).resolve().parents[1]
         skill_text = (plugin_root / "skills" / "codex-council" / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("paste the ASCII banner directly in chat", skill_text)
+        self.assertIn("## Preflight Gate - Mandatory", skill_text)
+        self.assertIn("Never spawn council agents without the mandatory preflight gate", skill_text)
+        self.assertIn('Treat "use Codex Council" as request, not cost acceptance.', skill_text)
+        self.assertIn("preflight estimate", skill_text)
+        self.assertIn("Never run `expanded` without explicit confirmation", skill_text)
+        self.assertIn("paste the ASCII banner in chat", skill_text)
         self.assertIn("Do not rely on hidden shell stdout", skill_text)
-        self.assertIn("persist compact artifacts", skill_text)
-        self.assertIn("relay them in chat", skill_text)
+        self.assertIn("Persist compact artifacts", skill_text)
+        self.assertIn("Relay stats in chat", skill_text)
 
     def test_docs_do_not_retain_five_member_contract(self):
         plugin_root = Path(__file__).resolve().parents[1]
@@ -239,7 +332,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
 
     def test_init_session_writes_mode_and_audit_metadata(self):
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Governance Review", Path(tmp), mode="deep")
+            session = init_session("Governance Review", Path(tmp), mode="deep", session_root=Path(tmp) / "state")
             metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
             self.assertEqual(metadata["mode"], "deep")
             self.assertEqual(metadata["topic"], "Governance Review")
@@ -249,7 +342,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
 
     def test_deep_session_adds_expanded_reviewer_set(self):
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Deep Performance Review", Path(tmp), mode="deep")
+            session = init_session("Deep Performance Review", Path(tmp), mode="deep", session_root=Path(tmp) / "state")
             metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
             self.assertEqual(len(metadata["reviewers"]), 5)
             self.assertIn("bias-auditor", metadata["reviewers"])
@@ -259,7 +352,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
 
     def test_validate_session_accepts_scaffolded_session(self):
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Session Validation", Path(tmp), mode="standard")
+            session = init_session("Session Validation", Path(tmp), mode="standard", session_root=Path(tmp) / "state")
             result = cc.validate_session(session)
             self.assertTrue(result["ok"], result["problems"])
 
@@ -276,6 +369,8 @@ class CodexCouncilSessionTests(unittest.TestCase):
                     "No Banner",
                     "--root",
                     tmp,
+                    "--session-root",
+                    str(Path(tmp) / "state"),
                 ],
                 check=True,
                 capture_output=True,
@@ -293,6 +388,8 @@ class CodexCouncilSessionTests(unittest.TestCase):
                     "With Banner",
                     "--root",
                     tmp,
+                    "--session-root",
+                    str(Path(tmp) / "state"),
                     "--banner",
                 ],
                 check=True,
@@ -305,14 +402,23 @@ class CodexCouncilSessionTests(unittest.TestCase):
 
     def test_session_stats_are_estimated_and_privacy_scoped(self):
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Stats Review", Path(tmp), frontend_review=True)
+            session = init_session("Stats Review", Path(tmp), frontend_review=True, session_root=Path(tmp) / "state")
             stats = cc.collect_session_stats(session)
             rendered = cc.render_session_stats(stats)
             serialized = json.dumps(stats)
 
         self.assertEqual(stats["estimated_artifact_usage"]["label"], "estimated artifact tokens")
+        self.assertIn("pre_execution_estimate", stats)
+        self.assertIn("post_execution_estimate", stats)
+        self.assertIn("artifact_only_tokens", stats)
+        self.assertGreater(stats["pre_execution_estimate"]["total_tokens"], 0)
+        self.assertGreater(stats["post_execution_estimate"]["total_tokens"], 0)
+        self.assertEqual(stats["post_execution_estimate"]["coverage"], "partial")
         self.assertFalse(stats["estimated_artifact_usage"]["is_actual_codex_usage"])
         self.assertGreater(stats["estimated_artifact_usage"]["estimated_tokens"], 0)
+        self.assertIn("Pre-execution estimate", rendered)
+        self.assertIn("Post-execution estimate", rendered)
+        self.assertIn("Artifact-only tokens", rendered)
         self.assertIn("not actual Codex usage", rendered)
         self.assertNotIn(tmp, serialized)
         self.assertTrue(stats["validation"]["ok"], stats["validation"]["problems"])
@@ -321,7 +427,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
         plugin_root = Path(__file__).resolve().parents[1]
         script = plugin_root / "scripts" / "codex_council.py"
         with tempfile.TemporaryDirectory() as tmp:
-            session = init_session("Stats Command", Path(tmp))
+            session = init_session("Stats Command", Path(tmp), session_root=Path(tmp) / "state")
             result = subprocess.run(
                 [
                     sys.executable,
@@ -330,6 +436,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
                     "--session",
                     str(session),
                     "--write",
+                    "--raw-bundle",
                     "--json",
                 ],
                 check=True,
@@ -339,9 +446,142 @@ class CodexCouncilSessionTests(unittest.TestCase):
             payload = json.loads(result.stdout)
             self.assertTrue((session / "stats.json").exists())
             self.assertTrue((session / "stats.md").exists())
+            self.assertTrue((session / "raw-output-bundle.json").exists())
+            stats_md = (session / "stats.md").read_text(encoding="utf-8")
+            bundle = json.loads((session / "raw-output-bundle.json").read_text(encoding="utf-8"))
 
         self.assertEqual(payload["estimated_artifact_usage"]["label"], "estimated artifact tokens")
         self.assertFalse(payload["estimated_artifact_usage"]["is_actual_codex_usage"])
+        self.assertIn("pre_execution_estimate", payload)
+        self.assertIn("post_execution_estimate", payload)
+        self.assertIn("artifact_only_tokens", payload)
+        self.assertGreater(payload["pre_execution_estimate"]["total_tokens"], 0)
+        self.assertGreater(payload["post_execution_estimate"]["total_tokens"], 0)
+        self.assertEqual(payload["missing_unmeasured_data"]["coverage"], "partial")
+        self.assertEqual(payload["raw_output_bundle"]["content_policy"], "path-only")
+        self.assertEqual(bundle["content_policy"], "path-only; no raw prompt or output text")
+        self.assertTrue(all(not path.startswith("/") for path in bundle["paths"]))
+        self.assertIn("## Pre-execution estimate", stats_md)
+        self.assertIn("## Post-execution estimate", stats_md)
+        self.assertIn("## Artifact-only tokens", stats_md)
+
+    def test_pre_session_estimate_is_labeled_and_credit_aware(self):
+        consumer = cc.default_consumer_data()
+        consumer["profile"].update(
+            {
+                "plan": "Pro",
+                "typical_model": "GPT-5.3-Codex",
+                "reasoning": "medium",
+            }
+        )
+        estimate = cc.estimate_pre_session(
+            "Architecture Review",
+            mode="standard",
+            token_budget="compact",
+            consumer_data=consumer,
+        )
+        rendered = cc.render_pre_session_estimate(estimate)
+        self.assertEqual(estimate["label"], "estimated pre-session tokens")
+        self.assertFalse(estimate["is_actual_codex_usage"])
+        self.assertGreater(estimate["estimated_total_tokens"], 0)
+        self.assertEqual(estimate["pre_execution_estimate"]["label"], "pre_execution_estimate")
+        self.assertGreater(estimate["pre_execution_estimate"]["components"]["member_input_tokens"], 0)
+        self.assertGreater(estimate["pre_execution_estimate"]["components"]["reviewer_output_tokens"], 0)
+        self.assertIsNotNone(estimate["estimated_credits"])
+        self.assertIn("not actual Codex usage", rendered)
+
+    def test_expanded_init_requires_explicit_confirmation(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "init",
+                    "--topic",
+                    "Expensive Review",
+                    "--root",
+                    tmp,
+                    "--session-root",
+                    str(Path(tmp) / "state"),
+                    "--token-budget",
+                    "expanded",
+                ],
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("expanded mode can consume", result.stdout.lower())
+
+            confirmed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "init",
+                    "--topic",
+                    "Confirmed Review",
+                    "--root",
+                    tmp,
+                    "--session-root",
+                    str(Path(tmp) / "state"),
+                    "--token-budget",
+                    "expanded",
+                    "--confirm-expanded",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            session = Path(confirmed.stdout.strip())
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertTrue(metadata["confirmation"]["expanded_confirmed"])
+            self.assertTrue(metadata["pre_session_estimate"]["confirmation_required"])
+
+    def test_profile_and_record_history_are_local_and_compact(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            config_root = Path(tmp) / "consumer"
+            session_root = Path(tmp) / "workspace"
+            session_root.mkdir()
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "profile",
+                    "--config-root",
+                    str(config_root),
+                    "--plan",
+                    "Plus",
+                    "--model",
+                    "GPT-5.3-Codex",
+                    "--reasoning",
+                    "medium",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            session = init_session(
+                "History Review",
+                session_root,
+                session_root=Path(tmp) / "state",
+                pre_session_estimate=cc.estimate_pre_session(
+                    "History Review",
+                    consumer_data=cc.load_consumer_data(config_root),
+                ),
+                confirmation={"estimate_accepted": True},
+            )
+            stats = cc.collect_session_stats(session)
+            for _ in range(cc.MAX_RECENT_HISTORY + 3):
+                cc.record_session_history(session, stats, config_root)
+            data = cc.load_consumer_data(config_root)
+
+        self.assertTrue(data["profile"]["storage_consent"])
+        self.assertLessEqual(len(data["history"]["recent"]), cc.MAX_RECENT_HISTORY)
+        self.assertGreaterEqual(data["history"]["summary"]["sessions"], cc.MAX_RECENT_HISTORY)
+        self.assertNotIn("History Review", json.dumps(data["history"]["recent"]))
 
     def test_score_command_supports_compact_json(self):
         plugin_root = Path(__file__).resolve().parents[1]

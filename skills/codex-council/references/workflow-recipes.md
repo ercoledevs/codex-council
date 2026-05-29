@@ -20,11 +20,13 @@ Prompt: "Council review this bugfix plan for root-cause evidence and regression 
 
 ## Plugin Or Skill Change
 
-Mode: Standard.
+Mode: `--type skill --skill-review` for focused skill/tool usability. Use Standard when architecture, security, packaging, or performance risk needs the full six-member council.
 
 Packs: Implementation Strategist, Operator UX Reviewer, Governance And Audit Officer, Performance Impact Analyst.
 
 Prompt: "Council review this plugin change for packaging, usability, provenance, performance impact, and validation."
+
+Skill-review lenses: skill engineer, UX-for-tools, non-expert adoption.
 
 ## Performance-Sensitive Change
 
@@ -36,7 +38,7 @@ Prompt: "Council review this change for latency, throughput, memory, cost, scali
 
 ## Frontend Or UX Review
 
-Mode: Standard with `--frontend-review`; Deep if the change affects checkout, auth, payments, permissions, destructive actions, accessibility-critical flows, or production release.
+Mode: Standard with `--type frontend` or `--frontend-review`; Deep if the change affects checkout, auth, payments, permissions, destructive actions, accessibility-critical flows, or production release.
 
 Optional reviewer: Leonardo da Vinci - Brutally Honest UX/UI Critic.
 
@@ -56,7 +58,7 @@ Prompt: "Deep Council: review release readiness, blockers, verification evidence
 
 ## Jury Go/No-Go
 
-Mode: Standard unless security, migration, data loss, or compliance is involved, then Deep.
+Mode: Standard with `--type decision` unless security, migration, data loss, or compliance is involved, then Deep.
 
 Packs: Governance And Audit Officer, Test And Regression Sentinel, Contrarian Simplifier.
 
@@ -70,8 +72,14 @@ Packs: Token And Context Optimizer, Contrarian Simplifier.
 
 Prompt: "Council review this using compact output. Preserve blockers, dissent, and verification."
 
+Before dispatch, run a preflight estimate and ask acceptance. If the local consumer profile is missing, ask plan, typical model, reasoning effort, and optional self-declared 5-hour/weekly budget.
+
 ## Session Closeout Stats
 
 Mode: Any scaffolded session.
 
-Prompt: "Generate Codex Council session stats. Use estimated artifact tokens only and do not imply actual Codex token usage."
+Prompt: "Generate Codex Council session stats. Compare pre_execution_estimate and post_execution_estimate, keep artifact_only_tokens separate, and do not imply actual Codex token usage."
+
+Use `--record-history` after the session only when the user consented to local learning history.
+
+Use `--raw-bundle` only for audit handoff; it writes relative artifact paths, not raw transcripts.

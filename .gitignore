@@ -5,6 +5,7 @@ __pycache__/
 *.tmp
 *.bak
 *~
+# Plugin-local runtime state: sessions, stats, prompts, and compact profile history.
 .codex-council/
 .pytest_cache/
 .mypy_cache/

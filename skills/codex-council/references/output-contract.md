@@ -16,15 +16,19 @@ Use this structure for Codex Council final synthesis.
 
 ## Optional Sections
 
-- Session Stats: include only when requested or when a scaffolded session report is being closed. Label token numbers as estimated artifact tokens, not actual Codex usage or billing telemetry.
+- Session Stats: include only when requested or closing a scaffolded session. Show pre-execution estimate, post-execution estimate, artifact-only tokens, delta, ratio, calibration, and coverage. Never present them as billing-token telemetry.
+- Preflight Estimate: include before dispatch, not at the end. Label it as local heuristic range and ask user acceptance. For `expanded`, require explicit confirmation.
+- Raw Output Bundle: optional audit artifact with relative paths only; do not paste raw transcripts unless explicitly requested.
 
 ## Style
 
 - Lead with the decision.
 - Keep dissent visible.
+- Treat Chairman output as a separate synthesis pass over saved artifacts.
 - Separate blockers from refinements.
 - Separate measured performance evidence from unverified performance claims.
 - Separate UX judgment from browser evidence.
-- Separate estimated session artifact tokens from real model/account usage.
+- Separate artifact-only tokens from full-session pre/post execution estimates.
+- Mark post estimates `coverage: partial` when prompts or outputs are missing.
 - Avoid theatrical certainty.
 - Do not report raw subagent transcripts unless the user asks.

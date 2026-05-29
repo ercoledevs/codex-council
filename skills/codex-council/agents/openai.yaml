@@ -1,5 +1,5 @@
 interface:
   display_name: "Codex Council"
-  short_description: "Council review with UX critique, browser evidence, scoring, and synthesis"
+  short_description: "Token-aware council review with typed synthesis, skill review, UX gates, and stats"
   default_prompt: "Use $codex-council to review this decision with compact council output."
   icon_small: "./assets/icon-small.png"

@@ -50,6 +50,23 @@ Useful public design details from https://llm-council.dev/:
 - treat bias metrics as indicators unless enough sessions have been persisted
 - expose quality metrics and alerts rather than presenting a binary magic answer
 
+## Workflow Inspiration
+
+Repository: https://github.com/chrisblattman/claudeblattman
+
+Useful transferable patterns from its `/council` skill:
+
+- single-round parallel critics
+- separate synthesis pass over raw outputs
+- task-type panel routing
+- compact skill/tool review panel
+- meta-reference guard before dispatch
+- fail-fast setup checks
+- visible dispatch announcement
+- compact invocation logging
+
+Codex Council adopts these as local Codex workflow patterns only. It intentionally does not copy cross-vendor peer-swap behavior because this plugin remains Codex-only.
+
 ## Stance
 
 Codex Council intentionally avoids:
