@@ -1,153 +1,166 @@
 # Codex Council
 
-![GitHub Release](https://img.shields.io/github/v/release/ercoledevs/codex-council?label=latest%20release)
+[![Latest release](https://img.shields.io/github/v/release/ercoledevs/codex-council?label=release&color=0f6b57)](https://github.com/ercoledevs/codex-council/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-0f6b57)](LICENSE)
+[![Website](https://img.shields.io/badge/docs-website-0f6b57)](https://ercoledevs.github.io/codex-council/)
 
 ![Codex Council cover](assets/cover.svg)
 
-Codex Council is a Codex plugin for structured multi-agent decision review.
+**Make Codex argue with itself before you ship.**
 
-It adapts the LLM Council pattern to a Codex-only workflow: independent first opinions, anonymized peer review, compact scoring, dissent preservation, and a Chairman synthesis.
+Codex Council turns one Codex request into a small panel review: several reviewers
+answer independently, their work is anonymized and ranked on a rubric, and a Chairman
+writes the final call — with the token cost shown up front. It runs entirely inside
+Codex and **never calls a third‑party model API**.
 
-It does not call third-party model provider APIs by itself. It relies on Codex and optional Codex subagents available in your environment.
+📖 **[Website](https://ercoledevs.github.io/codex-council/)** · 🧭 **[Wiki / playbook](https://ercoledevs.github.io/codex-council/wiki.html)** · 🔬 **[Real example](https://ercoledevs.github.io/codex-council/examples.html)** · 🇮🇹 **[Italiano](https://ercoledevs.github.io/codex-council/it/)**
 
-Additional workflow inspiration comes from Chris Blattman's Claude council pattern: single-round critics, a separate synthesis pass, typed panels, fail-fast setup checks, and compact invocation logging. Codex Council adapts those ideas without adding cross-vendor model calls.
+> **One honest caveat, up front.** The "diversity" here comes from isolated role
+> prompts and anonymous review, not from multiple model vendors. That's enough to
+> break single‑pass anchoring and surface dissent — it is **not** the same as a panel
+> of independent labs. The whole project is built around saying that plainly.
 
-## What It Provides
+---
 
-- A Codex skill: `$codex-council`
-- Six council roles:
-  - Ada Lovelace - Principal Architect
-  - Grace Hopper - Reliability Engineer
-  - Hypatia - Security and Governance Reviewer
-  - Florence Nightingale - Product and Operator Advocate
-  - Alan Turing - Contrarian Red Team
-  - Seymour Cray - Performance Engineer
-- Optional frontend/UX gate:
-  - Leonardo da Vinci - Brutally Honest UX/UI Critic
-  - Bob - Browser Customer Tester, an evidence runner rather than a voting council member
-- Guided role tuning for council member alters:
-  - Ada, Grace, Hypatia, Florence, Turing, Seymour, and Leonardo can receive bounded local behavior tuning
-  - Bob is intentionally excluded because he is an evidence runner
-- Internal competency packs for use without external skills
-- Workflow recipes for common review situations
-- Governance preflight checklist
-- Token-budget guidance
-- Token profiles: `compact`, `balanced`, and `expanded`
-- Typed synthesis templates: `architecture`, `implementation`, `decision`, `skill`, and `frontend`
-- Compact `--skill-review` mode with three skill/tool adoption lenses
-- Meta-reference guard for distinguishing "talking about council" from "run council"
-- Pre-session usage estimates before expensive council runs
-- Mandatory explicit confirmation for `expanded`
-- Compact local consumer profile/history for improving future estimates
-- Local `alter-overrides.json` role tuning with preview, reset, token caps, and prompt integration
-- Performance impact review for latency, throughput, memory, cost, and scalability
-- Deterministic reviewer-score aggregation
-- Session scaffolding and validation
-- Separate synthesis input manifest for Chairman synthesis
-- Sanitized invocation log stored in plugin-local state
-- Optional path-only raw output bundle
-- Optional ASCII council-table banner for human-visible session starts
-- End-of-session stats with comparable pre/post execution estimates plus artifact-only counts
-- Plugin strict validation
+## Contents
 
-## Install
+- [When to use it](#when-to-use-it)
+- [Quickstart](#quickstart)
+- [How it works](#how-it-works)
+- [The council](#the-council)
+- [Modes & token budget](#modes--token-budget)
+- [How to prompt it](#how-to-prompt-it)
+- [Tuning roles (alters)](#tuning-roles-alters)
+- [CLI reference](#cli-reference)
+- [Privacy & local state](#privacy--local-state)
+- [Limits](#limits)
+- [Install options](#install-options)
+- [Development](#development)
+- [Credits & license](#credits--license)
 
-Install directly from GitHub with the Codex Marketplace CLI:
+---
 
-```bash
-npx codex-marketplace add ercoledevs/codex-council --plugin
-```
+## When to use it
 
-Choose project or global scope when prompted, or pass the scope explicitly:
+Reach for the council when a confident, wrong answer is expensive — a migration you
+can't undo, a regression users will hit, a tradeoff you can't call alone. For small,
+reversible, checkable work, plain Codex is faster.
 
-```bash
-npx codex-marketplace add ercoledevs/codex-council --plugin --project
-npx codex-marketplace add ercoledevs/codex-council --plugin --global
-```
+| Good fit | Skip it |
+| --- | --- |
+| Architecture decisions, risky diffs, migrations | Tiny edits and quick questions |
+| Security, privacy, data‑loss risk | Anything you can verify yourself in a minute |
+| Frontend/UX behavior and release go/no‑go | A task that just needs one straightforward answer |
 
-For non-interactive installs:
+---
+
+## Quickstart
+
+**1. Install** from the Codex Marketplace CLI, then reload Codex:
 
 ```bash
 npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
 ```
 
-## Update
-
-If you installed with Codex Marketplace:
-
-```bash
-npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
-```
-
-For project installs:
-
-```bash
-npx codex-marketplace add ercoledevs/codex-council --plugin --project -y
-```
-
-Then restart or reload Codex.
-
-## Stay Updated
-
-New versions are announced through GitHub Releases.
-
-To receive update notifications:
-
-1. Open https://github.com/ercoledevs/codex-council
-2. Click **Watch**
-3. Choose **Custom**
-4. Enable **Releases**
-
-You can also check manually:
-
-```bash
-python3 scripts/codex_council.py check-update
-```
-
-## Manual Install
-
-Clone or copy this repository into your local Codex plugin directory:
-
-```bash
-mkdir -p ~/plugins
-git clone https://github.com/ercoledevs/codex-council.git ~/plugins/codex-council
-```
-
-Add the plugin to your local marketplace file:
-
-```json
-{
-  "name": "codex-council",
-  "source": {
-    "source": "local",
-    "path": "./plugins/codex-council"
-  },
-  "policy": {
-    "installation": "AVAILABLE",
-    "authentication": "ON_INSTALL"
-  },
-  "category": "Productivity"
-}
-```
-
-The marketplace file is usually:
+**2. Ask for a review** in chat — just say what to review and what you care about:
 
 ```text
-~/.agents/plugins/marketplace.json
+Use Codex Council to review this architecture decision.
+Focus on blockers, rollback, and verification.
 ```
 
-Restart or reload Codex after adding the plugin.
+**3. Accept the estimate.** Before any Standard/Deep run, the council shows a token
+estimate and waits for your OK. "Use Codex Council" is a request, not permission to
+spend — and `expanded` needs a separate, explicit yes.
 
-## Usage
+That's it. Everything below is detail you can reach for when you need it.
 
-Ask Codex to use the council explicitly:
+---
+
+## How it works
+
+One request becomes four stages:
+
+| Stage | What happens |
+| --- | --- |
+| **1. First opinions** | Up to six reviewers answer independently, in parallel, before seeing each other's work. |
+| **2. Anonymous review** | Outputs lose their authorship (Candidate A–F) and are ranked/scored on a rubric — not on who sounds senior. |
+| **3. Aggregation** | Scores combine deterministically (locally, when reviewer JSON exists). Blockers and dissent are kept, not averaged away. |
+| **4. Chairman synthesis** | The main agent writes the final call from saved outputs — winner, dissent, blockers, verification. Not just "the highest score wins." |
+
+The final answer leads with the decision and a **confidence** level (high / medium /
+low / blocked), separates **blockers** from **refinements**, keeps **dissent**
+visible, and lists the exact **verification** to run. Council consensus is not proof —
+the verification is how you make it real.
+
+---
+
+## The council
+
+Six reviewers answer every standard run. Each one guards a different concern:
+
+| Role | Lens |
+| --- | --- |
+| **Ada Lovelace** — Principal Architect | boundaries, integration, maintainability, migration risk |
+| **Grace Hopper** — Reliability Engineer | failure modes, tests, rollback, observability |
+| **Hypatia** — Security & Governance | secrets, permissions, privacy, provenance, policy |
+| **Florence Nightingale** — Product & Operator | workflow fit, docs, adoption, operational friction |
+| **Alan Turing** — Contrarian Red Team | hidden assumptions, simpler alternatives, overengineering |
+| **Seymour Cray** — Performance Engineer | latency, throughput, memory, cost, scale, measurement |
+
+### Optional frontend gate
+
+Turn it on with `--frontend-review` (or `--type frontend`) for UI/UX work:
+
+- **Leonardo da Vinci** — a brutally honest UX/UI critic. A Leonardo blocker lowers
+  final confidence even when the technical scores are high.
+- **Bob** — a browser evidence runner. He drives a real browser and reports
+  pass/fail. **Bob never votes**, and nothing is called "verified" until Bob (or
+  equivalent browser evidence) actually ran the path.
+
+---
+
+## Modes & token budget
+
+Pick the smallest mode that catches the risk. Escalate per blocker, not by default.
+
+| Mode | Use it for |
+| --- | --- |
+| `fast` | small, reversible, low‑risk decisions (a single Chairman pass) |
+| `standard` | implementation, architecture, and performance decisions (six members) |
+| `deep` | security, data loss, migrations, irreversible changes, or a close tie |
+| `--frontend-review` | UI/UX/browser behavior (adds Leonardo + Bob) |
+| `--type skill --skill-review` | plugin/skill usability (a cheap three‑lens panel) |
+
+Output detail is controlled by `--token-budget`, which defaults to `compact`:
+
+| Budget | When |
+| --- | --- |
+| `compact` *(default)* | normal decisions — tight outputs, smallest reference set |
+| `balanced` | real tradeoffs and ambiguity — more detail, only on the risky parts |
+| `expanded` | security/data‑loss/irreversible — full evidence. **Blocked until you confirm.** |
+
+Typed synthesis templates are available via `--type architecture|implementation|decision|skill|frontend`.
+
+---
+
+## How to prompt it
+
+A council prompt isn't a question — it's a decision to pressure‑test. The shape that
+works:
 
 ```text
-Use $codex-council to review this architecture decision.
+[Standard|Deep|Frontend] Council: review <the specific decision>.
+Context: <the diff, files, or links it should look at>.
+Constraints: <hard limits — compatibility, deadline, budget>.
+Return: blockers, dissent, confidence, the safest v1, and the exact verification.
 ```
 
+A few ready‑to‑use examples:
+
 ```text
-Council review this implementation plan for blockers, dissent, and verification.
+Council review this diff.
+Focus on regressions, missing tests, and performance impact.
 ```
 
 ```text
@@ -155,246 +168,296 @@ Deep Council: review this migration for security, rollback, and data-loss risk.
 ```
 
 ```text
-Frontend Council: review this modal flow with Leonardo and have Bob verify browser interaction cases.
+Frontend Council: review this modal flow with Leonardo and have Bob verify
+the browser interaction cases before Chairman synthesis.
 ```
 
-## Modes
+**Tips:** name the mode (it sets cost and scrutiny), give it a real decision rather
+than a vibe, point at evidence, and state your hard constraints. Don't ask it to "just
+confirm" — the council preserves dissent on purpose. Explaining the council ("how does
+it work?") is not running it; an ambiguous ask gets one clarifying line, no dispatch.
 
-- `fast`: local Chairman review for small, reversible, low-risk decisions
-- `standard`: six council members with compact outputs, anonymous review/ranking, performance coverage, and local synthesis
-- `deep`: six members plus additional reviewer scrutiny for security, data loss, migrations, irreversible changes, close ties, or explicit full-council requests
-- `--frontend-review`: optional flag for UI/UX work; adds Leonardo as UX reviewer and Bob as browser evidence runner
-- `--type`: optional synthesis template: `architecture`, `implementation`, `decision`, `skill`, or `frontend`
-- `--skill-review`: compact three-lens skill/tool review; uses skill engineer, UX-for-tools, and non-expert adoption lenses
-- `--token-budget`: defaults to `compact`; use `balanced` or `expanded` only when blockers, audit, or irreversible risk require more detail
-- Chat-visible banner: when Codex runs the council in chat, it should paste the ASCII table in the conversation before dispatch
-- `--banner`: optional terminal-only ASCII council table for direct CLI users; omit it for scripts that need path-only output
-- `expanded`: blocked unless explicitly confirmed with `--confirm-expanded`
+➡️ The [Wiki](https://ercoledevs.github.io/codex-council/wiki.html) has a 16‑recipe
+cookbook with paste‑ready prompts for common situations.
 
-## CLI
+---
 
-The helper script is stdlib-only.
+## Tuning roles (alters)
 
-Validate the plugin:
+An **alter** is a bounded, local tweak to how one reviewer behaves — make Ada blunter,
+point Seymour at database cost, tell Leonardo to stop being polite about bad UI.
+
+Tuning is **advisory only**: it can sharpen focus and tone, but it can never remove
+blockers, dissent, verification, anonymization, or Bob's non‑voting status. Bob isn't
+tunable. Always preview before saving:
 
 ```bash
-python3 scripts/codex_council.py validate --plugin-root . --strict
+python3 scripts/codex_council.py alters preview --role leonardo \
+  --tone "more brutally honest about confusing interaction design" \
+  --domain-focus "mobile UI, modal accessibility, and click-through regressions"
 ```
 
-Configure the local consumer profile used for estimates:
+See [CLI reference → Tune roles](#cli-reference) for the full command set.
+
+---
+
+## CLI reference
+
+The helper script (`scripts/codex_council.py`) is stdlib‑only. For everyday use you
+don't need it at all — ask in chat. The CLI is for **traceable sessions, estimates,
+scoring, and stats** you want to keep. Sections are collapsed; click to expand.
+
+<details>
+<summary><b>Setup & estimate</b></summary>
 
 ```bash
+# Configure the local consumer profile used for estimates (stored with consent).
 python3 scripts/codex_council.py profile --plan Plus --model GPT-5.3-Codex --reasoning medium
-```
 
-The profile is stored locally in `<plugin-root>/.codex-council/consumer-profile.json` by default. In versioned plugin-cache installs such as `codex-council/0.7.0`, state is stored in the stable parent `codex-council/.codex-council/` so role tuning and estimate history survive plugin updates. Existing version-local state is migrated on first read. It stores declared plan/model/reasoning and compact aggregate history only, not prompts or transcripts. Override the shared state location with `CODEX_COUNCIL_STATE_ROOT`, profile-only location with `--config-root` or `CODEX_COUNCIL_HOME`, and session storage with `--session-root` or `CODEX_COUNCIL_SESSION_ROOT`.
-
-Show the first-run questions when no profile exists:
-
-```bash
+# Show the first-run questions when no profile exists.
 python3 scripts/codex_council.py profile
-```
 
-Estimate before starting:
-
-```bash
+# Estimate before starting, then accept the range.
 python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode standard --token-budget compact
-```
 
-Classify a natural-language trigger before dispatching:
-
-```bash
+# Is this a real run, or just talking about the council?
 python3 scripts/codex_council.py classify-invocation --text "explain how council works"
 ```
+</details>
 
-Inspect local role tuning:
+<details>
+<summary><b>Run a traceable session</b></summary>
 
 ```bash
+# Scaffold a session after accepting the estimate. --root is the workspace analyzed;
+# artifacts are stored in plugin-local .codex-council/sessions/, never in your project.
+python3 scripts/codex_council.py init --topic "Architecture Review" --root . \
+  --mode standard --token-budget compact --confirm-estimate
+
+# Frontend session (Leonardo + Bob).
+python3 scripts/codex_council.py init --topic "Modal Review" --root . \
+  --mode standard --frontend-review --confirm-estimate
+
+# Compact skill/tool review session.
+python3 scripts/codex_council.py init --topic "Skill Review" --root . \
+  --type skill --skill-review --confirm-estimate
+
+# expanded must be confirmed explicitly.
+python3 scripts/codex_council.py init --topic "Migration Review" --root . \
+  --mode deep --token-budget expanded --confirm-expanded
+
+# Optional: ASCII banner (terminal) or a one-line dispatch announcement.
+python3 scripts/codex_council.py init --topic "Architecture Review" --root . --banner
+python3 scripts/codex_council.py init --topic "Decision Review" --root . --type decision --announce --confirm-estimate
+```
+</details>
+
+<details>
+<summary><b>Score, validate & close out</b></summary>
+
+```bash
+# Aggregate reviewer scores from a JSON file (use --compact for compact JSON).
+python3 scripts/codex_council.py score --input reviews.json
+
+# Validate a generated session.
+python3 scripts/codex_council.py validate-session --session <printed-session-dir>
+
+# End-of-session stats; --write persists stats.json and stats.md.
+python3 scripts/codex_council.py stats --session <printed-session-dir> --write
+
+# Optional: path-only raw bundle, and compact pre/post history (with consent).
+python3 scripts/codex_council.py stats --session <printed-session-dir> --write --raw-bundle
+python3 scripts/codex_council.py stats --session <printed-session-dir> --write --record-history
+```
+
+Stats are **local estimates**, not actual Codex token usage, billing telemetry, or
+exact tool‑call accounting. They separate `pre_execution_estimate`,
+`post_execution_estimate`, and `artifact_only_tokens`; if prompts or outputs are
+missing, coverage is reported as `partial`.
+</details>
+
+<details>
+<summary><b>Tune roles (alters)</b></summary>
+
+```bash
+# Inspect current tuning.
 python3 scripts/codex_council.py alters list
 python3 scripts/codex_council.py alters show --role ada
-```
 
-Preview a bounded alter update before saving:
+# Preview, then save (Ada, Grace, Hypatia, Florence, Turing, Seymour, Leonardo).
+python3 scripts/codex_council.py alters preview   --role ada --tone "more direct" --domain-focus "API design and maintainability"
+python3 scripts/codex_council.py alters configure --role ada --tone "more direct" --domain-focus "API design and maintainability"
 
-```bash
-python3 scripts/codex_council.py alters preview --role ada \
-  --tone "more direct and concise" \
-  --domain-focus "API design and long-term maintainability"
-```
-
-Save the tuning after reviewing the preview:
-
-```bash
-python3 scripts/codex_council.py alters configure --role ada \
-  --tone "more direct and concise" \
-  --domain-focus "API design and long-term maintainability"
-```
-
-Reset one alter or all alter tuning:
-
-```bash
+# Reset one role or all tuning.
 python3 scripts/codex_council.py alters reset --role ada
 python3 scripts/codex_council.py alters reset --all
 ```
 
-Role tuning is advisory and lower priority than Codex Council non-negotiables. It cannot remove blockers, dissent, verification, anonymization, safety checks, Bob's non-voting status, or frontend evidence rules. Only the compact compiled instruction is injected into prompts; raw task prompts are not stored in invocation logs.
+Supported fields: `--domain-focus`, `--strictness`, `--tone`, `--risk-posture`,
+`--evidence-preference`, `--extra-check`, `--instruction`. Use the CLI for changes —
+don't hand‑edit `alter-overrides.json`.
+</details>
 
-Create a traceable council session:
-
-```bash
-python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --confirm-estimate
-```
-
-`--root` is the workspace being analyzed. Session artifacts are stored under `<plugin-root>/.codex-council/sessions/` by default, not inside the project. The folder is gitignored so preflight, prompts, outputs, stats, and compact learning history can be reused across projects without polluting repositories.
-
-`expanded` requires explicit confirmation:
+<details>
+<summary><b>Maintain</b></summary>
 
 ```bash
-python3 scripts/codex_council.py init --topic "Migration Review" --root . --mode deep --token-budget expanded --confirm-expanded
-```
+# Strict plugin validation.
+python3 scripts/codex_council.py validate --plugin-root . --strict
 
-Create a terminal session with the ASCII council table banner:
+# Check for a newer GitHub release (--json for machine-readable output).
+python3 scripts/codex_council.py check-update
+
+# Run the test suite.
+python3 -m unittest discover -s tests -v
+```
+</details>
+
+---
+
+## Privacy & local state
+
+The council keeps its runtime artifacts — session scaffolds, estimates, prompts,
+outputs, stats, history, and alter overrides — in plugin‑local `.codex-council/`,
+**not inside your project**, and the folder is gitignored. So you can reuse profiles
+and learning history across projects without polluting any repo.
+
+- Invocation logs are compact JSONL and **never** store prompt text, raw output,
+  secrets, topics, workspace roots, or absolute paths.
+- The consumer profile stores only your declared plan/model/reasoning and compact
+  aggregate history — never prompts or transcripts.
+- State lives in a stable parent (`codex-council/.codex-council/`) so tuning and
+  history survive plugin updates. Override paths with `CODEX_COUNCIL_STATE_ROOT`,
+  `CODEX_COUNCIL_HOME`, or `CODEX_COUNCIL_SESSION_ROOT`.
+
+---
+
+## Limits
+
+Read these before you rely on it:
+
+- **Consensus is not proof.** This is an advisory workflow, not a legal, security, or
+  compliance approval system. Always run the verification.
+- **Not multi‑vendor diversity.** Role isolation reduces single‑pass anchoring; it does
+  not equal multiple independent model providers.
+- **No fake UI verification.** UI behavior isn't "verified" unless Bob, or equivalent
+  browser evidence, actually ran the path.
+- **No billing telemetry.** Token reports are local heuristics, not your real Codex
+  usage or remaining quota — check **Codex Settings → Usage** for that.
+- **`expanded` is gated.** It can consume a lot of usage, so it never runs without
+  explicit confirmation. Prefer expanding one blocker over a whole session.
+- Use **Deep mode** for sensitive, irreversible, privacy, security, migration, or
+  data‑loss decisions.
+
+---
+
+## Install options
+
+<details>
+<summary><b>Project vs. global scope</b></summary>
 
 ```bash
-python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --banner
+# Pick scope when prompted, or set it explicitly:
+npx codex-marketplace add ercoledevs/codex-council --plugin --project
+npx codex-marketplace add ercoledevs/codex-council --plugin --global
+
+# Non-interactive:
+npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
 ```
 
-Create a frontend/UX session with Leonardo and Bob:
+Restart or reload Codex after installing or updating.
+</details>
+
+<details>
+<summary><b>Update</b></summary>
+
+Re‑run the install command to pull the latest version:
 
 ```bash
-python3 scripts/codex_council.py init --topic "Frontend Modal Review" --root . --mode standard --token-budget compact --frontend-review
+npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
 ```
 
-Create a compact skill/tool review session:
-
-```bash
-python3 scripts/codex_council.py init --topic "Skill Review" --root . --type skill --skill-review --confirm-estimate
-```
-
-Print a one-line dispatch announcement:
-
-```bash
-python3 scripts/codex_council.py init --topic "Decision Review" --root . --type decision --announce --confirm-estimate
-```
-
-Validate a generated session:
-
-```bash
-python3 scripts/codex_council.py validate-session --session <printed-session-dir>
-```
-
-Aggregate reviewer scores:
-
-```bash
-python3 scripts/codex_council.py score --input reviews.json
-```
-
-Compact JSON output:
-
-```bash
-python3 scripts/codex_council.py score --input reviews.json --compact
-```
-
-Report end-of-session stats:
-
-```bash
-python3 scripts/codex_council.py stats --session <printed-session-dir>
-```
-
-Write reusable `stats.json` and `stats.md` artifacts:
-
-```bash
-python3 scripts/codex_council.py stats --session <printed-session-dir> --write
-```
-
-Write an optional path-only raw output bundle:
-
-```bash
-python3 scripts/codex_council.py stats --session <printed-session-dir> --write --raw-bundle
-```
-
-Record compact pre/post estimate history:
-
-```bash
-python3 scripts/codex_council.py stats --session <printed-session-dir> --write --record-history
-```
-
-Stats include comparable `pre_execution_estimate`, `post_execution_estimate`, `artifact_only_tokens`, delta, ratio, calibration recommendation, and missing/unmeasured data. They are local estimates, not actual Codex token usage, billing telemetry, hidden prompt overhead, or exact tool-call accounting.
-
-When Codex runs the council from chat, the useful stats should be summarized back into the conversation; the files are only durable artifacts.
-
-Post estimates are retrospective and use saved prompt files plus saved member/reviewer/Chairman outputs. `artifact_only_tokens` is separate and must not be used to compare full session cost. If prompts or outputs are missing, `stats` reports `coverage: partial`.
-
-`init` writes `preflight-estimate.json`, `preflight-estimate.md`, prompt scaffolds under `prompts/`, and `prompts/synthesis-inputs.json` for the separate Chairman synthesis pass. If the actual dispatch prompt differs from the scaffold, overwrite the matching prompt file before running `stats`.
-
-Invocation logs are compact JSONL rows in plugin-local state. They do not store prompt text, raw output text, secrets, topics, workspace roots, or absolute user paths.
-
-Pre-session estimates are local heuristics. They are not actual Codex usage, remaining quota, billing telemetry, hidden prompt overhead, cached input, or tool-call accounting. OpenAI documents that Codex usage depends on plan and task complexity, and recommends checking Codex Settings > Usage for actual usage/remaining credit.
-
-Check for newer GitHub Releases:
+Then reload Codex. To get notified of new versions, **Watch** the repo →
+**Custom** → enable **Releases**. You can also check from the CLI:
 
 ```bash
 python3 scripts/codex_council.py check-update
 ```
+</details>
 
-Machine-readable update check:
+<details>
+<summary><b>Manual install</b></summary>
+
+Clone into your local Codex plugin directory:
 
 ```bash
-python3 scripts/codex_council.py check-update --json
+mkdir -p ~/plugins
+git clone https://github.com/ercoledevs/codex-council.git ~/plugins/codex-council
 ```
+
+Add it to your local marketplace file (usually `~/.agents/plugins/marketplace.json`):
+
+```json
+{
+  "name": "codex-council",
+  "source": { "source": "local", "path": "./plugins/codex-council" },
+  "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+  "category": "Productivity"
+}
+```
+
+Restart or reload Codex after adding the plugin.
+</details>
+
+---
 
 ## Development
 
-Run the test suite:
-
 ```bash
+# Tests
 python3 -m unittest discover -s tests -v
-```
 
-Run strict validation:
-
-```bash
+# Strict validation
 python3 scripts/codex_council.py validate --plugin-root . --strict
-```
 
-Before publishing, ensure no local artifacts are present:
-
-```bash
+# Before publishing, check for stray local artifacts
 find . -name '.DS_Store' -o -name '._*' -o -name '__pycache__' -o -name '*.pyc'
 ```
 
-## Structure
+Repository layout:
 
 ```text
 codex-council/
-├── .codex-plugin/plugin.json
+├── .codex-plugin/plugin.json        # plugin manifest
+├── scripts/codex_council.py         # stdlib-only helper CLI
+├── skills/codex-council/            # the skill + reference docs
+│   ├── SKILL.md
+│   └── references/                  # roles, rubric, protocol, token budget, …
+├── skills/codex-council-alters/     # role-tuning skill
+├── docs/                            # the website (GitHub Pages)
 ├── assets/
-├── scripts/codex_council.py
-├── skills/codex-council/SKILL.md
-├── skills/codex-council/references/
 ├── tests/
 └── PROVENANCE.md
 ```
 
-## Important Limits
+The public site in `docs/` is published with GitHub Pages from the `main` branch
+(`/docs` folder) → https://ercoledevs.github.io/codex-council/
 
-- Council consensus is not proof.
-- This is an advisory workflow, not a legal, security, or compliance approval system.
-- Role diversity is produced by isolated Codex role prompts, not by multiple external model providers.
-- The original LLM Council pattern uses multiple LLM providers; Codex Council keeps the workflow inside Codex.
-- Leonardo and Bob activate only for frontend/UI/UX work. Bob provides browser evidence and does not vote.
-- Deep mode should be used for sensitive, irreversible, privacy, security, migration, or data-loss decisions.
-- Validate evidence before declaring work complete.
+---
 
-## Provenance
+## Credits & license
 
-This project is inspired by public LLM Council work:
+Inspired by the public **LLM Council** pattern:
 
-- https://github.com/karpathy/llm-council
-- https://llm-council.dev/
+- [karpathy/llm-council](https://github.com/karpathy/llm-council)
+- [llm-council.dev](https://llm-council.dev/)
 
-The original pattern asks multiple models for independent answers, anonymizes responses for peer review/ranking, then has a Chairman model synthesize the final answer. Codex Council keeps that decision shape while adapting execution to Codex roles, optional Codex subagents, and local deterministic scoring. See [PROVENANCE.md](PROVENANCE.md) for details.
+The original asks multiple independent models for answers, anonymizes them for peer
+review/ranking, then has a Chairman model synthesize the result. Codex Council keeps
+that decision shape while adapting execution to Codex roles, optional Codex subagents,
+and local deterministic scoring. Additional workflow patterns (single‑round critics, a
+separate synthesis pass, typed panels, fail‑fast setup checks, compact invocation
+logging) are adapted from Chris Blattman's Claude council pattern — without adding any
+cross‑vendor model calls. See [PROVENANCE.md](PROVENANCE.md) for details.
 
-## License
-
-MIT. See [LICENSE](LICENSE).
+Licensed under the [MIT License](LICENSE).

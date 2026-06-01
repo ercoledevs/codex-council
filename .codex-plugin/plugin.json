@@ -7,7 +7,7 @@
     "email": "local@example.invalid",
     "url": "https://github.com/ercoledevs"
   },
-  "homepage": "https://github.com/ercoledevs/codex-council",
+  "homepage": "https://ercoledevs.github.io/codex-council/",
   "repository": "https://github.com/ercoledevs/codex-council",
   "license": "MIT",
   "keywords": [
@@ -30,7 +30,7 @@
       "Decision Support",
       "Structured Review"
     ],
-    "websiteURL": "https://github.com/ercoledevs/codex-council",
+    "websiteURL": "https://ercoledevs.github.io/codex-council/",
     "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
     "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
     "defaultPrompt": [
