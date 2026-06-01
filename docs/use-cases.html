@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Use Cases - Codex Council</title>
+    <meta name="description" content="When Codex Council earns its cost: architecture calls, risky diffs, frontend UX, performance, plugin design, and release decisions — and when plain Codex is the better tool.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/use-cases.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/use-cases.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/use-cases.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/use-cases.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Codex Council Use Cases">
+    <meta property="og:description" content="Where the council helps and where it doesn't: architecture, risky diffs, frontend UX, performance, plugin design, release readiness.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/use-cases.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Codex Council Use Cases">
+    <meta name="twitter:description" content="Where the council helps and where it doesn't: architecture, risky diffs, frontend UX, performance, plugin design, release readiness.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">
+          <img src="assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html" aria-current="page">Use Cases</a>
+          <a href="examples.html">Examples</a>
+          <a href="usage.html">Usage</a>
+          <a href="alters.html">Alters</a>
+          <a href="limits.html">Limits</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="it/use-cases.html" hreflang="it" aria-label="Versione italiana">IT</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Use cases</p>
+          <h1>Reach for it when getting it wrong is expensive.</h1>
+          <p class="lead">
+            Most prompts don't need a council. This is for the ones where a confident, wrong
+            answer costs you a rollback, a migration, or a bug your users hit first.
+          </p>
+
+          <div class="grid">
+            <article class="card">
+              <h3>Architecture decisions</h3>
+              <p>Weigh two designs, draw the module boundaries, and settle the rollback plan before you commit to one of them.</p>
+            </article>
+            <article class="card">
+              <h3>Risky diffs</h3>
+              <p>Hand it a patch and ask what breaks: regressions, missing tests, the edge case that pages you at 3am.</p>
+            </article>
+            <article class="card">
+              <h3>Frontend and UX</h3>
+              <p>Let Leonardo tear into the UX, then have Bob drive the browser before anyone says "it works".</p>
+            </article>
+            <article class="card">
+              <h3>Performance proposals</h3>
+              <p>Seymour goes after latency, memory, and database load — and the question everyone skips: how will you measure it?</p>
+            </article>
+            <article class="card">
+              <h3>Plugins and skills</h3>
+              <p>Skill-review mode checks whether people will find your tool, use it, and not trip over rules you already wrote.</p>
+            </article>
+            <article class="card">
+              <h3>Release readiness</h3>
+              <p>Trade "I think it's fine" for a list: blockers, open disagreements, what's tested, what's still unknown.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Frontend review</p>
+          <h2>Leonardo critiques. Bob verifies.</h2>
+          <div class="feature-row">
+            <div class="feature-copy">
+              <p>
+                UI bugs hide in behavior, not screenshots — the focus trap that won't release,
+                the background that stays clickable, the modal that falls apart on a phone. So
+                frontend runs get a stricter path.
+              </p>
+              <ul>
+                <li><strong>Leonardo</strong> is the critic, and he isn't kind about confusing design.</li>
+                <li><strong>Bob</strong> runs the browser. He gathers evidence; he doesn't get a vote.</li>
+                <li>Nothing is called "verified" until Bob, or a real browser, has reproduced it.</li>
+              </ul>
+            </div>
+            <figure class="visual-frame illustration" data-illustration="frontend" role="img" aria-label="Frontend review flow: UX critique, browser modal testing, focus checks, blocked background interaction, and evidence collection."></figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Mode selection</p>
+          <h2>Pick the smallest mode that catches the risk.</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Situation</th>
+                  <th>Mode</th>
+                  <th>Why</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Small, reversible decision</td>
+                  <td><code>fast</code></td>
+                  <td>A quick Chairman pass, none of the full-council cost.</td>
+                </tr>
+                <tr>
+                  <td>Implementation or architecture choice</td>
+                  <td><code>standard</code></td>
+                  <td>Six reviewers and a scoring pass. Enough for most calls.</td>
+                </tr>
+                <tr>
+                  <td>Security, migration, data loss, a close tie</td>
+                  <td><code>deep</code></td>
+                  <td>When the downside is real, the extra scrutiny pays for itself.</td>
+                </tr>
+                <tr>
+                  <td>Frontend, UX, modals, forms, navigation</td>
+                  <td><code>standard --frontend-review</code></td>
+                  <td>Leonardo on the experience, Bob on the browser when there's something to click.</td>
+                </tr>
+                <tr>
+                  <td>Skill or plugin usability</td>
+                  <td><code>--type skill --skill-review</code></td>
+                  <td>Compact lenses for how the tool is built and whether anyone can use it.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Don't overuse it</p>
+          <h2>Plenty of the time, plain Codex wins.</h2>
+          <ul class="wide-list">
+            <li><strong>Use plain Codex</strong> for small edits, quick questions, and anything you can check yourself in a minute.</li>
+            <li><strong>Use the council</strong> when the failure is expensive: a migration you can't undo, a regression users will see, a tradeoff you can't call alone.</li>
+            <li><strong>Use expanded only when you mean it.</strong> It burns through usage, so the plugin won't start it without a confirmation.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>A council workflow for Codex. MIT licensed.</p>
+        </div>
+        <div class="footer-links">
+          <a href="usage.html">Install</a>
+          <a href="examples.html">Examples</a>
+          <a href="limits.html">Limits</a>
+        </div>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>

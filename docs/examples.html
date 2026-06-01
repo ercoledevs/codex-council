@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Examples - Codex Council</title>
+    <meta name="description" content="One real run, start to finish: the same proposal through a plain Codex prompt and through the council, with the preflight estimate and the blockers it surfaced.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/examples.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/examples.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/examples.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/examples.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Codex Council Examples">
+    <meta property="og:description" content="A real run: the same proposal through a plain prompt and through the council, with the preflight estimate and the blockers it found.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/examples.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Codex Council Examples">
+    <meta name="twitter:description" content="A real run: the same proposal through a plain prompt and through the council, with the preflight estimate and the blockers it found.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">
+          <img src="assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html">Use Cases</a>
+          <a href="examples.html" aria-current="page">Examples</a>
+          <a href="usage.html">Usage</a>
+          <a href="alters.html">Alters</a>
+          <a href="limits.html">Limits</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="it/examples.html" hreflang="it" aria-label="Versione italiana">IT</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Prompt comparison</p>
+          <h1>Same problem, more pressure.</h1>
+          <p class="lead">
+            I ran this for real while building the site. The brief was deliberately messy:
+            shareable session reports with automatic redaction, HTML and JSON export, and team
+            handoff links. A plain prompt gave me a tidy outline. The council gave me a safer plan.
+          </p>
+
+          <div class="comparison">
+            <div class="panel">
+              <div class="panel-title">Normal Codex prompt</div>
+              <div class="panel-body">
+                <pre><code>Evaluate proposal:
+Add shareable Council reports
+with automatic redaction,
+HTML/JSON export, and
+team handoff links.</code></pre>
+                <p><strong>What the single pass caught:</strong></p>
+                <ul>
+                  <li>Build a local report assembler on top of existing session artifacts.</li>
+                  <li>Run a redaction pass before HTML/JSON export.</li>
+                  <li>Keep handoff local until there's authenticated hosting.</li>
+                  <li>Add tests for secrets, paths, the report schema, and the generated HTML.</li>
+                </ul>
+                <p>All useful, all roughly right. But it still treated the whole thing as an export feature.</p>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Codex Council prompt</div>
+              <div class="panel-body">
+                <pre><code>Standard Council:
+review the same proposal.
+Use architecture, reliability,
+privacy, product, red-team,
+and performance lenses.
+Return blockers and
+the safest v1 scope.</code></pre>
+                <p><strong>What the council added:</strong></p>
+                <ul>
+                  <li>Ship local, deterministic exports in v1 — nothing else.</li>
+                  <li>Don't sell automatic redaction as a security boundary.</li>
+                  <li>Allowlist a public schema instead of scrubbing raw logs.</li>
+                  <li>Fail closed if redaction or a sensitive-content check breaks.</li>
+                  <li>No recursive walks through session folders, no dumping huge raw output.</li>
+                  <li>Add a lifecycle: preview, dry-run, delete, re-export, retention.</li>
+                  <li>Add performance gates at 1 MB, 25 MB, and 100 MB.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">The actual output</p>
+          <h2>Captured straight from the run.</h2>
+          <p class="lead">
+            Condensed, but real. The token numbers are estimates, not a bill — and remember this
+            is still one model playing several parts, not a panel of rival providers.
+          </p>
+
+          <div class="runs">
+            <article class="run">
+              <div class="run-head"><span class="run-num">1</span><h3>Standard Council preflight</h3></div>
+              <pre><code>$ python3 scripts/codex_council.py estimate \
+  --topic "Add shareable Codex Council session reports..." \
+  --mode standard --token-budget compact --type implementation
+
+Mode: standard
+Type: implementation
+Roles/reviewers/evidence runners: 6/2/0
+Estimated total tokens: 12220 (range 9165..16497)
+Estimated input/output tokens: 10830/1390</code></pre>
+            </article>
+            <article class="run">
+              <div class="run-head"><span class="run-num">2</span><h3>What plain Codex returned</h3></div>
+              <pre><code>Recommendation:
+Build it, but scope v1 as local explicit export.
+
+Architecture:
+session artifacts -> ReportAssembler -> RedactionPipeline
+-> HTML/JSON exporters -> optional handoff artifact
+
+Risks:
+accidental disclosure, telemetry confusion, collaboration
+hosting scope creep.</code></pre>
+            </article>
+            <article class="run">
+              <div class="run-head"><span class="run-num">3</span><h3>What the council returned</h3></div>
+              <pre><code>Final recommendation:
+Ship local deterministic session exports only.
+Use HTML and JSON generated from an allowlisted public schema.
+Run strict redaction before rendering or serialization.
+Do not ship automatic publishing, public URLs, or
+security-boundary claims yet.</code></pre>
+            </article>
+            <article class="run">
+              <div class="run-head"><span class="run-num">4</span><h3>Blockers it surfaced</h3></div>
+              <pre><code>- No raw prompts, outputs, logs, or arbitrary session fields by default.
+- Redaction must be field-level and fail closed.
+- Report schema must be allowlisted and versioned.
+- Partial/legacy sessions must degrade safely, not dump raw data.
+- Export must be manifest-driven with no recursive scans.
+- Preview, dry-run, delete, re-export, and retention rules are required.
+- Team handoff needs a threat model before hosted or public links.
+- Performance gates are required because preview/re-export can double work.</code></pre>
+            </article>
+            <article class="run">
+              <div class="run-head"><span class="run-num">5</span><h3>The honest read</h3></div>
+              <pre><code>The single pass had the right shape.
+The council made it safer: smaller v1, no premature
+sharing claims, and privacy, lifecycle, and performance
+constraints that would otherwise have shipped as
+production risks.</code></pre>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">The takeaway</p>
+          <h2>It's worth it when it changes the answer.</h2>
+          <ul class="wide-list">
+            <li><strong>Plain Codex found a workable architecture.</strong> The council turned it into a safer release.</li>
+            <li><strong>Plain Codex said "local export first".</strong> The council said "local export only — until sharing has a threat model".</li>
+            <li><strong>Plain Codex added redaction tests.</strong> The council required fail-closed, field-level redaction before anything renders.</li>
+            <li><strong>Plain Codex listed risks.</strong> The council turned them into blockers, a lifecycle, and performance gates.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>A council workflow for Codex. MIT licensed.</p>
+        </div>
+        <div class="footer-links">
+          <a href="usage.html">Install</a>
+          <a href="alters.html">Tune alters</a>
+          <a href="limits.html">Limits</a>
+        </div>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" id="github-cover" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <!-- Font importati direttamente nell'SVG per garantire che vengano renderizzati ovunque -->
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;family=Space+Mono&amp;display=swap');
+                        .text-title { font-family: 'Inter', sans-serif; font-weight: 900; }
+                        .text-subtitle { font-family: 'Inter', sans-serif; font-weight: 400; }
+                        .text-mono { font-family: 'Space Mono', monospace; font-weight: 400; }
+                    </style>
+
+                    <!-- Sfondo con gradiente radiale scuro -->
+                    <radialGradient id="bg-gradient" cx="50%" cy="0%" r="100%" fx="50%" fy="0%">
+                        <stop offset="0%" stop-color="#1e293b"/> <!-- slate-800 -->
+                        <stop offset="100%" stop-color="#020617"/> <!-- slate-950 -->
+                    </radialGradient>
+
+                    <!-- Nuovo gradiente per il titolo -->
+                    <linearGradient id="title-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff"/>
+                        <stop offset="100%" stop-color="#a5b4fc"/> <!-- indigo-300 -->
+                    </linearGradient>
+
+                    <!-- Griglia a punti per effetto "tech" -->
+                    <pattern id="dot-grid" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+                        <circle cx="2" cy="2" r="1.5" fill="#ffffff" opacity="0.05"/>
+                    </pattern>
+
+                    <!-- Filtro per il bagliore dietro il logo -->
+                    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                        <feGaussianBlur stdDeviation="60" result="blur"/>
+                        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+                    </filter>
+                    
+                    <!-- Filtro per ombra del logo -->
+                    <filter id="drop-shadow" x="-10%" y="-10%" width="130%" height="130%">
+                        <feDropShadow dx="0" dy="20" stdDeviation="25" flood-color="#000000" flood-opacity="0.5"/>
+                    </filter>
+                </defs>
+
+                <!-- Sfondo principale -->
+                <rect width="1200" height="630" fill="url(#bg-gradient)"/>
+                <rect width="1200" height="630" fill="url(#dot-grid)"/>
+
+                <!-- Bagliore azzurro/indaco -->
+                <circle cx="280" cy="315" r="180" fill="#6366f1" filter="url(#glow)" opacity="0.25"/>
+                <!-- Bagliore secondario magenta in basso a destra -->
+                <circle cx="1100" cy="600" r="250" fill="#d946ef" filter="url(#glow)" opacity="0.1"/>
+
+                <!-- GRUPPO TESTUALE (Centrato verticalmente rispetto al logo e al canvas) -->
+                <g transform="translate(510, 160)">
+                    <!-- BADGE USERNAME -->
+                    <g transform="translate(0, 0)">
+                        <rect x="0" y="0" width="165" height="40" rx="20" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                        <circle cx="22" cy="20" r="4.5" fill="#10b981"/>
+                        <text x="90" y="26" fill="#94a3b8" font-size="16" class="text-mono" text-anchor="middle" letter-spacing="0.5">@ercoledevs</text>
+                    </g>
+
+                    <!-- TITOLO -->
+                    <text x="0" y="110" fill="url(#title-gradient)" font-size="82" class="text-title" letter-spacing="-1.5">Codex Council</text>
+                    
+                    <!-- Linea decorativa -->
+                    <rect x="0" y="145" width="100" height="6" rx="3" fill="#6366f1"/>
+
+                    <!-- Sottotitolo / Descrizione -->
+                    <text x="0" y="205" fill="#cbd5e1" font-size="26" class="text-subtitle" line-height="1.5">
+                        <tspan id="subtitle-line1" x="0" dy="0">Defining architectural standards,</tspan>
+                        <tspan id="subtitle-line2" x="0" dy="38">best practices and code governance.</tspan>
+                    </text>
+                    
+                    <!-- URL Repo (Raffinato e ALLARGATO) -->
+                    <g transform="translate(0, 295)">
+                        <rect x="0" y="-28" width="460" height="48" rx="8" fill="#000000" fill-opacity="0.4" stroke="#1e293b" stroke-width="1"/>
+                        <text x="18" y="3" fill="#10b981" font-size="18" class="text-mono">~</text>
+                        <text x="40" y="3" fill="#64748b" font-size="18" class="text-mono">github.com/ercoledevs/codex-council</text>
+                    </g>
+                </g>
+
+                <!-- IL LOGO (Ricreato in vettoriale) -->
+                <!-- Spostato per bilanciare la centratura orizzontale -->
+                <g transform="translate(150, 165) scale(1.5)" filter="url(#drop-shadow)">
+                    <!-- Base bianca arrotondata -->
+                    <rect x="0" y="0" width="200" height="200" rx="45" fill="#ffffff"/>
+                    
+                    <!-- Nodi e connessioni -->
+                    <g stroke="#09090b" stroke-width="15" stroke-linecap="round" stroke-linejoin="round">
+                        
+                        <!-- Linee di connessione (disegnate sotto per essere nascoste dai box) -->
+                        <!-- Dal centro (95, 105) ai centri degli altri box -->
+                        <line x1="95" y1="105" x2="49" y2="59"/> <!-- Verso TL -->
+                        <line x1="95" y1="105" x2="140" y2="60"/> <!-- Verso TR -->
+                        <line x1="95" y1="105" x2="57.5" y2="142.5"/> <!-- Verso BL -->
+                        <line x1="95" y1="105" x2="132.5" y2="147.5"/> <!-- Verso BR -->
+
+                        <!-- I Box con bordo nero e interno bianco (coprono le linee all'interno) -->
+                        <!-- Top Left (Piccolo) -->
+                        <rect x="35" y="45" width="28" height="28" rx="7" fill="#ffffff"/>
+                        
+                        <!-- Top Right (Grande) -->
+                        <rect x="110" y="30" width="60" height="60" rx="14" fill="#ffffff"/>
+                        
+                        <!-- Bottom Left (Medio) -->
+                        <rect x="30" y="115" width="55" height="55" rx="12" fill="#ffffff"/>
+                        
+                        <!-- Bottom Right (Piccolo) -->
+                        <rect x="115" y="130" width="35" height="35" rx="8" fill="#ffffff"/>
+
+                        <!-- Center -->
+                        <rect x="75" y="85" width="40" height="40" rx="9" fill="#ffffff"/>
+                    </g>
+                </g>
+                
+                <!-- Decorazione laterale (Simbolo codice) -->
+                <g transform="translate(1080, 50)" opacity="0.2">
+                    <path d="M20 10 L10 20 L20 30 M40 10 L50 20 L40 30" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </g>
+            </svg>

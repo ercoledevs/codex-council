@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Limits - Codex Council</title>
+    <meta name="description" content="What Codex Council won't claim: no fake multi-provider diversity, no unverified UI, no real billing telemetry. Plus where its local state lives and what it's based on.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/limits.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/limits.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/limits.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/limits.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Codex Council Limits">
+    <meta property="og:description" content="The honest constraints: no fake provider diversity, no unverified UI, no real billing data. Where state lives, and what it's based on.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/limits.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Codex Council Limits">
+    <meta name="twitter:description" content="The honest constraints: no fake provider diversity, no unverified UI, no real billing data. Where state lives, and what it's based on.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">
+          <img src="assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html">Use Cases</a>
+          <a href="examples.html">Examples</a>
+          <a href="usage.html">Usage</a>
+          <a href="alters.html">Alters</a>
+          <a href="limits.html" aria-current="page">Limits</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="it/limits.html" hreflang="it" aria-label="Versione italiana">IT</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Limits</p>
+          <h1>It sharpens judgment. It doesn't replace verification.</h1>
+          <p class="lead">
+            I built it to make risk visible, not to manufacture confidence. The final answer still
+            needs tests, a real browser, and your own read of the situation.
+          </p>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">What it won't fake</p>
+          <h2>The honesty is part of the design.</h2>
+          <ul class="wide-list">
+            <li><strong>No fake provider diversity.</strong> This is Codex playing several roles, not several independent models.</li>
+            <li><strong>No unverified UI claims.</strong> A UI isn't "verified" unless Bob, or a real browser, actually ran the path.</li>
+            <li><strong>No real billing data.</strong> Token reports are local estimates, not your actual Codex usage or remaining quota.</li>
+            <li><strong>No silent expanded runs.</strong> Expanded can burn a lot of usage, so it won't start without your confirmation.</li>
+            <li><strong>No mess in your repo.</strong> Sessions, prompts, stats, and history live in plugin-local state and stay gitignored.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Privacy and state</p>
+          <h2>Local artifacts are still artifacts.</h2>
+          <p class="lead">
+            The helper script keeps session scaffolds, estimates, prompts, outputs, stats, history,
+            and alter overrides in plugin-local state. Before you publish a repo, make sure
+            <code class="inline-code">.codex-council/</code> is gitignored and uncommitted.
+          </p>
+          <pre><code># Check for local runtime artifacts before publishing.
+git status --short
+find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code></pre>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Where it comes from</p>
+          <h2>Built on the LLM Council idea, adapted for Codex.</h2>
+          <p class="lead">
+            The pattern comes from
+            <a href="https://github.com/karpathy/llm-council">karpathy/llm-council</a> and
+            <a href="https://llm-council.dev/">llm-council.dev</a>: ask several independent models,
+            anonymize the answers, rank them, then synthesize a final one. Codex Council keeps that
+            shape but runs it through Codex roles, local scoring, token estimates, and optional
+            browser evidence.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>A council workflow for Codex. MIT licensed.</p>
+        </div>
+        <div class="footer-links">
+          <a href="usage.html">Install</a>
+          <a href="examples.html">Examples</a>
+          <a href="https://github.com/ercoledevs/codex-council/blob/main/PROVENANCE.md">Provenance</a>
+        </div>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>
