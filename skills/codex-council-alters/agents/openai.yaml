@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Council Alters"
+  short_description: "Guided local role tuning for Codex Council members"
+  default_prompt: "Tune Ada's Codex Council alter with a compact, safe role behavior preview."

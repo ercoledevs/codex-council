@@ -25,6 +25,9 @@ Additional workflow inspiration comes from Chris Blattman's Claude council patte
 - Optional frontend/UX gate:
   - Leonardo da Vinci - Brutally Honest UX/UI Critic
   - Bob - Browser Customer Tester, an evidence runner rather than a voting council member
+- Guided role tuning for council member alters:
+  - Ada, Grace, Hypatia, Florence, Turing, Seymour, and Leonardo can receive bounded local behavior tuning
+  - Bob is intentionally excluded because he is an evidence runner
 - Internal competency packs for use without external skills
 - Workflow recipes for common review situations
 - Governance preflight checklist
@@ -36,6 +39,7 @@ Additional workflow inspiration comes from Chris Blattman's Claude council patte
 - Pre-session usage estimates before expensive council runs
 - Mandatory explicit confirmation for `expanded`
 - Compact local consumer profile/history for improving future estimates
+- Local `alter-overrides.json` role tuning with preview, reset, token caps, and prompt integration
 - Performance impact review for latency, throughput, memory, cost, and scalability
 - Deterministic reviewer-score aggregation
 - Session scaffolding and validation
@@ -183,7 +187,7 @@ Configure the local consumer profile used for estimates:
 python3 scripts/codex_council.py profile --plan Plus --model GPT-5.3-Codex --reasoning medium
 ```
 
-The profile is stored locally in `<plugin-root>/.codex-council/consumer-profile.json` by default. It stores declared plan/model/reasoning and compact aggregate history only, not prompts or transcripts. Override the shared state location with `CODEX_COUNCIL_STATE_ROOT`, profile-only location with `--config-root` or `CODEX_COUNCIL_HOME`, and session storage with `--session-root` or `CODEX_COUNCIL_SESSION_ROOT`.
+The profile is stored locally in `<plugin-root>/.codex-council/consumer-profile.json` by default. In versioned plugin-cache installs such as `codex-council/0.7.0`, state is stored in the stable parent `codex-council/.codex-council/` so role tuning and estimate history survive plugin updates. Existing version-local state is migrated on first read. It stores declared plan/model/reasoning and compact aggregate history only, not prompts or transcripts. Override the shared state location with `CODEX_COUNCIL_STATE_ROOT`, profile-only location with `--config-root` or `CODEX_COUNCIL_HOME`, and session storage with `--session-root` or `CODEX_COUNCIL_SESSION_ROOT`.
 
 Show the first-run questions when no profile exists:
 
@@ -202,6 +206,38 @@ Classify a natural-language trigger before dispatching:
 ```bash
 python3 scripts/codex_council.py classify-invocation --text "explain how council works"
 ```
+
+Inspect local role tuning:
+
+```bash
+python3 scripts/codex_council.py alters list
+python3 scripts/codex_council.py alters show --role ada
+```
+
+Preview a bounded alter update before saving:
+
+```bash
+python3 scripts/codex_council.py alters preview --role ada \
+  --tone "more direct and concise" \
+  --domain-focus "API design and long-term maintainability"
+```
+
+Save the tuning after reviewing the preview:
+
+```bash
+python3 scripts/codex_council.py alters configure --role ada \
+  --tone "more direct and concise" \
+  --domain-focus "API design and long-term maintainability"
+```
+
+Reset one alter or all alter tuning:
+
+```bash
+python3 scripts/codex_council.py alters reset --role ada
+python3 scripts/codex_council.py alters reset --all
+```
+
+Role tuning is advisory and lower priority than Codex Council non-negotiables. It cannot remove blockers, dissent, verification, anonymization, safety checks, Bob's non-voting status, or frontend evidence rules. Only the compact compiled instruction is injected into prompts; raw task prompts are not stored in invocation logs.
 
 Create a traceable council session:
 

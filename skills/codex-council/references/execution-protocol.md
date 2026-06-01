@@ -32,6 +32,8 @@ Use `--announce` when a terminal run should print a one-line dispatch status, fo
 
 Use `--type architecture|implementation|decision|skill|frontend` for typed synthesis templates. `--type frontend` activates the frontend gate. `--type skill` or `--skill-review` uses a compact three-member skill/tool panel: skill engineer, UX-for-tools, and non-expert adoption.
 
+If local role tuning exists, disclose active tuned alters before dispatch. Tuning is advisory, lower priority than all council non-negotiables, and must never be treated as evidence of true multi-provider diversity.
+
 ## Stage 1: Independent First Opinions
 
 Dispatch six agents in parallel for Standard/Deep mode, or three agents for `--skill-review`:
@@ -55,6 +57,8 @@ Put instructions first, then output schema, then task-specific context. Each dis
 You are <persona> - <role> for Codex Council.
 ```
 
+Local role tuning, if enabled, is appended after the stable role/protocol prefix as a bounded advisory block. It cannot alter required sections or council invariants.
+
 Member output:
 
 ```markdown
@@ -67,6 +71,8 @@ Member output:
 ```
 
 Compact cap: 90 words. Balanced cap: 140 words. Expanded cap: only when blockers require detail.
+
+After all first-opinion agents finish, retrieve their outputs and close the completed agents before spawning reviewers, Leonardo, Bob, or any extra agent. The platform limit is six open agents, so reviewer dispatch must happen after member cleanup.
 
 ## Stage 2: Anonymous Review
 

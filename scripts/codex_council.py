@@ -8,6 +8,7 @@ folders and aggregates reviewer score JSON with normalized score averaging.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import os
@@ -86,16 +87,68 @@ SYNTHESIS_INPUT_MANIFEST = "synthesis-inputs.json"
 RAW_OUTPUT_BUNDLE = "raw-output-bundle.json"
 TOKEN_ESTIMATE_CHARS_PER_TOKEN = 4
 CONSUMER_FILE_VERSION = 1
+ALTER_CONFIG_VERSION = 1
 DEFAULT_CONSUMER_DIR = ".codex-council"
 DEFAULT_SESSION_SUBDIR = "sessions"
 CONSUMER_FILENAME = "consumer-profile.json"
+ALTER_CONFIG_FILENAME = "alter-overrides.json"
 INVOCATION_LOG_FILENAME = "invocations.jsonl"
 MAX_RECENT_HISTORY = 25
 MAX_HISTORY_SUMMARY_RATIOS = 40
+ALTER_COMPILED_WORD_CAP = 90
+ALTER_FIELD_CHAR_CAP = 180
 EXPANDED_CONFIRMATION = "I understand expanded mode can consume significantly more Codex usage"
 SCORING_STATS_OVERHEAD_TOKENS = 220
 TOOL_OVERHEAD_PER_PROMPT_TOKENS = 35
 TOOL_OVERHEAD_BASE_TOKENS = 120
+
+ALTER_ROLE_CATALOG = {
+    "ada": {
+        "display_name": "Ada Lovelace",
+        "kind": "member",
+        "applies_to": ["Ada Lovelace - Principal Architect", "Ada Lovelace - Skill Engineer"],
+    },
+    "grace": {
+        "display_name": "Grace Hopper",
+        "kind": "member",
+        "applies_to": ["Grace Hopper - Reliability Engineer", "Grace Hopper - Non-Expert Adoption Reviewer"],
+    },
+    "hypatia": {
+        "display_name": "Hypatia",
+        "kind": "member",
+        "applies_to": ["Hypatia - Security and Governance Reviewer"],
+    },
+    "florence": {
+        "display_name": "Florence Nightingale",
+        "kind": "member",
+        "applies_to": [
+            "Florence Nightingale - Product and Operator Advocate",
+            "Florence Nightingale - UX-for-Tools Critic",
+        ],
+    },
+    "turing": {
+        "display_name": "Alan Turing",
+        "kind": "member",
+        "applies_to": ["Alan Turing - Contrarian Red Team"],
+    },
+    "seymour": {
+        "display_name": "Seymour Cray",
+        "kind": "member",
+        "applies_to": ["Seymour Cray - Performance Engineer"],
+    },
+    "leonardo": {
+        "display_name": "Leonardo da Vinci",
+        "kind": "reviewer",
+        "applies_to": ["Leonardo da Vinci - Brutally Honest UX/UI Critic"],
+    },
+}
+
+FORBIDDEN_ALTER_PATTERNS = (
+    r"\b(ignore|bypass|disable|skip|remove)\b.*\b(preflight|blocker|verification|security|privacy|anonym)",
+    r"\b(always approve|always accept|never block|hide blockers|hide risks|do not mention uncertainty)\b",
+    r"\b(override|supersede|replace)\b.*\b(non-negotiable|system|developer|council|safety|role)\b",
+    r"\b(bob)\b.*\b(member|vote|voter|candidate|council)\b",
+)
 
 CODEX_CREDIT_RATES_PER_MILLION = {
     "gpt-5.5": {"input": 125.0, "cached_input": 12.50, "output": 750.0},
@@ -223,13 +276,24 @@ def plugin_root() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
+def state_base_plugin_root(root: Optional[Path] = None) -> Path:
+    root = (root or plugin_root()).expanduser()
+    if SEMVER_RE.match(root.name) and root.parent.name == "codex-council":
+        return root.parent
+    return root
+
+
+def version_local_state_root() -> Path:
+    return plugin_root() / DEFAULT_CONSUMER_DIR
+
+
 def plugin_state_root(state_root: Optional[Path] = None) -> Path:
     if state_root is not None:
         return state_root.expanduser()
     configured = os.environ.get("CODEX_COUNCIL_STATE_ROOT")
     if configured:
         return Path(configured).expanduser()
-    return plugin_root() / DEFAULT_CONSUMER_DIR
+    return state_base_plugin_root() / DEFAULT_CONSUMER_DIR
 
 
 def session_storage_root(session_root: Optional[Path] = None) -> Path:
@@ -265,6 +329,30 @@ def consumer_dir(config_root: Optional[Path] = None) -> Path:
 
 def consumer_file(config_root: Optional[Path] = None) -> Path:
     return consumer_dir(config_root) / CONSUMER_FILENAME
+
+
+def alter_config_file(config_root: Optional[Path] = None) -> Path:
+    return consumer_dir(config_root) / ALTER_CONFIG_FILENAME
+
+
+def _explicit_consumer_state(config_root: Optional[Path] = None) -> bool:
+    return bool(config_root or os.environ.get("CODEX_COUNCIL_HOME") or os.environ.get("CODEX_COUNCIL_STATE_ROOT"))
+
+
+def migrate_version_local_state_file(filename: str, config_root: Optional[Path] = None) -> Optional[Path]:
+    if _explicit_consumer_state(config_root):
+        return None
+    destination = consumer_dir(config_root) / filename
+    source = version_local_state_root() / filename
+    if destination == source or destination.exists() or not source.exists():
+        return None
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(source.read_bytes())
+    try:
+        destination.chmod(0o600)
+    except OSError:
+        pass
+    return destination
 
 
 def utc_now() -> str:
@@ -320,6 +408,374 @@ def normalize_session_options(
     return session_type, frontend_review, skill_review
 
 
+def default_alter_config() -> dict[str, Any]:
+    return {
+        "version": ALTER_CONFIG_VERSION,
+        "updated_at": utc_now(),
+        "alters": {},
+    }
+
+
+def role_id_for_label(label: str) -> Optional[str]:
+    for role_id, spec in ALTER_ROLE_CATALOG.items():
+        if label in spec["applies_to"]:
+            return role_id
+    return None
+
+
+def normalize_alter_role(role_id: str) -> str:
+    normalized = role_id.strip().lower().replace("_", "-")
+    aliases = {
+        "alan": "turing",
+        "alan-turing": "turing",
+        "ada-lovelace": "ada",
+        "grace-hopper": "grace",
+        "florence-nightingale": "florence",
+        "seymour-cray": "seymour",
+        "leonardo-da-vinci": "leonardo",
+        "bob": "bob",
+    }
+    normalized = aliases.get(normalized, normalized)
+    if normalized == "bob":
+        raise ValueError("Bob is an evidence runner and cannot be customized as an alter")
+    if normalized not in ALTER_ROLE_CATALOG:
+        raise ValueError(f"Unknown alter role: {role_id}")
+    return normalized
+
+
+def _compact_text(value: Optional[str], field_name: str, char_cap: int = ALTER_FIELD_CHAR_CAP) -> str:
+    if value is None:
+        return ""
+    compact = re.sub(r"\s+", " ", value.strip())
+    if len(compact) > char_cap:
+        raise ValueError(f"{field_name} exceeds {char_cap} characters")
+    if has_forbidden_alter_instruction(compact):
+        raise ValueError(f"{field_name} attempts to override council non-negotiables")
+    return compact
+
+
+def has_forbidden_alter_instruction(text: str) -> bool:
+    normalized = text.lower()
+    return any(re.search(pattern, normalized) for pattern in FORBIDDEN_ALTER_PATTERNS)
+
+
+def default_alter_entry(role_id: str) -> dict[str, Any]:
+    return {
+        "role_id": role_id,
+        "display_name": ALTER_ROLE_CATALOG[role_id]["display_name"],
+        "enabled": True,
+        "updated_at": utc_now(),
+        "summary": "",
+        "compiled_instruction": "",
+        "dimensions": {
+            "domain_focus": "",
+            "strictness": "",
+            "tone": "",
+            "risk_posture": "",
+            "evidence_preference": "",
+            "extra_checks": [],
+        },
+        "estimated_added_tokens": 0,
+    }
+
+
+def compile_alter_instruction(
+    role_id: str,
+    domain_focus: Optional[str] = None,
+    strictness: Optional[str] = None,
+    tone: Optional[str] = None,
+    risk_posture: Optional[str] = None,
+    evidence_preference: Optional[str] = None,
+    extra_checks: Optional[list[str]] = None,
+    instruction: Optional[str] = None,
+) -> tuple[str, dict[str, Any]]:
+    role_id = normalize_alter_role(role_id)
+    dimensions = {
+        "domain_focus": _compact_text(domain_focus, "domain_focus"),
+        "strictness": _compact_text(strictness, "strictness"),
+        "tone": _compact_text(tone, "tone"),
+        "risk_posture": _compact_text(risk_posture, "risk_posture"),
+        "evidence_preference": _compact_text(evidence_preference, "evidence_preference"),
+        "extra_checks": [_compact_text(item, "extra_check", 120) for item in (extra_checks or []) if _compact_text(item, "extra_check", 120)],
+    }
+    bounded_instruction = _compact_text(instruction, "instruction", 280)
+    clauses: list[str] = []
+    if dimensions["tone"]:
+        clauses.append(f"Tone: {dimensions['tone']}.")
+    if dimensions["strictness"]:
+        clauses.append(f"Rigor: {dimensions['strictness']}.")
+    if dimensions["domain_focus"]:
+        clauses.append(f"Domain focus: {dimensions['domain_focus']}.")
+    if dimensions["risk_posture"]:
+        clauses.append(f"Risk posture: {dimensions['risk_posture']}.")
+    if dimensions["evidence_preference"]:
+        clauses.append(f"Evidence preference: {dimensions['evidence_preference']}.")
+    if dimensions["extra_checks"]:
+        clauses.append("Extra checks: " + "; ".join(dimensions["extra_checks"]) + ".")
+    if bounded_instruction:
+        clauses.append(f"Additional bounded instruction: {bounded_instruction}")
+    if not clauses:
+        raise ValueError("At least one alter tuning field is required")
+    compiled = " ".join(clauses)
+    word_count = len(re.findall(r"\S+", compiled))
+    if word_count > ALTER_COMPILED_WORD_CAP:
+        raise ValueError(f"compiled_instruction exceeds {ALTER_COMPILED_WORD_CAP} words")
+    if has_forbidden_alter_instruction(compiled):
+        raise ValueError("compiled_instruction attempts to override council non-negotiables")
+    return compiled, dimensions
+
+
+def build_alter_entry(
+    role_id: str,
+    domain_focus: Optional[str] = None,
+    strictness: Optional[str] = None,
+    tone: Optional[str] = None,
+    risk_posture: Optional[str] = None,
+    evidence_preference: Optional[str] = None,
+    extra_checks: Optional[list[str]] = None,
+    instruction: Optional[str] = None,
+    enabled: bool = True,
+) -> dict[str, Any]:
+    role_id = normalize_alter_role(role_id)
+    compiled, dimensions = compile_alter_instruction(
+        role_id,
+        domain_focus=domain_focus,
+        strictness=strictness,
+        tone=tone,
+        risk_posture=risk_posture,
+        evidence_preference=evidence_preference,
+        extra_checks=extra_checks,
+        instruction=instruction,
+    )
+    entry = default_alter_entry(role_id)
+    entry.update(
+        {
+            "enabled": enabled,
+            "updated_at": utc_now(),
+            "summary": render_alter_summary(role_id, compiled, dimensions),
+            "compiled_instruction": compiled,
+            "dimensions": dimensions,
+            "estimated_added_tokens": estimate_tokens(len(render_alter_prompt_block(entry | {"compiled_instruction": compiled}))),
+        }
+    )
+    return entry
+
+
+def validate_alter_entry(role_id: str, entry: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    try:
+        normalized_role_id = normalize_alter_role(role_id)
+    except ValueError as exc:
+        return [str(exc)]
+    if entry.get("role_id", normalized_role_id) != normalized_role_id:
+        problems.append("role_id mismatch")
+    compiled = str(entry.get("compiled_instruction", ""))
+    if entry.get("enabled", True) and not compiled.strip():
+        problems.append("enabled alter has empty compiled_instruction")
+    if len(re.findall(r"\S+", compiled)) > ALTER_COMPILED_WORD_CAP:
+        problems.append(f"compiled_instruction exceeds {ALTER_COMPILED_WORD_CAP} words")
+    if has_forbidden_alter_instruction(compiled):
+        problems.append("compiled_instruction attempts to override council non-negotiables")
+    return problems
+
+
+def validate_alter_config(data: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    if data.get("version") != ALTER_CONFIG_VERSION:
+        problems.append("unsupported alter config version")
+    alters = data.get("alters")
+    if not isinstance(alters, dict):
+        return problems + ["alters must be an object"]
+    for role_id, entry in alters.items():
+        if not isinstance(entry, dict):
+            problems.append(f"{role_id} alter entry must be an object")
+            continue
+        problems.extend(f"{role_id}: {problem}" for problem in validate_alter_entry(role_id, entry))
+    return problems
+
+
+def load_alter_config(config_root: Optional[Path] = None) -> dict[str, Any]:
+    migrate_version_local_state_file(ALTER_CONFIG_FILENAME, config_root)
+    path = alter_config_file(config_root)
+    if not path.exists():
+        return default_alter_config()
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid alter config JSON at {path}: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"Invalid alter config at {path}: root must be an object")
+    problems = validate_alter_config(data)
+    if problems:
+        raise ValueError(f"Invalid alter config at {path}: {'; '.join(problems)}")
+    baseline = default_alter_config()
+    baseline.update({key: data[key] for key in data if key != "alters"})
+    baseline["alters"] = data.get("alters", {})
+    return baseline
+
+
+def save_alter_config(data: dict[str, Any], config_root: Optional[Path] = None) -> Path:
+    problems = validate_alter_config(data)
+    if problems:
+        raise ValueError(f"Cannot save invalid alter config: {'; '.join(problems)}")
+    path = alter_config_file(config_root)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    data["updated_at"] = utc_now()
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    tmp_path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    try:
+        tmp_path.chmod(0o600)
+    except OSError:
+        pass
+    tmp_path.replace(path)
+    try:
+        path.chmod(0o600)
+    except OSError:
+        pass
+    return path
+
+
+def configure_alter(
+    role_id: str,
+    config_root: Optional[Path] = None,
+    domain_focus: Optional[str] = None,
+    strictness: Optional[str] = None,
+    tone: Optional[str] = None,
+    risk_posture: Optional[str] = None,
+    evidence_preference: Optional[str] = None,
+    extra_checks: Optional[list[str]] = None,
+    instruction: Optional[str] = None,
+) -> dict[str, Any]:
+    role_id = normalize_alter_role(role_id)
+    data = load_alter_config(config_root)
+    entry = build_alter_entry(
+        role_id,
+        domain_focus=domain_focus,
+        strictness=strictness,
+        tone=tone,
+        risk_posture=risk_posture,
+        evidence_preference=evidence_preference,
+        extra_checks=extra_checks,
+        instruction=instruction,
+    )
+    data["alters"][role_id] = entry
+    path = save_alter_config(data, config_root)
+    return {"path": str(path), "role_id": role_id, "entry": entry}
+
+
+def reset_alter(role_id: Optional[str] = None, config_root: Optional[Path] = None) -> dict[str, Any]:
+    data = load_alter_config(config_root)
+    if role_id is None:
+        removed = sorted(data.get("alters", {}).keys())
+        data["alters"] = {}
+    else:
+        role_id = normalize_alter_role(role_id)
+        removed = [role_id] if role_id in data.get("alters", {}) else []
+        data.get("alters", {}).pop(role_id, None)
+    path = save_alter_config(data, config_root)
+    return {"path": str(path), "removed": removed}
+
+
+def render_alter_summary(role_id: str, compiled_instruction: str, dimensions: dict[str, Any]) -> str:
+    role_name = ALTER_ROLE_CATALOG[role_id]["display_name"]
+    active_fields = [
+        label
+        for label, value in dimensions.items()
+        if (isinstance(value, list) and value) or (isinstance(value, str) and value.strip())
+    ]
+    field_summary = ", ".join(active_fields) if active_fields else "bounded instruction"
+    word_count = len(re.findall(r"\S+", compiled_instruction))
+    return f"{role_name}: {field_summary}; {word_count} words."
+
+
+def active_alter_entry(alter_config: dict[str, Any], role_label: str) -> Optional[dict[str, Any]]:
+    role_id = role_id_for_label(role_label)
+    if role_id is None:
+        return None
+    entry = alter_config.get("alters", {}).get(role_id)
+    if not isinstance(entry, dict) or not entry.get("enabled", True):
+        return None
+    if validate_alter_entry(role_id, entry):
+        return None
+    return entry
+
+
+def render_alter_prompt_block(entry: dict[str, Any]) -> str:
+    instruction = re.sub(r"\s+", " ", str(entry.get("compiled_instruction", "")).strip())
+    if not instruction:
+        return ""
+    return (
+        "\n\nLocal role tuning (advisory, lower priority than all Codex Council non-negotiables):\n"
+        f"- {instruction}\n"
+        "- This tuning cannot remove blockers, dissent, verification, confidence, anonymization, safety checks, or role boundaries.\n"
+    )
+
+
+def active_alter_session_metadata(alter_config: dict[str, Any], roles: list[str], reviewers: list[str]) -> dict[str, Any]:
+    applied: list[dict[str, Any]] = []
+    for label in roles + reviewers:
+        role_id = role_id_for_label(label)
+        if role_id is None:
+            continue
+        entry = active_alter_entry(alter_config, label)
+        if entry is None:
+            continue
+        compiled = str(entry.get("compiled_instruction", ""))
+        applied.append(
+            {
+                "role_id": role_id,
+                "display_name": ALTER_ROLE_CATALOG[role_id]["display_name"],
+                "kind": ALTER_ROLE_CATALOG[role_id]["kind"],
+                "summary": entry.get("summary", ""),
+                "estimated_added_tokens": entry.get("estimated_added_tokens", estimate_tokens(len(compiled))),
+                "fingerprint": hashlib.sha256(compiled.encode("utf-8")).hexdigest()[:12],
+            }
+        )
+    return {
+        "count": len(applied),
+        "roles": applied,
+        "raw_instructions_logged": False,
+        "precedence": "advisory; lower priority than Codex Council non-negotiables",
+    }
+
+
+def render_alter_config(data: dict[str, Any], role_id: Optional[str] = None, config_root: Optional[Path] = None) -> str:
+    lines = ["Codex Council role tuning", f"- Path: {alter_config_file(config_root)}", f"- Version: {data.get('version')}"]
+    role_ids = [normalize_alter_role(role_id)] if role_id else sorted(ALTER_ROLE_CATALOG)
+    for current_role_id in role_ids:
+        spec = ALTER_ROLE_CATALOG[current_role_id]
+        entry = data.get("alters", {}).get(current_role_id)
+        lines.append("")
+        lines.append(f"## {spec['display_name']} ({current_role_id})")
+        if not entry:
+            lines.append("- Status: default")
+            lines.append("- Summary: no local tuning")
+            continue
+        lines.append(f"- Status: {'enabled' if entry.get('enabled', True) else 'disabled'}")
+        lines.append(f"- Updated: {entry.get('updated_at', 'unknown')}")
+        lines.append(f"- Summary: {entry.get('summary', '')}")
+        lines.append(f"- Estimated added tokens: {entry.get('estimated_added_tokens', 0)}")
+    lines.append("")
+    lines.append("Bob is intentionally absent: he is an evidence runner, not a council alter.")
+    return "\n".join(lines)
+
+
+def render_alter_preview(entry: dict[str, Any]) -> str:
+    role_id = str(entry["role_id"])
+    return "\n".join(
+        [
+            f"# {ALTER_ROLE_CATALOG[role_id]['display_name']} Role Tuning Preview",
+            "",
+            entry.get("summary", ""),
+            "",
+            "## Effective Prompt Delta",
+            render_alter_prompt_block(entry).strip(),
+            "",
+            f"Estimated added tokens per affected prompt: {entry.get('estimated_added_tokens', 0)}",
+        ]
+    )
+
+
 def default_consumer_data() -> dict[str, Any]:
     return {
         "version": CONSUMER_FILE_VERSION,
@@ -346,6 +802,7 @@ def default_consumer_data() -> dict[str, Any]:
 
 
 def load_consumer_data(config_root: Optional[Path] = None) -> dict[str, Any]:
+    migrate_version_local_state_file(CONSUMER_FILENAME, config_root)
     path = consumer_file(config_root)
     if (
         config_root is None
@@ -464,6 +921,7 @@ def estimate_pre_session(
     skill_review: bool = False,
     context_tokens: int = 0,
     consumer_data: Optional[dict[str, Any]] = None,
+    alter_config: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
@@ -471,6 +929,7 @@ def estimate_pre_session(
         raise ValueError(f"token_budget must be one of: {', '.join(sorted(TOKEN_BUDGETS))}")
     session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
     consumer_data = consumer_data or default_consumer_data()
+    alter_config = alter_config or default_alter_config()
     profile = consumer_data["profile"]
     if skill_review:
         member_count = len(SKILL_REVIEW_ROLE_FILES)
@@ -497,6 +956,13 @@ def estimate_pre_session(
     per_reviewer_output = {"compact": 100, "balanced": 180, "expanded": 400}[token_budget]
     chairman_input = 350 + (member_count * per_member_output) + (reviewer_count * per_reviewer_output)
     chairman_output = {"compact": 250, "balanced": 420, "expanded": 900}[token_budget]
+    active_labels = list(active_role_files(skill_review).values()) + session_reviewers(mode, frontend_review, skill_review)
+    alter_tuning_prompt_tokens = sum(
+        int(entry.get("estimated_added_tokens", estimate_tokens(len(str(entry.get("compiled_instruction", ""))))))
+        for label in active_labels
+        for entry in [active_alter_entry(alter_config, label)]
+        if entry is not None
+    )
     factor_in = mode_factor * reasoning_factor
     factor_out = mode_factor * budget_factor
     components = {
@@ -510,6 +976,7 @@ def estimate_pre_session(
         "scoring_stats_overhead_tokens": int(SCORING_STATS_OVERHEAD_TOKENS * mode_factor),
         "context_duplication_tokens": int(context_tokens * max(member_count + reviewer_count + 1, 1) * factor_in),
         "frontend_browser_evidence_tokens": int(evidence_count * 180 * factor_out),
+        "alter_tuning_prompt_tokens": int(alter_tuning_prompt_tokens * factor_in),
     }
     input_tokens = (
         components["static_protocol_input_tokens"]
@@ -517,6 +984,7 @@ def estimate_pre_session(
         + components["reviewer_input_tokens"]
         + components["synthesis_input_tokens"]
         + components["context_duplication_tokens"]
+        + components["alter_tuning_prompt_tokens"]
     )
     output_tokens = (
         components["member_output_tokens"]
@@ -551,6 +1019,7 @@ def estimate_pre_session(
                 "members": member_count,
                 "reviewers": reviewer_count,
                 "evidence_runners": evidence_count,
+                "active_alters": active_alter_session_metadata(alter_config, active_labels, [])["count"],
             },
             "note": "Forecast includes duplicated context across agents, expected prompts/outputs, synthesis, scoring/stats overhead, and optional browser evidence. It is not real Codex billing usage.",
         },
@@ -621,6 +1090,7 @@ def render_pre_session_estimate(estimate: dict[str, Any]) -> str:
                 f"- Reviewer input/output: {components['reviewer_input_tokens']}/{components['reviewer_output_tokens']}",
                 f"- Synthesis input/output: {components['synthesis_input_tokens']}/{components['synthesis_output_tokens']}",
                 f"- Context duplication: {components['context_duplication_tokens']}",
+                f"- Local role tuning: {components.get('alter_tuning_prompt_tokens', 0)}",
                 f"- Scoring/stats overhead: {components['scoring_stats_overhead_tokens']}",
                 f"- Browser evidence: {components['frontend_browser_evidence_tokens']}",
             ]
@@ -656,8 +1126,10 @@ def render_member_prompt(
     token_budget: str,
     session_type: str = "general",
     skill_review: bool = False,
+    alter_config: Optional[dict[str, Any]] = None,
 ) -> str:
     lens = f"\nLens: {SKILL_REVIEW_LENSES[role]}\n" if skill_review and role in SKILL_REVIEW_LENSES else ""
+    alter_block = render_alter_prompt_block(active_alter_entry(alter_config or default_alter_config(), role) or {})
     return (
         f"You are {role} for Codex Council.\n\n"
         f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
@@ -667,6 +1139,7 @@ def render_member_prompt(
         "Required sections:\n"
         "## Recommendation\n## Rationale\n## Blocking Issues\n"
         "## Non-Blocking Improvements\n## Verification Required\n## Confidence\n"
+        f"{alter_block}"
     )
 
 
@@ -676,12 +1149,15 @@ def render_reviewer_prompt(
     mode: str,
     token_budget: str,
     session_type: str = "general",
+    alter_config: Optional[dict[str, Any]] = None,
 ) -> str:
+    alter_block = render_alter_prompt_block(active_alter_entry(alter_config or default_alter_config(), reviewer) or {})
     return (
         f"You are {reviewer} for Codex Council.\n\n"
         f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n\n"
         "Review anonymized candidates A-F when available. Rank candidates, preserve blockers, "
         "surface missing measurements, and keep the review compact.\n"
+        f"{alter_block}"
     )
 
 
@@ -705,6 +1181,7 @@ def write_prompt_scaffold(
     frontend_review: bool = False,
     session_type: str = "general",
     skill_review: bool = False,
+    alter_config: Optional[dict[str, Any]] = None,
 ) -> None:
     member_prompts_dir = session_dir / "prompts" / "members"
     reviewer_prompts_dir = session_dir / "prompts" / "reviewers"
@@ -714,7 +1191,7 @@ def write_prompt_scaffold(
     prompt_files = active_member_prompt_files(skill_review)
     for member_file, role in role_files.items():
         (member_prompts_dir / prompt_files[member_file]).write_text(
-            render_member_prompt(role, topic, mode, token_budget, session_type, skill_review),
+            render_member_prompt(role, topic, mode, token_budget, session_type, skill_review, alter_config),
             encoding="utf-8",
         )
     for reviewer in session_reviewers(mode, frontend_review, skill_review):
@@ -722,7 +1199,7 @@ def write_prompt_scaffold(
         if reviewer in BASE_REVIEWERS or reviewer in DEEP_REVIEWERS:
             reviewer_slug = reviewer
         (reviewer_prompts_dir / f"{reviewer_slug}.md").write_text(
-            render_reviewer_prompt(reviewer, topic, mode, token_budget, session_type),
+            render_reviewer_prompt(reviewer, topic, mode, token_budget, session_type, alter_config),
             encoding="utf-8",
         )
     (session_dir / "prompts" / "chairman-synthesis.md").write_text(
@@ -1445,6 +1922,7 @@ def init_session(
     pre_session_estimate: Optional[dict[str, Any]] = None,
     confirmation: Optional[dict[str, Any]] = None,
     session_root: Optional[Path] = None,
+    config_root: Optional[Path] = None,
 ) -> Path:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
@@ -1454,6 +1932,7 @@ def init_session(
     runtime_problems = validate_runtime_contract(plugin_root())
     if runtime_problems:
         raise RuntimeError("Codex Council runtime contract failed: " + "; ".join(runtime_problems))
+    alter_config = load_alter_config(config_root)
     if pre_session_estimate is None:
         pre_session_estimate = estimate_pre_session(
             topic,
@@ -1462,6 +1941,7 @@ def init_session(
             frontend_review=frontend_review,
             session_type=session_type,
             skill_review=skill_review,
+            alter_config=alter_config,
         )
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     storage_root = session_storage_root(session_root)
@@ -1477,6 +1957,7 @@ def init_session(
     role_files = active_role_files(skill_review)
     reviewers = session_reviewers(mode, frontend_review, skill_review)
     evidence_runners = session_evidence_runners(frontend_review)
+    alter_metadata = active_alter_session_metadata(alter_config, list(role_files.values()), reviewers)
     activation_tags: list[str] = []
     if frontend_review:
         activation_tags.append("frontend-ui-ux")
@@ -1508,6 +1989,7 @@ def init_session(
         "confirmation": confirmation or {},
         "dispatch_line": dispatch_line,
         "synthesis_contract": "separate_synthesis_pass",
+        "alter_overrides": alter_metadata,
     }
     (session_dir / "session.json").write_text(
         json.dumps(metadata, indent=2)
@@ -1523,7 +2005,7 @@ def init_session(
     )
     if pre_session_estimate:
         write_preflight_estimate(session_dir, pre_session_estimate)
-    write_prompt_scaffold(session_dir, topic, mode, token_budget, frontend_review, session_type, skill_review)
+    write_prompt_scaffold(session_dir, topic, mode, token_budget, frontend_review, session_type, skill_review, alter_config)
     write_synthesis_input_manifest(session_dir, role_files, reviewers, evidence_runners, session_type)
     for filename, role in role_files.items():
         sections = REQUIRED_MEMBER_SECTIONS.copy()
@@ -1967,6 +2449,20 @@ def main() -> None:
     classify_parser.add_argument("--explicit", action="store_true")
     classify_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
 
+    alters_parser = subparsers.add_parser("alters", help="Manage local council member role tuning")
+    alters_parser.add_argument("action", choices=("list", "show", "preview", "configure", "reset"))
+    alters_parser.add_argument("--config-root", help="Directory for local alter config")
+    alters_parser.add_argument("--role", choices=sorted(ALTER_ROLE_CATALOG), help="Alter role id")
+    alters_parser.add_argument("--all", action="store_true", help="Apply reset to all alters")
+    alters_parser.add_argument("--domain-focus")
+    alters_parser.add_argument("--strictness")
+    alters_parser.add_argument("--tone")
+    alters_parser.add_argument("--risk-posture")
+    alters_parser.add_argument("--evidence-preference")
+    alters_parser.add_argument("--extra-check", action="append", default=[])
+    alters_parser.add_argument("--instruction", help="Short bounded advisory instruction")
+    alters_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
     update_parser = subparsers.add_parser("check-update", help="Check GitHub Releases for a newer plugin version")
     update_parser.add_argument("--plugin-root", default=str(Path(__file__).resolve().parents[1]))
     update_parser.add_argument("--repository", help="Override GitHub repository as owner/repo")
@@ -1984,6 +2480,7 @@ def main() -> None:
             args.skill_review,
         )
         consumer_data = load_consumer_data(config_root)
+        alter_config = load_alter_config(config_root)
         estimate = estimate_pre_session(
             args.topic,
             mode=args.mode,
@@ -1993,6 +2490,7 @@ def main() -> None:
             skill_review=skill_review,
             context_tokens=max(args.context_tokens, 0),
             consumer_data=consumer_data,
+            alter_config=alter_config,
         )
         if args.token_budget == "expanded" and not args.confirm_expanded:
             print(render_pre_session_estimate(estimate))
@@ -2015,6 +2513,7 @@ def main() -> None:
             pre_session_estimate=estimate,
             confirmation=confirmation,
             session_root=Path(args.session_root).expanduser().resolve() if args.session_root else None,
+            config_root=config_root,
         )
         if args.banner:
             print(render_council_banner(args.mode, args.token_budget, frontend_review, skill_review, session_type))
@@ -2039,6 +2538,7 @@ def main() -> None:
             skill_review=skill_review,
             context_tokens=max(args.context_tokens, 0),
             consumer_data=load_consumer_data(config_root),
+            alter_config=load_alter_config(config_root),
         )
         print(json.dumps(result, indent=2) if args.json else render_pre_session_estimate(result))
         return
@@ -2150,6 +2650,75 @@ def main() -> None:
         payload = {"classification": classification, "text_present": bool(args.text.strip())}
         print(json.dumps(payload, indent=2) if args.json else classification)
         return
+
+    if args.command == "alters":
+        config_root = Path(args.config_root).expanduser() if args.config_root else None
+        if args.action in {"list", "show"}:
+            data = load_alter_config(config_root)
+            if args.json:
+                if args.role:
+                    role_id = normalize_alter_role(args.role)
+                    print(json.dumps(data.get("alters", {}).get(role_id, {}), indent=2))
+                else:
+                    print(json.dumps(data, indent=2))
+            else:
+                print(render_alter_config(data, args.role, config_root))
+            return
+        if args.action == "preview":
+            if args.role is None:
+                raise SystemExit("preview requires --role")
+            data = load_alter_config(config_root)
+            role_id = normalize_alter_role(args.role)
+            if any(
+                value
+                for value in (
+                    args.domain_focus,
+                    args.strictness,
+                    args.tone,
+                    args.risk_posture,
+                    args.evidence_preference,
+                    args.extra_check,
+                    args.instruction,
+                )
+            ):
+                entry = build_alter_entry(
+                    role_id,
+                    domain_focus=args.domain_focus,
+                    strictness=args.strictness,
+                    tone=args.tone,
+                    risk_posture=args.risk_posture,
+                    evidence_preference=args.evidence_preference,
+                    extra_checks=args.extra_check,
+                    instruction=args.instruction,
+                )
+            else:
+                entry = data.get("alters", {}).get(role_id)
+                if not entry:
+                    raise SystemExit(f"No saved tuning for {role_id}; pass tuning fields to preview a new one.")
+            print(json.dumps(entry, indent=2) if args.json else render_alter_preview(entry))
+            return
+        if args.action == "configure":
+            if args.role is None:
+                raise SystemExit("configure requires --role")
+            result = configure_alter(
+                args.role,
+                config_root=config_root,
+                domain_focus=args.domain_focus,
+                strictness=args.strictness,
+                tone=args.tone,
+                risk_posture=args.risk_posture,
+                evidence_preference=args.evidence_preference,
+                extra_checks=args.extra_check,
+                instruction=args.instruction,
+            )
+            print(json.dumps(result, indent=2) if args.json else render_alter_preview(result["entry"]) + f"\n\nSaved: {result['path']}")
+            return
+        if args.action == "reset":
+            if not args.all and args.role is None:
+                raise SystemExit("reset requires --role or --all")
+            result = reset_alter(None if args.all else args.role, config_root)
+            print(json.dumps(result, indent=2) if args.json else f"Reset alters: {', '.join(result['removed']) or 'none'}\nSaved: {result['path']}")
+            return
 
     if args.command == "check-update":
         result = check_update(

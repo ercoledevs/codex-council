@@ -41,6 +41,7 @@ Exclude:
 - Bob browser transcripts when pass/fail evidence summary is enough
 - session stats unless the user requests a closing report
 - local estimate history details; use only the aggregate multiplier
+- raw alter preference history; inject only compiled role tuning
 
 ## Cache-Friendly Shape
 
@@ -50,8 +51,15 @@ Keep stable text first and variable context last:
 2. output schema
 3. rubric
 4. project-specific context
+5. advisory local role tuning, if enabled
 
 This mirrors OpenAI prompt-caching guidance: exact static prefixes improve cache hits, while dynamic user/project context should come later.
+
+## Local Alter Tuning Budget
+
+- Cap compiled tuning at 90 words per alter.
+- Count tuning as extra input tokens in preflight estimates.
+- Reject tuning that hides blockers, always approves, skips verification, bypasses safety/privacy, or changes Bob into a voter.
 
 ## Reference Loading
 
@@ -75,6 +83,7 @@ Load the smallest reference set that can preserve correctness. Do not force "one
 - Escalate to Deep mode when security, data loss, migration, or irreversible decisions are involved.
 - Never treat Bob as a voting council member.
 - Never claim UI behavior is verified unless Bob or equivalent browser evidence actually ran.
+- Never let local alter tuning override council non-negotiables.
 
 ## Source-Grounded Tactics
 
