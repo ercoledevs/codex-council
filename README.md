@@ -30,6 +30,8 @@ Codex and **never calls a third‑party model API**.
 - [The council](#the-council)
 - [Modes & token budget](#modes--token-budget)
 - [How to prompt it](#how-to-prompt-it)
+- [Forging proposals](#forging-proposals)
+- [Codex Mind](#codex-mind)
 - [Tuning roles (alters)](#tuning-roles-alters)
 - [CLI reference](#cli-reference)
 - [Privacy & local state](#privacy--local-state)
@@ -51,6 +53,7 @@ reversible, checkable work, plain Codex is faster.
 | Architecture decisions, risky diffs, migrations | Tiny edits and quick questions |
 | Security, privacy, data‑loss risk | Anything you can verify yourself in a minute |
 | Frontend/UX behavior and release go/no‑go | A task that just needs one straightforward answer |
+| Creative implementation shaping with Codex Forge | Rubber-stamp validation |
 
 ---
 
@@ -141,6 +144,66 @@ Output detail is controlled by `--token-budget`, which defaults to `compact`:
 | `expanded` | security/data‑loss/irreversible — full evidence. **Blocked until you confirm.** |
 
 Typed synthesis templates are available via `--type architecture|implementation|decision|skill|frontend`.
+
+---
+
+## Forging proposals
+
+`codex-forge` is the creative sibling of Codex Council:
+
+- **Forge creates** a bounded implementation proposal from several creative lenses.
+- **Council judges** whether that proposal is safe, coherent, and worth shipping.
+
+Forge uses five creator roles:
+
+| Role | Lens |
+| --- | --- |
+| **Buckminster Fuller** | system shape, primitives, boundaries |
+| **Hedy Lamarr** | product value, workflow fit, interaction concept |
+| **Katherine Johnson** | feasibility, interfaces, implementation path |
+| **Margaret Hamilton** | safety, reliability, rollback, privacy |
+| **John von Neumann** | performance, complexity, cost, simplification |
+
+The loop is deliberately bounded: one structured round by default, then a second
+round — which you approve after round 1, or which starts automatically when round 1
+comes back strongly discordant — and a hard cap of three. If the creators still do
+not converge, Forge returns `nonconverged` with persistent dissent instead of forcing
+fake consensus.
+
+```text
+Use Codex Forge to design a bounded implementation proposal for this idea.
+```
+
+```bash
+python3 scripts/codex_council.py estimate --topic "Forge a release workflow" --mode standard --type forge --token-budget compact
+python3 scripts/codex_council.py init --topic "Forge a release workflow" --root . --mode standard --type forge --confirm-estimate
+```
+
+Use Council after Forge when the forged proposal needs judgment.
+
+---
+
+## Codex Mind
+
+`codex-mind` runs that whole arc for you — Forge, then Council, in one guided pass.
+If you don't have a proposal yet, it asks what to build first. You see **one combined
+estimate** up front (both stages, summed) and get a single **build / revise / stop**
+call at the end, with blockers, dissent, and verification.
+
+Each run opens with an ASCII digital‑brain banner, then:
+
+1. Asks what to create — only if no proposal exists yet.
+2. Shows one combined estimate for Forge + Council; you accept once.
+3. Forges the proposal.
+4. Hands only the proposal to Council — never full transcripts — and judges it.
+5. Returns the verdict.
+
+It honours stop conditions: a Forge `nonconverged` or a Council blocker pauses the run
+rather than forcing it forward, so a full pipeline doesn't burst your token budget.
+
+```text
+Use Codex Mind to forge a proposal for this idea and then run it through the council.
+```
 
 ---
 
@@ -242,6 +305,10 @@ python3 scripts/codex_council.py init --topic "Modal Review" --root . \
 python3 scripts/codex_council.py init --topic "Skill Review" --root . \
   --type skill --skill-review --confirm-estimate
 
+# Creative proposal forging session.
+python3 scripts/codex_council.py init --topic "Forge a Release Workflow" --root . \
+  --type forge --token-budget compact --confirm-estimate
+
 # expanded must be confirmed explicitly.
 python3 scripts/codex_council.py init --topic "Migration Review" --root . \
   --mode deep --token-budget expanded --confirm-expanded
@@ -258,6 +325,9 @@ python3 scripts/codex_council.py init --topic "Decision Review" --root . --type 
 ```bash
 # Aggregate reviewer scores from a JSON file (use --compact for compact JSON).
 python3 scripts/codex_council.py score --input reviews.json
+
+# Assess Forge convergence from saved round scores.
+python3 scripts/codex_council.py forge-convergence --input forge-scores.json
 
 # Validate a generated session.
 python3 scripts/codex_council.py validate-session --session <printed-session-dir>
@@ -434,6 +504,7 @@ codex-council/
 │   ├── SKILL.md
 │   └── references/                  # roles, rubric, protocol, token budget, …
 ├── skills/codex-council-alters/     # role-tuning skill
+├── skills/codex-forge/              # creative proposal forging skill
 ├── docs/                            # the website (GitHub Pages)
 ├── assets/
 ├── tests/

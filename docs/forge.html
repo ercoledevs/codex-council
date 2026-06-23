@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Forge - Codex Council</title>
+    <meta name="description" content="Codex Forge is the creative sibling of the council: five creator roles shape a bounded implementation proposal in a capped loop, then hand it to the council to judge.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/forge.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/forge.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/forge.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/forge.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Codex Forge">
+    <meta property="og:description" content="Forge creates a bounded implementation proposal from five creator lenses; the council judges it. A capped, convergent creation loop inside Codex.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/forge.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Codex Forge">
+    <meta name="twitter:description" content="Forge creates a bounded implementation proposal from five creator lenses; the council judges it.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">
+          <img src="assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html">Use Cases</a>
+          <a href="examples.html">Examples</a>
+          <a href="usage.html">Usage</a>
+          <a href="alters.html">Alters</a>
+          <a href="limits.html">Limits</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="forge.html" aria-current="page">Forge</a>
+          <a href="mind.html">Mind</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="it/forge.html" hreflang="it" aria-label="Versione italiana">IT</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section section-tight">
+        <div class="section-inner">
+          <p class="eyebrow">Codex Forge</p>
+          <h1>Forge the proposal. Let the council judge it.</h1>
+          <p class="lead">
+            Forge is the creative sibling of Codex Council. The council reviews what already
+            exists; Forge invents what could. Five creator roles shape one bounded implementation
+            proposal — then hand it to the council for judgment. Forge creates; it does not
+            validate truth, safety, UI behavior, or correctness.
+          </p>
+
+          <figure class="forge-stage">
+            <svg class="forge-anim" viewBox="0 0 1200 510" role="img"
+                 aria-label="The forging process: five creator roles — Fuller, Lamarr, Johnson, Hamilton, von Neumann — feed a central Forge, which produces a unified proposal that is handed to the Council. A capped loop allows up to three rounds.">
+              <title>How Codex Forge shapes a proposal</title>
+              <defs>
+                <marker id="fg-ah-brand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--brand)"></path>
+                </marker>
+                <marker id="fg-ah-gold" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--gold)" opacity="0.8"></path>
+                </marker>
+              </defs>
+
+              <!-- Convergence wires: each creator -> Forge -->
+              <path class="fg-wire" d="M212,93 C 360,93 372,273 528,273"></path>
+              <path class="fg-wire" d="M212,183 C 360,183 372,273 528,273"></path>
+              <path class="fg-wire" d="M212,273 H 528"></path>
+              <path class="fg-wire" d="M212,363 C 360,363 372,273 528,273"></path>
+              <path class="fg-wire" d="M212,453 C 360,453 372,273 528,273"></path>
+              <path class="fg-pulse fg-d1" d="M212,93 C 360,93 372,273 528,273"></path>
+              <path class="fg-pulse fg-d2" d="M212,183 C 360,183 372,273 528,273"></path>
+              <path class="fg-pulse fg-d3" d="M212,273 H 528"></path>
+              <path class="fg-pulse fg-d4" d="M212,363 C 360,363 372,273 528,273"></path>
+              <path class="fg-pulse fg-d5" d="M212,453 C 360,453 372,273 528,273"></path>
+
+              <!-- Round loop (re-brief, capped) -->
+              <path class="fg-loop" d="M600,201 C 470,70 300,46 134,56" marker-end="url(#fg-ah-gold)"></path>
+              <text class="fg-mini" x="372" y="40" text-anchor="middle">UP TO 3 ROUNDS</text>
+
+              <!-- Creator chips -->
+              <g>
+                <rect class="fg-chip" x="44" y="66" width="168" height="54" rx="12"></rect>
+                <g transform="translate(60,83)">
+                  <rect class="fg-glyph" x="0" y="0" width="8" height="8" rx="1.5"></rect>
+                  <rect class="fg-glyph" x="12" y="0" width="8" height="8" rx="1.5"></rect>
+                  <rect class="fg-glyph" x="0" y="12" width="8" height="8" rx="1.5"></rect>
+                  <rect class="fg-glyph" x="12" y="12" width="8" height="8" rx="1.5"></rect>
+                </g>
+                <text class="fg-label" x="100" y="99">Fuller</text>
+
+                <rect class="fg-chip" x="44" y="156" width="168" height="54" rx="12"></rect>
+                <path class="fg-glyph" transform="translate(60,173)" d="M10,0 V20 M0,10 H20 M3,3 L17,17 M17,3 L3,17"></path>
+                <text class="fg-label" x="100" y="189">Lamarr</text>
+
+                <rect class="fg-chip" x="44" y="246" width="168" height="54" rx="12"></rect>
+                <g transform="translate(60,263)">
+                  <path class="fg-glyph" d="M2,16 L8,7 L14,13 L20,3"></path>
+                  <circle class="fg-glyph-fill" cx="2" cy="16" r="2.3"></circle>
+                  <circle class="fg-glyph-fill" cx="20" cy="3" r="2.3"></circle>
+                </g>
+                <text class="fg-label" x="100" y="279">Johnson</text>
+
+                <rect class="fg-chip" x="44" y="336" width="168" height="54" rx="12"></rect>
+                <path class="fg-glyph" transform="translate(61,353)" d="M9,0 L18,3.5 V10 C18,16 9,20 9,20 C9,20 0,16 0,10 V3.5 Z"></path>
+                <text class="fg-label" x="100" y="369">Hamilton</text>
+
+                <rect class="fg-chip" x="44" y="426" width="168" height="54" rx="12"></rect>
+                <path class="fg-glyph-fill" transform="translate(62,443)" d="M11,0 L2,12 H9 L7,21 L18,8 H11 Z"></path>
+                <text class="fg-label" x="100" y="459">von Neumann</text>
+              </g>
+
+              <!-- The Forge crucible -->
+              <circle class="fg-glow" cx="600" cy="273" r="92"></circle>
+              <polygon class="fg-crucible" points="563,209 637,209 674,273 637,337 563,337 526,273"></polygon>
+              <g>
+                <path class="fg-spark fg-d1" d="M572,206 l4,7 l-8,0 z"></path>
+                <path class="fg-spark fg-d3" d="M600,196 l4,7 l-8,0 z"></path>
+                <path class="fg-spark fg-d5" d="M628,206 l4,7 l-8,0 z"></path>
+              </g>
+              <text class="fg-strong" x="600" y="280" text-anchor="middle">FORGE</text>
+
+              <!-- Forge -> proposal -->
+              <path class="fg-wire" d="M674,273 H 752" marker-end="url(#fg-ah-brand)"></path>
+              <path class="fg-pulse fg-d1" d="M674,273 H 752"></path>
+
+              <!-- Unified proposal document -->
+              <rect class="fg-doc" x="760" y="183" width="232" height="180" rx="14"></rect>
+              <rect class="fg-docline brand" x="784" y="207" width="118" height="12" rx="3"></rect>
+              <rect class="fg-docline" x="784" y="240" width="184" height="8" rx="3"></rect>
+              <rect class="fg-docline" x="784" y="260" width="150" height="8" rx="3"></rect>
+              <rect class="fg-docline" x="784" y="280" width="172" height="8" rx="3"></rect>
+              <rect class="fg-docline" x="784" y="300" width="120" height="8" rx="3"></rect>
+              <g class="fg-checkwrap">
+                <g class="fg-check">
+                  <circle cx="970" cy="201" r="18"></circle>
+                  <path d="M962,201 l5,6 l11,-13"></path>
+                </g>
+              </g>
+
+              <!-- Proposal -> Council -->
+              <path class="fg-wire" d="M992,273 H 1020" marker-end="url(#fg-ah-brand)"></path>
+              <path class="fg-pulse fg-d4" d="M992,273 H 1020"></path>
+              <rect class="fg-council" x="1024" y="243" width="152" height="60" rx="30"></rect>
+              <text class="fg-council-text" x="1100" y="279" text-anchor="middle">COUNCIL</text>
+            </svg>
+          </figure>
+          <p class="wiki-lead" style="margin-top:16px;">
+            Your idea enters on the left. Five creators shape it in parallel, the Forge converges
+            their work into one proposal (re-briefing up to three rounds if needed), and the result
+            is handed to the council to judge.
+          </p>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Forge vs. Council</p>
+          <h2>One invents. The other interrogates.</h2>
+          <div class="comparison">
+            <div class="panel">
+              <div class="panel-title">Forge creates</div>
+              <div class="panel-body">
+                <p>Use it when you have an idea and want a concrete, buildable shape for it — a
+                  proposal that balances boldness, feasibility, safety, and cost.</p>
+                <p>Output is one bounded proposal, not a verdict. It does not check whether the
+                  idea is correct or safe to ship.</p>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-title">Council judges</div>
+              <div class="panel-body">
+                <p>Use it when you have a proposal and want to know if it survives architecture,
+                  reliability, security, product, red‑team, and performance pressure.</p>
+                <p>The natural flow is Forge → Council: invent the shape, then pressure‑test it
+                  before you build. Forge even writes the next prompt for you.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">The five creators</p>
+          <h2>Different imaginations, one proposal.</h2>
+          <div class="grid">
+            <article class="card"><h3>Buckminster Fuller</h3><p><em>Systems Imagination Architect.</em> The bold system shape — primitives, boundaries, the creative architecture.</p></article>
+            <article class="card"><h3>Hedy Lamarr</h3><p><em>Product Invention Strategist.</em> Turns the idea into user value, workflow fit, interaction shape, and adoption hooks.</p></article>
+            <article class="card"><h3>Katherine Johnson</h3><p><em>Feasibility &amp; Integration Engineer.</em> Grounds it in implementable steps, dependencies, interfaces, and constraints.</p></article>
+            <article class="card"><h3>Margaret Hamilton</h3><p><em>Safety &amp; Reliability Builder.</em> Surfaces failure modes, privacy, rollback, and reliability constraints.</p></article>
+            <article class="card"><h3>John von Neumann</h3><p><em>Performance &amp; Complexity Optimizer.</em> Pushes for performance, low cost, low latency, and ruthless simplification.</p></article>
+            <article class="card"><h3>The synthesizer</h3><p>A separate creative pass merges the five into one unified proposal — keeping disagreement visible instead of averaging it away.</p></article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">A bounded loop</p>
+          <h2>It converges, or it tells you it didn't.</h2>
+          <p class="lead">
+            Creation can spin forever, so Forge is deliberately capped. It won't manufacture fake
+            agreement to look finished.
+          </p>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">01</div>
+              <h3>One round, by default</h3>
+              <p>The five creators each produce a proposal, and the synthesizer merges them. Most ideas need only this.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">02</div>
+              <h3>Convergence check</h3>
+              <p>Proposals are scored. Converged means every creator's alignment is high, scores agree, and there are no blockers or open dissent.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">03</div>
+              <h3>Re-brief</h3>
+              <p>If it hasn't converged, Forge runs another round — automatically when round 1 is strongly discordant, or after your OK on a near-miss. It re-briefs only the divergence. Hard cap: three rounds.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">04</div>
+              <h3>Converged or not</h3>
+              <p>You get a unified proposal, or an honest <code class="inline-code">nonconverged</code> result with the dissent that stopped it.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <strong>How convergence is decided</strong>
+            Proposals are scored on novelty, feasibility, user fit, risk control, and implementation clarity. It converges only when the lowest alignment is at least 7/10, the scores don't scatter, and nothing is blocked — otherwise you get <code class="inline-code">nonconverged</code> with the dissent preserved. When round 1 is strongly discordant (low alignment or a wide spread), the next round starts automatically; a near-miss waits for your go-ahead.
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">What it returns</p>
+          <h2>A proposal you can hand straight to the council.</h2>
+          <ul class="wide-list">
+            <li><strong>Unified proposal</strong> — the merged design, leading with what to build.</li>
+            <li><strong>Convergence result</strong> — converged, partial, or nonconverged.</li>
+            <li><strong>Persistent dissent</strong> — the creative disagreement that survived, kept visible.</li>
+            <li><strong>Implementation shape</strong> — the buildable path: steps, interfaces, dependencies.</li>
+            <li><strong>Safety &amp; performance notes</strong> — failure modes, rollback, cost and latency flags.</li>
+            <li><strong>Verification</strong> — what still needs to be proven before you trust it.</li>
+            <li><strong>Next prompt</strong> — a ready‑to‑send Council prompt to judge what you just forged.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Use it</p>
+          <h2>Ask Forge to shape the idea.</h2>
+          <p>In chat — give it an idea to design, not a decision to judge:</p>
+          <div class="prompt">
+            <span class="prompt-tag">Prompt</span>
+            <code>Use Codex Forge to design a bounded implementation proposal for &lt;your idea&gt;.
+Balance bold shape, feasibility, safety, and cost — and tell me where the
+creators disagree. Then give me the prompt to send Council for judgment.</code>
+          </div>
+          <p style="margin-top:24px;">Or scaffold a traceable Forge session from the CLI (it reuses the council's
+            preflight estimate, token budgets, and stats):</p>
+          <pre><code># Estimate, then scaffold a Forge session (--type forge).
+python3 scripts/codex_council.py estimate --topic "Forge a release workflow" --mode standard --type forge --token-budget compact
+python3 scripts/codex_council.py init --topic "Forge a release workflow" --root . --mode standard --type forge --token-budget compact --confirm-estimate
+
+# When creator scores exist, assess convergence.
+python3 scripts/codex_council.py forge-convergence --input forge-scores.json</code></pre>
+          <div class="callout">
+            <strong>Forge, then verify</strong>
+            A forged proposal is a starting point, not a green light. If the risk is non‑trivial, run <a href="index.html">Codex Council</a> (or normal implementation verification) on it before you build.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>A council workflow for Codex. MIT licensed.</p>
+        </div>
+        <div class="footer-links">
+          <a href="wiki.html">Wiki</a>
+          <a href="examples.html">Examples</a>
+          <a href="limits.html">Limits</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>

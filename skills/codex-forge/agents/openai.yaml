@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Forge"
+  short_description: "Creative multi-agent proposal forging for Codex"
+  default_prompt: "Use Codex Forge to design a bounded implementation proposal for this idea."

@@ -239,6 +239,111 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertIn("UX-for-Tools", prompt)
             self.assertTrue(cc.validate_session(session)["ok"])
 
+    def test_forge_session_uses_five_creator_roles_and_no_reviewers(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session(
+                "Forge A New Developer Tool",
+                Path(tmp),
+                session_type="forge",
+                token_budget="balanced",
+                session_root=Path(tmp) / "state",
+            )
+            metadata = json.loads((session / "session.json").read_text(encoding="utf-8"))
+            self.assertEqual(metadata["session_type"], "forge")
+            self.assertIn("forge", metadata["activation_tags"])
+            self.assertEqual(len(metadata["roles"]), 5)
+            self.assertEqual(metadata["reviewers"], [])
+            self.assertIn("Hedy Lamarr - Product Invention Strategist", metadata["roles"])
+            self.assertIn("John von Neumann - Performance and Complexity Optimizer", metadata["roles"])
+            self.assertIn("dispatched 5 members, 0 reviewers", metadata["dispatch_line"])
+            self.assertTrue((session / "members" / "01-fuller-systems-imagination.md").exists())
+            prompt = (session / "prompts" / "members" / "01-fuller.md").read_text(encoding="utf-8")
+            self.assertIn("Codex Forge", prompt)
+            self.assertIn("## Creative Proposal", prompt)
+            final_text = (session / "final.md").read_text(encoding="utf-8")
+            self.assertIn("## Convergence Result", final_text)
+            self.assertIn("## Persistent Dissent", final_text)
+            self.assertTrue(cc.validate_session(session)["ok"])
+
+    def test_forge_estimate_counts_five_roles_without_council_reviewers(self):
+        estimate = cc.estimate_pre_session(
+            "Forge a release-readiness workflow",
+            mode="standard",
+            token_budget="balanced",
+            session_type="forge",
+        )
+        self.assertEqual(estimate["session_type"], "forge")
+        self.assertEqual(estimate["role_count"], 5)
+        self.assertEqual(estimate["reviewer_count"], 0)
+        components = estimate["pre_execution_estimate"]["components"]
+        self.assertGreater(components["member_input_tokens"], 0)
+        self.assertGreater(components["forge_rebrief_overhead_tokens"], 0)
+
+    def test_forge_convergence_assessment_allows_nonconvergence(self):
+        converged = cc.assess_forge_convergence(
+            {
+                "agents": {
+                    "a": {"alignment": 8, "novelty": 7, "feasibility": 8, "user_fit": 8, "risk_control": 8, "implementation_clarity": 8},
+                    "b": {"alignment": 8, "novelty": 8, "feasibility": 8, "user_fit": 7, "risk_control": 8, "implementation_clarity": 8},
+                },
+                "persistent_dissent": [],
+            }
+        )
+        blocked = cc.assess_forge_convergence(
+            {
+                "agents": {
+                    "a": {"alignment": 8, "novelty": 8, "feasibility": 8, "user_fit": 8, "risk_control": 8, "implementation_clarity": 8},
+                    "b": {"alignment": 5, "novelty": 9, "feasibility": 4, "user_fit": 6, "risk_control": 4, "implementation_clarity": 5},
+                },
+                "persistent_dissent": ["Feasibility split remains unresolved"],
+            }
+        )
+        self.assertTrue(converged["converged"])
+        self.assertFalse(blocked["converged"])
+        self.assertEqual(blocked["status"], "nonconverged")
+        self.assertIn("Feasibility split remains unresolved", blocked["persistent_dissent"])
+
+    def test_forge_strong_discord_auto_triggers_second_round(self):
+        # Strong discord: one creator is far off -> second round runs automatically.
+        discord = cc.assess_forge_convergence(
+            {
+                "agents": {
+                    "a": {"alignment": 9, "novelty": 9, "feasibility": 9, "user_fit": 9, "risk_control": 9, "implementation_clarity": 9},
+                    "b": {"alignment": 3, "novelty": 4, "feasibility": 3, "user_fit": 3, "risk_control": 4, "implementation_clarity": 3},
+                },
+                "persistent_dissent": [],
+            }
+        )
+        self.assertFalse(discord["converged"])
+        self.assertTrue(discord["strong_discord"])
+        self.assertEqual(discord["second_round"], "auto")
+
+        # Near-miss: below the bar but mild -> stays opt-in.
+        near_miss = cc.assess_forge_convergence(
+            {
+                "agents": {
+                    "a": {"alignment": 7, "novelty": 7, "feasibility": 7, "user_fit": 7, "risk_control": 7, "implementation_clarity": 7},
+                    "b": {"alignment": 6, "novelty": 7, "feasibility": 6, "user_fit": 7, "risk_control": 6, "implementation_clarity": 7},
+                },
+                "persistent_dissent": [],
+            }
+        )
+        self.assertFalse(near_miss["converged"])
+        self.assertFalse(near_miss["strong_discord"])
+        self.assertEqual(near_miss["second_round"], "optional")
+
+        # Converged: no further round.
+        converged = cc.assess_forge_convergence(
+            {
+                "agents": {
+                    "a": {"alignment": 8, "novelty": 8, "feasibility": 8, "user_fit": 8, "risk_control": 8, "implementation_clarity": 8},
+                    "b": {"alignment": 8, "novelty": 8, "feasibility": 8, "user_fit": 8, "risk_control": 8, "implementation_clarity": 8},
+                },
+                "persistent_dissent": [],
+            }
+        )
+        self.assertEqual(converged["second_round"], "none")
+
     def test_session_type_router_updates_prompt_and_frontend_gate(self):
         with tempfile.TemporaryDirectory() as tmp:
             session = init_session(
@@ -795,6 +900,30 @@ class CodexCouncilSessionTests(unittest.TestCase):
         text = skill_path.read_text(encoding="utf-8")
         self.assertIn("Bob is not customizable", text)
         self.assertIn("alters preview", text)
+
+    def test_forge_skill_exists_and_requires_bounded_creation(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        skill_path = plugin_root / "skills" / "codex-forge" / "SKILL.md"
+        text = skill_path.read_text(encoding="utf-8")
+        self.assertIn("bounded convergent creation", text)
+        self.assertIn("one structured round", text)
+        self.assertIn("optional second round", text)
+        self.assertIn("hard cap of three", text)
+        self.assertIn("does not validate truth", text)
+
+    def test_mind_skill_chains_forge_then_council(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        skill_path = plugin_root / "skills" / "codex-mind" / "SKILL.md"
+        text = skill_path.read_text(encoding="utf-8")
+        self.assertIn("brain-banner.md", text)
+        self.assertIn("combined preflight estimate", text)
+        self.assertIn("not full Forge transcripts", text)
+        self.assertIn("Forge", text)
+        self.assertIn("Council", text)
+        banner_path = plugin_root / "skills" / "codex-mind" / "references" / "brain-banner.md"
+        banner = banner_path.read_text(encoding="utf-8")
+        self.assertIn("```", banner)
+        self.assertIn("((()))", banner)  # the ASCII brain art is present
 
     def test_check_update_reports_available_release_without_network(self):
         with tempfile.TemporaryDirectory() as tmp:

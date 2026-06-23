@@ -45,6 +45,14 @@ SKILL_REVIEW_ROLE_FILES = {
     "03-grace-non-expert-adoption.md": "Grace Hopper - Non-Expert Adoption Reviewer",
 }
 
+FORGE_ROLE_FILES = {
+    "01-fuller-systems-imagination.md": "Buckminster Fuller - Systems Imagination Architect",
+    "02-hedy-product-invention.md": "Hedy Lamarr - Product Invention Strategist",
+    "03-katherine-feasibility-integration.md": "Katherine Johnson - Feasibility and Integration Engineer",
+    "04-margaret-safety-reliability.md": "Margaret Hamilton - Safety and Reliability Builder",
+    "05-von-neumann-performance-complexity.md": "John von Neumann - Performance and Complexity Optimizer",
+}
+
 MEMBER_PROMPT_FILES = {
     "01-ada-principal-architect.md": "01-ada.md",
     "02-grace-reliability-engineer.md": "02-grace.md",
@@ -60,10 +68,26 @@ SKILL_REVIEW_PROMPT_FILES = {
     "03-grace-non-expert-adoption.md": "03-grace-non-expert-adoption.md",
 }
 
+FORGE_PROMPT_FILES = {
+    "01-fuller-systems-imagination.md": "01-fuller.md",
+    "02-hedy-product-invention.md": "02-hedy.md",
+    "03-katherine-feasibility-integration.md": "03-katherine.md",
+    "04-margaret-safety-reliability.md": "04-margaret.md",
+    "05-von-neumann-performance-complexity.md": "05-von-neumann.md",
+}
+
 SKILL_REVIEW_LENSES = {
     "Ada Lovelace - Skill Engineer": "Will this skill/plugin work, last, stay discoverable, and avoid duplicating existing rules?",
     "Florence Nightingale - UX-for-Tools Critic": "Where does this add friction, cognitive load, brittle flags, or recovery pain?",
     "Grace Hopper - Non-Expert Adoption Reviewer": "Can a junior user invoke it and recover from failure in under 30 minutes?",
+}
+
+FORGE_LENSES = {
+    "Buckminster Fuller - Systems Imagination Architect": "Generate the bold system shape, boundaries, primitives, and creative architecture.",
+    "Hedy Lamarr - Product Invention Strategist": "Turn the idea into user value, workflow fit, interaction shape, and adoption hooks.",
+    "Katherine Johnson - Feasibility and Integration Engineer": "Ground the idea in implementable steps, dependencies, interfaces, and constraints.",
+    "Margaret Hamilton - Safety and Reliability Builder": "Surface safety, reliability, privacy, rollback, and failure-mode constraints.",
+    "John von Neumann - Performance and Complexity Optimizer": "Optimize for performance, cost, latency, simplicity, and measurable efficiency.",
 }
 
 BASE_REVIEWERS = ["performance-impact-reviewer", "coverage-integrator"]
@@ -79,7 +103,7 @@ EVIDENCE_RUNNER_FILES = {
 
 MODES = {"fast", "standard", "deep"}
 TOKEN_BUDGETS = {"compact", "balanced", "expanded"}
-SESSION_TYPES = {"general", "architecture", "implementation", "decision", "skill", "frontend"}
+SESSION_TYPES = {"general", "architecture", "implementation", "decision", "skill", "frontend", "forge"}
 TEXT_ARTIFACT_SUFFIXES = {".json", ".md", ".txt"}
 GENERATED_STATS_FILES = {"stats.json", "stats.md"}
 PREFLIGHT_FILES = {"preflight-estimate.json", "preflight-estimate.md"}
@@ -101,6 +125,23 @@ EXPANDED_CONFIRMATION = "I understand expanded mode can consume significantly mo
 SCORING_STATS_OVERHEAD_TOKENS = 220
 TOOL_OVERHEAD_PER_PROMPT_TOKENS = 35
 TOOL_OVERHEAD_BASE_TOKENS = 120
+FORGE_DEFAULT_ROUNDS = 1
+FORGE_OPTIONAL_ROUND_CAP = 2
+FORGE_HARD_ROUND_CAP = 3
+FORGE_ALIGNMENT_THRESHOLD = 7.0
+FORGE_SCORE_STDEV_THRESHOLD = 1.25
+# Strong discord (creators disagree from the start) auto-triggers a second round;
+# a near-miss below the convergence bar stays opt-in.
+FORGE_STRONG_DISCORD_ALIGNMENT = 5.0
+FORGE_STRONG_DISCORD_STDEV = 2.0
+
+FORGE_WEIGHTS = {
+    "novelty": 0.18,
+    "feasibility": 0.24,
+    "user_fit": 0.20,
+    "risk_control": 0.20,
+    "implementation_clarity": 0.18,
+}
 
 ALTER_ROLE_CATALOG = {
     "ada": {
@@ -167,6 +208,15 @@ REQUIRED_MEMBER_SECTIONS = [
     "## Confidence",
 ]
 
+REQUIRED_FORGE_MEMBER_SECTIONS = [
+    "## Creative Proposal",
+    "## Rationale",
+    "## Constraints",
+    "## Risks",
+    "## Convergence Notes",
+    "## Verification Needed",
+]
+
 PERFORMANCE_MEMBER_EXTRA_SECTIONS = [
     "## Performance Impact",
     "## Measurement Required",
@@ -200,6 +250,16 @@ REQUIRED_FINAL_SECTIONS = [
     "## Audit Notes",
 ]
 
+REQUIRED_FORGE_FINAL_SECTIONS = [
+    "## Unified Proposal",
+    "## Convergence Result",
+    "## Persistent Dissent",
+    "## Implementation Shape",
+    "## Safety And Performance Notes",
+    "## Verification",
+    "## Next Prompt",
+]
+
 REQUIRED_REFERENCES = [
     "competency-packs.md",
     "execution-protocol.md",
@@ -219,6 +279,7 @@ SYNTHESIS_TEMPLATES = {
     "decision": "Recommended action -> Top risks -> Reasons in favor -> Dissent -> Go/no-go confidence.",
     "skill": "Ship/revise/kill -> Top blockers -> Top patches -> Adoption risk -> First-run check.",
     "frontend": "UX verdict -> Browser evidence -> Interaction blockers -> Accessibility/mobile checks -> Verification.",
+    "forge": "Unified proposal -> convergence result -> persistent dissent -> implementation shape -> safety/performance -> verification -> next prompt.",
 }
 
 DEFAULT_REPOSITORY = "ercoledevs/codex-council"
@@ -383,12 +444,20 @@ def classify_council_invocation(text: str, explicit: bool = False) -> str:
     return "meta"
 
 
-def active_role_files(skill_review: bool = False) -> dict[str, str]:
-    return SKILL_REVIEW_ROLE_FILES if skill_review else ROLE_FILES
+def active_role_files(skill_review: bool = False, session_type: str = "general") -> dict[str, str]:
+    if skill_review:
+        return SKILL_REVIEW_ROLE_FILES
+    if session_type == "forge":
+        return FORGE_ROLE_FILES
+    return ROLE_FILES
 
 
-def active_member_prompt_files(skill_review: bool = False) -> dict[str, str]:
-    return SKILL_REVIEW_PROMPT_FILES if skill_review else MEMBER_PROMPT_FILES
+def active_member_prompt_files(skill_review: bool = False, session_type: str = "general") -> dict[str, str]:
+    if skill_review:
+        return SKILL_REVIEW_PROMPT_FILES
+    if session_type == "forge":
+        return FORGE_PROMPT_FILES
+    return MEMBER_PROMPT_FILES
 
 
 def normalize_session_options(
@@ -934,9 +1003,12 @@ def estimate_pre_session(
     if skill_review:
         member_count = len(SKILL_REVIEW_ROLE_FILES)
         reviewer_count = 0
+    elif session_type == "forge":
+        member_count = len(FORGE_ROLE_FILES)
+        reviewer_count = 0
     else:
         member_count = 1 if mode == "fast" else len(ROLE_FILES)
-        reviewer_count = 0 if mode == "fast" else len(session_reviewers(mode, frontend_review))
+        reviewer_count = 0 if mode == "fast" else len(session_reviewers(mode, frontend_review, session_type=session_type))
     evidence_count = len(session_evidence_runners(frontend_review))
     topic_tokens = estimate_tokens(len(topic))
     budget_factor = {"compact": 1.0, "balanced": 1.55, "expanded": 3.2}[token_budget]
@@ -956,15 +1028,24 @@ def estimate_pre_session(
     per_reviewer_output = {"compact": 100, "balanced": 180, "expanded": 400}[token_budget]
     chairman_input = 350 + (member_count * per_member_output) + (reviewer_count * per_reviewer_output)
     chairman_output = {"compact": 250, "balanced": 420, "expanded": 900}[token_budget]
-    active_labels = list(active_role_files(skill_review).values()) + session_reviewers(mode, frontend_review, skill_review)
+    factor_in = mode_factor * reasoning_factor
+    factor_out = mode_factor * budget_factor
+    forge_rebrief_overhead = 0
+    if session_type == "forge":
+        forge_rebrief_overhead = int((180 + (member_count * 40)) * factor_out)
+        chairman_input += 160
+    active_labels = list(active_role_files(skill_review, session_type).values()) + session_reviewers(
+        mode,
+        frontend_review,
+        skill_review,
+        session_type,
+    )
     alter_tuning_prompt_tokens = sum(
         int(entry.get("estimated_added_tokens", estimate_tokens(len(str(entry.get("compiled_instruction", ""))))))
         for label in active_labels
         for entry in [active_alter_entry(alter_config, label)]
         if entry is not None
     )
-    factor_in = mode_factor * reasoning_factor
-    factor_out = mode_factor * budget_factor
     components = {
         "static_protocol_input_tokens": int(static_overhead * factor_in),
         "member_input_tokens": int(member_count * per_member_input * factor_in),
@@ -977,6 +1058,7 @@ def estimate_pre_session(
         "context_duplication_tokens": int(context_tokens * max(member_count + reviewer_count + 1, 1) * factor_in),
         "frontend_browser_evidence_tokens": int(evidence_count * 180 * factor_out),
         "alter_tuning_prompt_tokens": int(alter_tuning_prompt_tokens * factor_in),
+        "forge_rebrief_overhead_tokens": forge_rebrief_overhead,
     }
     input_tokens = (
         components["static_protocol_input_tokens"]
@@ -992,6 +1074,7 @@ def estimate_pre_session(
         + components["synthesis_output_tokens"]
         + components["frontend_browser_evidence_tokens"]
         + components["scoring_stats_overhead_tokens"]
+        + components["forge_rebrief_overhead_tokens"]
     )
     calibrated_total = int((input_tokens + output_tokens) * history_multiplier(consumer_data))
     input_share = input_tokens / max(input_tokens + output_tokens, 1)
@@ -1091,6 +1174,7 @@ def render_pre_session_estimate(estimate: dict[str, Any]) -> str:
                 f"- Synthesis input/output: {components['synthesis_input_tokens']}/{components['synthesis_output_tokens']}",
                 f"- Context duplication: {components['context_duplication_tokens']}",
                 f"- Local role tuning: {components.get('alter_tuning_prompt_tokens', 0)}",
+                f"- Forge re-brief overhead: {components.get('forge_rebrief_overhead_tokens', 0)}",
                 f"- Scoring/stats overhead: {components['scoring_stats_overhead_tokens']}",
                 f"- Browser evidence: {components['frontend_browser_evidence_tokens']}",
             ]
@@ -1128,6 +1212,18 @@ def render_member_prompt(
     skill_review: bool = False,
     alter_config: Optional[dict[str, Any]] = None,
 ) -> str:
+    if session_type == "forge":
+        lens = f"\nLens: {FORGE_LENSES.get(role, 'Create a useful proposal while preserving constraints.')}\n"
+        return (
+            f"You are {role} for Codex Forge.\n\n"
+            f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
+            f"{lens}\n"
+            "Generate one creative but implementable proposal. Respect immutable user/project constraints, privacy, "
+            "token budget, and verification needs. Preserve useful dissent; do not claim validation or truth.\n\n"
+            "Required sections:\n"
+            "## Creative Proposal\n## Rationale\n## Constraints\n## Risks\n"
+            "## Convergence Notes\n## Verification Needed\n"
+        )
     lens = f"\nLens: {SKILL_REVIEW_LENSES[role]}\n" if skill_review and role in SKILL_REVIEW_LENSES else ""
     alter_block = render_alter_prompt_block(active_alter_entry(alter_config or default_alter_config(), role) or {})
     return (
@@ -1163,6 +1259,16 @@ def render_reviewer_prompt(
 
 def render_chairman_prompt(topic: str, mode: str, token_budget: str, session_type: str = "general") -> str:
     template = SYNTHESIS_TEMPLATES.get(session_type, SYNTHESIS_TEMPLATES["general"])
+    if session_type == "forge":
+        return (
+            "You are the Forge synthesizer for Codex Forge.\n\n"
+            f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n\n"
+            f"Synthesis template: {template}\n\n"
+            "Run a separate creative synthesis using saved Forge outputs and the synthesis input manifest. "
+            "Summarize divided opinions, re-brief only if the user approved another round, and return either "
+            "a unified proposal or an explicit nonconverged result with persistent dissent. "
+            "Do not claim the proposal is validated truth.\n"
+        )
     return (
         "You are the Chairman synthesizer for Codex Council.\n\n"
         f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n\n"
@@ -1187,14 +1293,14 @@ def write_prompt_scaffold(
     reviewer_prompts_dir = session_dir / "prompts" / "reviewers"
     member_prompts_dir.mkdir(parents=True, exist_ok=True)
     reviewer_prompts_dir.mkdir(parents=True, exist_ok=True)
-    role_files = active_role_files(skill_review)
-    prompt_files = active_member_prompt_files(skill_review)
+    role_files = active_role_files(skill_review, session_type)
+    prompt_files = active_member_prompt_files(skill_review, session_type)
     for member_file, role in role_files.items():
         (member_prompts_dir / prompt_files[member_file]).write_text(
             render_member_prompt(role, topic, mode, token_budget, session_type, skill_review, alter_config),
             encoding="utf-8",
         )
-    for reviewer in session_reviewers(mode, frontend_review, skill_review):
+    for reviewer in session_reviewers(mode, frontend_review, skill_review, session_type):
         reviewer_slug = slugify(reviewer)
         if reviewer in BASE_REVIEWERS or reviewer in DEEP_REVIEWERS:
             reviewer_slug = reviewer
@@ -1415,8 +1521,98 @@ def aggregate(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def session_reviewers(mode: str, frontend_review: bool = False, skill_review: bool = False) -> list[str]:
-    if skill_review:
+def forge_weighted_score(dimensions: dict[str, Any]) -> float:
+    missing = [name for name in FORGE_WEIGHTS if name not in dimensions]
+    if missing:
+        raise ValueError(f"Missing Forge score dimensions: {', '.join(missing)}")
+    score = 0.0
+    for name, weight in FORGE_WEIGHTS.items():
+        value = float(dimensions[name])
+        if not 1 <= value <= 10:
+            raise ValueError(f"Forge score {name}={value} is outside 1..10")
+        score += value * weight
+    return round(score, 4)
+
+
+def assess_forge_convergence(payload: dict[str, Any]) -> dict[str, Any]:
+    agents = payload.get("agents", {})
+    if not isinstance(agents, dict) or not agents:
+        raise ValueError("Forge convergence requires at least one agent score")
+    persistent_dissent = payload.get("persistent_dissent", [])
+    if persistent_dissent is None:
+        persistent_dissent = []
+    if not isinstance(persistent_dissent, list):
+        raise ValueError("persistent_dissent must be a list")
+
+    agent_results: dict[str, Any] = {}
+    alignments: list[float] = []
+    totals: list[float] = []
+    blockers: list[str] = []
+    for agent_id, scores in agents.items():
+        if not isinstance(scores, dict):
+            raise ValueError(f"Forge agent score for {agent_id} must be an object")
+        alignment = float(scores.get("alignment", 0))
+        if not 1 <= alignment <= 10:
+            raise ValueError(f"Forge alignment for {agent_id} is outside 1..10")
+        weighted = forge_weighted_score(scores)
+        agent_blockers = [str(item) for item in scores.get("blockers", []) if str(item).strip()]
+        blockers.extend(f"{agent_id}: {item}" for item in agent_blockers)
+        alignments.append(alignment)
+        totals.append(weighted)
+        agent_results[str(agent_id)] = {
+            "alignment": alignment,
+            "weighted_score": weighted,
+            "blockers": agent_blockers,
+        }
+
+    score_stdev = statistics.pstdev(totals) if len(totals) > 1 else 0.0
+    min_alignment = min(alignments)
+    converged = (
+        min_alignment >= FORGE_ALIGNMENT_THRESHOLD
+        and score_stdev <= FORGE_SCORE_STDEV_THRESHOLD
+        and not blockers
+        and not persistent_dissent
+    )
+    # Strong discord = creators disagree from the start (low alignment or wide spread).
+    # It auto-triggers the next round; a near-miss stays opt-in.
+    strong_discord = (
+        min_alignment < FORGE_STRONG_DISCORD_ALIGNMENT
+        or score_stdev > FORGE_STRONG_DISCORD_STDEV
+    )
+    if converged:
+        second_round = "none"
+    elif strong_discord:
+        second_round = "auto"
+    else:
+        second_round = "optional"
+    return {
+        "label": "forge_convergence_assessment",
+        "status": "converged" if converged else "nonconverged",
+        "converged": converged,
+        "strong_discord": strong_discord,
+        "second_round": second_round,
+        "min_alignment": round(min_alignment, 4),
+        "score_stdev": round(score_stdev, 4),
+        "thresholds": {
+            "min_alignment": FORGE_ALIGNMENT_THRESHOLD,
+            "score_stdev": FORGE_SCORE_STDEV_THRESHOLD,
+            "strong_discord_alignment": FORGE_STRONG_DISCORD_ALIGNMENT,
+            "strong_discord_stdev": FORGE_STRONG_DISCORD_STDEV,
+        },
+        "weights": FORGE_WEIGHTS,
+        "agent_results": agent_results,
+        "persistent_dissent": [str(item) for item in persistent_dissent],
+        "blockers": blockers,
+    }
+
+
+def session_reviewers(
+    mode: str,
+    frontend_review: bool = False,
+    skill_review: bool = False,
+    session_type: str = "general",
+) -> list[str]:
+    if skill_review or session_type == "forge":
         return []
     reviewers = BASE_REVIEWERS.copy()
     if mode == "deep":
@@ -1449,8 +1645,8 @@ def render_dispatch_announcement(
     session_type: str = "general",
 ) -> str:
     panel = "skill-review" if skill_review else session_type if session_type != "general" else mode
-    members = len(active_role_files(skill_review))
-    reviewers = len(session_reviewers(mode, frontend_review, skill_review))
+    members = len(active_role_files(skill_review, session_type))
+    reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type))
     runners = len(session_evidence_runners(frontend_review))
     suffix = f", {runners} evidence runners" if runners else ""
     return f"{panel} panel: dispatched {members} members, {reviewers} reviewers{suffix} ({token_budget})"
@@ -1463,12 +1659,14 @@ def render_council_banner(
     skill_review: bool = False,
     session_type: str = "general",
 ) -> str:
-    reviewers = len(session_reviewers(mode, frontend_review, skill_review))
+    reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type))
     runners = len(session_evidence_runners(frontend_review))
     gates = "performance"
-    roles = len(active_role_files(skill_review))
+    roles = len(active_role_files(skill_review, session_type))
     if skill_review:
         gates = "skill-review"
+    if session_type == "forge":
+        gates = "bounded creation"
     if frontend_review:
         gates += " + UX + Bob"
     width = 76
@@ -1480,13 +1678,13 @@ def render_council_banner(
     return "\n".join(
         [
             border,
-            row("CODEX COUNCIL".center(width - 4)),
-            row("     [Ada]      [Grace]    [Hypatia]    [Seymour]"),
-            row("         \\         |          |          /"),
+            row(("CODEX FORGE" if session_type == "forge" else "CODEX COUNCIL").center(width - 4)),
+            row(" [Fuller]   [Hedy]   [Katherine]   [Hamilton]   [von Neumann]" if session_type == "forge" else "     [Ada]      [Grace]    [Hypatia]    [Seymour]"),
+            row("       \\        |          |             |          /" if session_type == "forge" else "         \\         |          |          /"),
             row("            .-------------------------------."),
-            row(" [Turing] --|  council table: judge methods |-- [Florence]"),
+            row("            | forge table: create methods   |" if session_type == "forge" else " [Turing] --|  council table: judge methods |-- [Florence]"),
             row("            '-------------------------------'"),
-            row("method: first opinions -> anonymous review -> synthesis"),
+            row("method: diverge -> synthesize -> re-brief -> converge" if session_type == "forge" else "method: first opinions -> anonymous review -> synthesis"),
             row(f"mode: {mode} | type: {session_type} | budget: {token_budget} | roles: {roles} | reviewers: {reviewers}"),
             row(f"gates: {gates} | runners: {runners}"),
             border,
@@ -1954,8 +2152,8 @@ def init_session(
     if frontend_review:
         evidence_runners_dir.mkdir(parents=True, exist_ok=False)
 
-    role_files = active_role_files(skill_review)
-    reviewers = session_reviewers(mode, frontend_review, skill_review)
+    role_files = active_role_files(skill_review, session_type)
+    reviewers = session_reviewers(mode, frontend_review, skill_review, session_type)
     evidence_runners = session_evidence_runners(frontend_review)
     alter_metadata = active_alter_session_metadata(alter_config, list(role_files.values()), reviewers)
     activation_tags: list[str] = []
@@ -1963,6 +2161,8 @@ def init_session(
         activation_tags.append("frontend-ui-ux")
     if skill_review:
         activation_tags.append("skill-review")
+    if session_type == "forge":
+        activation_tags.append("forge")
     dispatch_line = render_dispatch_announcement(mode, token_budget, frontend_review, skill_review, session_type)
 
     metadata = {
@@ -1998,7 +2198,7 @@ def init_session(
     )
     (session_dir / "brief.md").write_text(
         (
-            f"# Codex Council Brief\n\nTopic: {topic}\nMode: {mode}\nType: {session_type}\n"
+            f"# {'Codex Forge' if session_type == 'forge' else 'Codex Council'} Brief\n\nTopic: {topic}\nMode: {mode}\nType: {session_type}\n"
             f"Token Profile: {token_budget}\n\n## Context\n\n## Constraints\n\n## Success Criteria\n"
         ),
         encoding="utf-8",
@@ -2008,14 +2208,14 @@ def init_session(
     write_prompt_scaffold(session_dir, topic, mode, token_budget, frontend_review, session_type, skill_review, alter_config)
     write_synthesis_input_manifest(session_dir, role_files, reviewers, evidence_runners, session_type)
     for filename, role in role_files.items():
-        sections = REQUIRED_MEMBER_SECTIONS.copy()
-        if not skill_review and filename == "06-seymour-performance-engineer.md":
+        sections = REQUIRED_FORGE_MEMBER_SECTIONS.copy() if session_type == "forge" else REQUIRED_MEMBER_SECTIONS.copy()
+        if session_type != "forge" and not skill_review and filename == "06-seymour-performance-engineer.md":
             sections.extend(PERFORMANCE_MEMBER_EXTRA_SECTIONS)
         (members_dir / filename).write_text(
             f"# {role}\n\n" + "\n\n".join(sections) + "\n",
             encoding="utf-8",
         )
-    if not skill_review:
+    if not skill_review and session_type != "forge":
         (reviews_dir / "performance-impact-reviewer.md").write_text(
             "# Performance Impact Reviewer\n\n## Ranking\n\n## Performance Blockers\n\n## Missing Measurements\n\n## Verification Required\n",
             encoding="utf-8",
@@ -2071,7 +2271,7 @@ def init_session(
         + "\n",
         encoding="utf-8",
     )
-    final_sections = REQUIRED_FINAL_SECTIONS.copy()
+    final_sections = REQUIRED_FORGE_FINAL_SECTIONS.copy() if session_type == "forge" else REQUIRED_FINAL_SECTIONS.copy()
     if frontend_review:
         final_sections.insert(final_sections.index("## Audit Notes"), "## Frontend Evidence")
     (session_dir / "final.md").write_text("# Chairman Synthesis\n\n" + "\n\n".join(final_sections) + "\n", encoding="utf-8")
@@ -2107,7 +2307,7 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
                 problems.append("session.json session_type is invalid")
             if metadata.get("token_budget") not in TOKEN_BUDGETS:
                 problems.append("session.json token_budget is invalid")
-            role_files = active_role_files(bool(metadata.get("skill_review")))
+            role_files = active_role_files(bool(metadata.get("skill_review")), metadata.get("session_type", "general"))
             if len(metadata.get("roles", [])) != len(role_files):
                 problems.append(f"session.json roles must contain the {len(role_files)} expected council members")
 
@@ -2121,11 +2321,12 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             problems.append(f"missing prompts/{filename}")
     final_path = session_dir / "final.md"
     if final_path.exists():
-        for section in _missing_sections(final_path, REQUIRED_FINAL_SECTIONS):
+        required_final_sections = REQUIRED_FORGE_FINAL_SECTIONS if metadata.get("session_type") == "forge" else REQUIRED_FINAL_SECTIONS
+        for section in _missing_sections(final_path, required_final_sections):
             problems.append(f"final.md missing {section}")
 
     members_dir = session_dir / "members"
-    role_files = active_role_files(bool(metadata.get("skill_review")))
+    role_files = active_role_files(bool(metadata.get("skill_review")), metadata.get("session_type", "general"))
     if not members_dir.is_dir():
         problems.append("missing members directory")
     else:
@@ -2134,9 +2335,10 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             if not path.exists():
                 problems.append(f"missing member file: {filename}")
                 continue
-            for section in _missing_sections(path, REQUIRED_MEMBER_SECTIONS):
+            required_member_sections = REQUIRED_FORGE_MEMBER_SECTIONS if metadata.get("session_type") == "forge" else REQUIRED_MEMBER_SECTIONS
+            for section in _missing_sections(path, required_member_sections):
                 problems.append(f"{filename} missing {section}")
-            if not metadata.get("skill_review") and filename == "06-seymour-performance-engineer.md":
+            if metadata.get("session_type") != "forge" and not metadata.get("skill_review") and filename == "06-seymour-performance-engineer.md":
                 for section in _missing_sections(path, PERFORMANCE_MEMBER_EXTRA_SECTIONS):
                     problems.append(f"{filename} missing {section}")
 
@@ -2149,7 +2351,7 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
         except Exception as exc:
             problems.append(f"invalid reviews example: {exc}")
 
-    if not metadata.get("skill_review"):
+    if not metadata.get("skill_review") and metadata.get("session_type") != "forge":
         for filename in ("performance-impact-reviewer.md", "coverage-integrator.md"):
             path = session_dir / "reviews" / filename
             if not path.exists():
@@ -2426,6 +2628,11 @@ def main() -> None:
     score_parser.add_argument("--output")
     score_parser.add_argument("--compact", action="store_true", help="Print minified JSON")
 
+    forge_parser = subparsers.add_parser("forge-convergence", help="Assess Codex Forge convergence JSON")
+    forge_parser.add_argument("--input", required=True)
+    forge_parser.add_argument("--output")
+    forge_parser.add_argument("--compact", action="store_true", help="Print minified JSON")
+
     validate_parser = subparsers.add_parser("validate", help="Validate the plugin layout")
     validate_parser.add_argument("--plugin-root", default=str(Path(__file__).resolve().parents[1]))
     validate_parser.add_argument("--strict", action="store_true")
@@ -2602,6 +2809,19 @@ def main() -> None:
     if args.command == "score":
         payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
         result = aggregate(payload)
+        rendered = (
+            json.dumps(result, separators=(",", ":"))
+            if args.compact
+            else json.dumps(result, indent=2)
+        )
+        if args.output:
+            Path(args.output).write_text(rendered + "\n", encoding="utf-8")
+        print(rendered)
+        return
+
+    if args.command == "forge-convergence":
+        payload = json.loads(Path(args.input).read_text(encoding="utf-8"))
+        result = assess_forge_convergence(payload)
         rendered = (
             json.dumps(result, separators=(",", ":"))
             if args.compact

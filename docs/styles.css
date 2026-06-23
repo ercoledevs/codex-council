@@ -364,6 +364,12 @@ h3 { font-size: 1.12rem; letter-spacing: -0.01em; }
   border-bottom: 1px solid var(--line);
 }
 
+/* Intro sections that flow into a figure + caption: lighter bottom padding so the
+   caption keeps clear space from the next section without a glued edge. */
+.section.section-tight {
+  padding-bottom: clamp(34px, 5vw, 60px);
+}
+
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -1204,6 +1210,140 @@ td code,
 }
 
 .prompt .copy-btn:hover { color: var(--brand); background: var(--brand-tint); }
+
+/* --------------------------------------------------------------------------
+   Forge — animated "forging" diagram (inline SVG, theme-aware)
+   -------------------------------------------------------------------------- */
+
+.forge-stage {
+  margin: 38px 0 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background:
+    radial-gradient(60% 90% at 50% 38%, var(--brand-tint), transparent 70%),
+    var(--surface);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.forge-anim {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Static / reduced-motion base — everything stays legible without animation */
+.fg-wire { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+.fg-chip { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+.fg-glyph { fill: none; stroke: var(--brand); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.fg-glyph-fill { fill: var(--brand); }
+.fg-label { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 17px; fill: var(--ink); }
+.fg-strong { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 800; font-size: 18px; letter-spacing: 0.06em; fill: var(--brand-2); }
+.fg-mini { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.05em; fill: var(--gold); }
+.fg-crucible { fill: var(--brand-tint); stroke: var(--brand); stroke-width: 2.5; }
+.fg-doc { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.5; }
+.fg-docline { fill: var(--line); }
+.fg-docline.brand { fill: var(--brand); }
+.fg-loop { fill: none; stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5 7; opacity: 0.75; }
+.fg-arrow { fill: var(--muted); }
+.fg-arrow.brand { fill: var(--brand); }
+.fg-council { fill: var(--brand); }
+.fg-council-text { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 800; font-size: 15px; letter-spacing: 0.08em; fill: var(--btn-ink); }
+.fg-check { fill: var(--brand); }
+.fg-check path { stroke: var(--btn-ink); stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Animated layers */
+.fg-pulse {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 12 126;
+  animation: fg-dash 1.8s linear infinite;
+}
+.fg-glow {
+  fill: var(--brand);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fg-glow 2.6s ease-in-out infinite;
+}
+.fg-spark {
+  fill: var(--gold);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fg-spark 1.5s ease-in-out infinite;
+}
+.fg-checkwrap {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fg-pop 3s ease-in-out infinite;
+}
+.fg-d1 { animation-delay: 0s; }
+.fg-d2 { animation-delay: 0.3s; }
+.fg-d3 { animation-delay: 0.6s; }
+.fg-d4 { animation-delay: 0.9s; }
+.fg-d5 { animation-delay: 1.2s; }
+
+@keyframes fg-dash { to { stroke-dashoffset: -138; } }
+@keyframes fg-glow {
+  0%, 100% { opacity: 0.12; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.08); }
+}
+@keyframes fg-spark {
+  0%, 100% { opacity: 0; transform: translateY(3px) scale(0.6); }
+  45% { opacity: 1; transform: translateY(-6px) scale(1); }
+}
+@keyframes fg-pop {
+  0%, 70%, 100% { transform: scale(1); }
+  12% { transform: scale(0.4); opacity: 0.3; }
+  28% { transform: scale(1.15); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-pulse, .fg-spark, .fg-glow { display: none; }
+  .fg-checkwrap { animation: none; }
+  .fg-wire { stroke: var(--brand); opacity: 0.55; }
+}
+
+/* --------------------------------------------------------------------------
+   Mind: ASCII brain banner rendered as a halftone in a terminal frame
+   -------------------------------------------------------------------------- */
+
+.brain-frame {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 34px auto 0;
+  padding: 40px 30px 26px;
+  border: 1px solid var(--code-border);
+  border-radius: var(--r-lg);
+  background: var(--code-bg);
+  box-shadow: var(--shadow-lg);
+  overflow-x: auto;
+}
+
+.brain-frame::before {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 19px 0 #febc2e, 38px 0 #28c840;
+}
+
+.brain-art {
+  margin: 0 auto;
+  width: max-content;
+  color: #5fe3c0;
+  font-family: "SFMono-Regular", ui-monospace, Consolas, Menlo, monospace;
+  font-size: clamp(14px, 2vw, 22px);
+  line-height: 1.15;
+  white-space: pre;
+}
 
 /* --------------------------------------------------------------------------
    Reveal-on-scroll (progressive enhancement)

@@ -48,9 +48,18 @@
     });
   }
 
+  /* ---- ASCII brain banner (loaded once, shared) ---------------------- */
+  var brainEl = document.querySelector("[data-brain]");
+  if (brainEl) {
+    fetch(brainEl.getAttribute("data-brain"))
+      .then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+      .then(function (t) { brainEl.textContent = t.replace(/\s+$/, ""); })
+      .catch(function () { brainEl.closest(".brain-frame")?.remove(); });
+  }
+
   /* ---- Copy buttons on code / prompt blocks -------------------------- */
   if (navigator.clipboard) {
-    document.querySelectorAll("pre, .prompt").forEach(function (block) {
+    document.querySelectorAll("pre:not(.brain-art), .prompt").forEach(function (block) {
       var btn = document.createElement("button");
       btn.type = "button";
       btn.className = "copy-btn";

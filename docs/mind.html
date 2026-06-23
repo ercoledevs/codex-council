@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Mind - Codex Council</title>
+    <meta name="description" content="Codex Mind is the guided pipeline: it forges a proposal, then runs it through the council, end to end — with one combined estimate up front and a clear build / revise / stop verdict.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/mind.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/mind.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/mind.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/mind.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Codex Mind">
+    <meta property="og:description" content="The guided pipeline: forge a proposal, then judge it with the council — one combined estimate, one build / revise / stop verdict.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/mind.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Codex Mind">
+    <meta name="twitter:description" content="The guided pipeline: forge a proposal, then judge it with the council — one combined estimate, one build / revise / stop verdict.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">
+          <img src="assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html">Use Cases</a>
+          <a href="examples.html">Examples</a>
+          <a href="usage.html">Usage</a>
+          <a href="alters.html">Alters</a>
+          <a href="limits.html">Limits</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="forge.html">Forge</a>
+          <a href="mind.html" aria-current="page">Mind</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="it/mind.html" hreflang="it" aria-label="Versione italiana">IT</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section section-tight">
+        <div class="section-inner">
+          <p class="eyebrow">Codex Mind</p>
+          <h1>One guided run, idea to verdict.</h1>
+          <p class="lead">
+            Codex Mind chains the two halves of the plugin: it forges a proposal, then puts it
+            through the council — in one guided pass. If you don't have a proposal yet, it asks what
+            to build first. You get one combined cost estimate up front and a single
+            build / revise / stop call at the end.
+          </p>
+
+          <figure class="brain-frame" aria-label="Codex Mind starts each run with an ASCII digital brain banner.">
+            <pre class="brain-art" data-brain="assets/brain.txt" aria-hidden="true"></pre>
+          </figure>
+          <p class="wiki-lead" style="margin-top:16px;">
+            Every Mind run opens with this banner — the signal that the guided pipeline has begun.
+          </p>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">The pipeline</p>
+          <h2>Forge invents. Council judges. Mind runs both.</h2>
+          <figure class="forge-stage">
+            <svg class="forge-anim" viewBox="0 0 1200 230" role="img"
+                 aria-label="The Codex Mind pipeline: your idea goes to Forge, the forged proposal goes to Council, and the result is a build, revise, or stop verdict.">
+              <title>The Codex Mind pipeline</title>
+              <defs>
+                <marker id="fg-ah-brand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--brand)"></path>
+                </marker>
+              </defs>
+
+              <path class="fg-wire" d="M196,115 H 322" marker-end="url(#fg-ah-brand)"></path>
+              <path class="fg-pulse fg-d1" d="M196,115 H 322"></path>
+              <path class="fg-wire" d="M432,115 H 584" marker-end="url(#fg-ah-brand)"></path>
+              <path class="fg-pulse fg-d2" d="M432,115 H 584"></path>
+              <path class="fg-wire" d="M770,115 H 894" marker-end="url(#fg-ah-brand)"></path>
+              <path class="fg-pulse fg-d3" d="M770,115 H 894"></path>
+
+              <rect class="fg-chip" x="40" y="84" width="156" height="62" rx="14"></rect>
+              <text class="fg-label" x="118" y="121" text-anchor="middle">IDEA</text>
+
+              <circle class="fg-glow" cx="380" cy="115" r="66"></circle>
+              <polygon class="fg-crucible" points="353,70 407,70 432,115 407,160 353,160 328,115"></polygon>
+              <text class="fg-strong" x="380" y="121" text-anchor="middle">FORGE</text>
+
+              <rect class="fg-council" x="590" y="84" width="180" height="62" rx="31"></rect>
+              <text class="fg-council-text" x="680" y="120" text-anchor="middle">COUNCIL</text>
+
+              <rect class="fg-doc" x="900" y="62" width="250" height="106" rx="14"></rect>
+              <rect class="fg-docline brand" x="924" y="86" width="120" height="12" rx="3"></rect>
+              <rect class="fg-docline" x="924" y="116" width="200" height="8" rx="3"></rect>
+              <rect class="fg-docline" x="924" y="134" width="160" height="8" rx="3"></rect>
+              <g class="fg-checkwrap"><g class="fg-check"><circle cx="1126" cy="84" r="17"></circle><path d="M1118,84 l5,6 l11,-13"></path></g></g>
+              <text class="fg-mini" x="1025" y="196" text-anchor="middle">BUILD · REVISE · STOP</text>
+            </svg>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">How the guided run works</p>
+          <h2>Four moves, fully guided.</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">01</div>
+              <h3>Start</h3>
+              <p>The brain banner appears. If there's no proposal yet, Mind asks one focused question: what should we build, and the hard constraints.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">02</div>
+              <h3>Estimate once</h3>
+              <p>One combined token estimate for both stages, shown and accepted up front — so you see the full cost before anything runs.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">03</div>
+              <h3>Forge</h3>
+              <p>Five creators shape a bounded proposal (auto second round only on strong discord, hard cap three). You see it before it moves on.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">04</div>
+              <h3>Judge &amp; decide</h3>
+              <p>The council reviews the proposal and returns one call — build, revise, or stop — with blockers, dissent, and the exact verification.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <strong>Checkpoints, not surprises</strong>
+            If Forge can't converge, Mind surfaces the dissent and asks before paying for a council review. If the council finds a blocker, the run stops at revise or stop — never "build" over a live blocker.
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">When to reach for which</p>
+          <h2>Three doors into the same building.</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Forge alone</h3>
+              <p>You only need a shape for an idea. <a href="forge.html">Invent a proposal →</a></p>
+            </article>
+            <article class="card">
+              <h3>Council alone</h3>
+              <p>You already have a plan and want it pressure-tested. <a href="index.html">Judge a proposal →</a></p>
+            </article>
+            <article class="card">
+              <h3>Mind</h3>
+              <p>You have an idea and want to go all the way to a decision in one guided pass.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Use it</p>
+          <h2>Hand Mind an idea.</h2>
+          <p>In chat — give it something to build, and it runs the whole pipeline:</p>
+          <div class="prompt">
+            <span class="prompt-tag">Prompt</span>
+            <code>Use Codex Mind to forge a proposal for &lt;your idea&gt; and then run it
+through the council. Show me the combined estimate first, and end with a
+clear build / revise / stop call.</code>
+          </div>
+          <p style="margin-top:24px;">Mind doesn't add new commands — it reuses Forge and Council under the hood. The
+            combined estimate is just both stages, summed:</p>
+          <pre><code># Estimate both stages up front (shown as one range), then accept once.
+python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --type forge --token-budget compact
+python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --token-budget compact</code></pre>
+          <div class="callout">
+            <strong>Cheap by design</strong>
+            Two stages, one accepted estimate, compact by default. The handoff between them is just the proposal — never full transcripts — so a full run doesn't double your tokens.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>A council workflow for Codex. MIT licensed.</p>
+        </div>
+        <div class="footer-links">
+          <a href="forge.html">Forge</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="limits.html">Limits</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>

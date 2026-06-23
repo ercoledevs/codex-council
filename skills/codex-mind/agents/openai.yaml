@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Mind"
+  short_description: "Guided Forge-then-Council pipeline for Codex"
+  default_prompt: "Use Codex Mind to forge a proposal for my idea and then run it through the council."

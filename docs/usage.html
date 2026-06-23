@@ -52,6 +52,8 @@
           <a href="alters.html">Alters</a>
           <a href="limits.html">Limits</a>
           <a href="wiki.html">Wiki</a>
+          <a href="forge.html">Forge</a>
+          <a href="mind.html">Mind</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
@@ -86,6 +88,11 @@
           <h2>Give the council a decision, not a vibe.</h2>
           <div class="prompt-stack">
             <article class="card">
+              <h3>Forge</h3>
+              <pre><code>Use Codex Forge to design a bounded implementation proposal.
+Return convergence, dissent, safety notes, and next Council prompt.</code></pre>
+            </article>
+            <article class="card">
               <h3>Architecture</h3>
               <pre><code>Use Codex Council to review this architecture decision.
 Focus on blockers, rollback, and verification.</code></pre>
@@ -116,6 +123,10 @@ python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode s
 
 # Start a session once you've accepted the estimate.
 python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --confirm-estimate
+
+# Forge a creative proposal first, then send it to Council for judgment.
+python3 scripts/codex_council.py estimate --topic "Forge a Release Workflow" --mode standard --type forge --token-budget compact
+python3 scripts/codex_council.py init --topic "Forge a Release Workflow" --root . --mode standard --type forge --confirm-estimate
 
 # Validate and write stats at the end.
 python3 scripts/codex_council.py validate-session --session &lt;session-dir&gt;
