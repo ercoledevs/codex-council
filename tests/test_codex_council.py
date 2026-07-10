@@ -221,6 +221,232 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertNotIn("workspace_root", log_entry)
             self.assertNotIn(str(Path(tmp)), json.dumps(log_entry))
 
+    def test_init_session_writes_intelligence_artifacts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session(
+                "Secure Handoff Reports",
+                Path(tmp),
+                session_type="implementation",
+                token_budget="balanced",
+                session_root=Path(tmp) / "state",
+            )
+            capsule = json.loads((session / "context-capsule.json").read_text(encoding="utf-8"))
+            manifest = json.loads((session / "run-manifest.json").read_text(encoding="utf-8"))
+            ledger = json.loads((session / "decision-ledger.json").read_text(encoding="utf-8"))
+            telemetry = json.loads((session / "telemetry.json").read_text(encoding="utf-8"))
+            findings_lines = (session / "findings.jsonl").read_text(encoding="utf-8").splitlines()
+
+        self.assertEqual(capsule["schema_version"], cc.INTELLIGENCE_SCHEMA_VERSION)
+        self.assertEqual(capsule["topic"], "Secure Handoff Reports")
+        self.assertEqual(capsule["session_type"], "implementation")
+        self.assertEqual(capsule["token_budget"], "balanced")
+        self.assertIn("privacy", capsule["risk_flags"])
+        self.assertEqual(manifest["privacy"]["raw_prompt_logging"], "session-local only")
+        self.assertEqual(ledger["status"], "scaffolded")
+        self.assertEqual(ledger["decisions"], [])
+        self.assertGreater(telemetry["pre_execution_estimate"]["total_tokens"], 0)
+        self.assertTrue(findings_lines)
+        self.assertEqual(json.loads(findings_lines[0])["kind"], "placeholder")
+
+    def test_router_is_advisory_and_forces_full_for_risky_work(self):
+        safe = cc.route_council_panel(
+            "Update README copy for a small reversible docs change",
+            requested_panel="auto",
+            router="auto",
+        )
+        risky = cc.route_council_panel(
+            "Add public team handoff links with redaction, privacy policy, and security review",
+            requested_panel="targeted",
+            router="auto",
+        )
+        risky_without_router = cc.route_council_panel(
+            "Change authentication permissions and security policy",
+            requested_panel="targeted",
+            router="off",
+        )
+
+        self.assertEqual(safe["selected_panel"], "triad")
+        self.assertFalse(safe["forced_full"])
+        self.assertEqual(risky["selected_panel"], "full")
+        self.assertTrue(risky["forced_full"])
+        self.assertIn("privacy", risky["risk_flags"])
+        self.assertEqual(risky_without_router["selected_panel"], "full")
+        self.assertTrue(risky_without_router["forced_full"])
+
+    def test_prompt_compiler_deduplicates_findings_and_preserves_signal(self):
+        compiled = cc.compile_context_capsule(
+            "Ship handoff reports",
+            constraints=["No public links", "No public links", "Fail closed redaction"],
+            context="  Use local files only.\n\nUse local files only.  ",
+        )
+        findings = cc.deduplicate_findings(
+            [
+                {"claim": "Redaction must fail closed", "source": "Hypatia"},
+                {"claim": "redaction must fail closed.", "source": "Grace"},
+                {"claim": "HTML export needs CSP", "source": "Seymour"},
+            ]
+        )
+
+        self.assertLessEqual(compiled["compiled_tokens"], compiled["raw_tokens"])
+        self.assertEqual(compiled["duplicates_removed"], 2)
+        self.assertEqual(len(findings["findings"]), 2)
+        self.assertEqual(findings["findings"][0]["sources"], ["Hypatia", "Grace"])
+
+    def test_doctor_and_dashboard_report_session_health(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            state = Path(tmp) / "state"
+            session = init_session("Doctor Dashboard", Path(tmp), session_root=state)
+            subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "stats",
+                    "--session",
+                    str(session),
+                    "--write",
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            doctor = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "doctor",
+                    "--session",
+                    str(session),
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            dashboard = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "dashboard",
+                    "--state-root",
+                    str(state),
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+
+        doctor_payload = json.loads(doctor.stdout)
+        dashboard_payload = json.loads(dashboard.stdout)
+        self.assertTrue(doctor_payload["ok"], doctor_payload["problems"])
+        self.assertEqual(doctor_payload["coverage"], "partial")
+        self.assertEqual(dashboard_payload["session_count"], 1)
+        self.assertGreater(dashboard_payload["totals"]["pre_execution_tokens"], 0)
+        self.assertIn("unique_signal_per_1k_tokens", dashboard_payload["efficiency"])
+
+    def test_cells_cli_preview_commit_plan_and_doctor_are_shadow_only(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        script = plugin_root / "scripts" / "codex_council.py"
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session(
+                "Decision Runtime CLI",
+                Path(tmp),
+                session_root=Path(tmp) / "state",
+                decision_runtime="shadow",
+            )
+            (session / "final.md").write_text(
+                "# Chairman Synthesis\n\n"
+                "## Recommendation\n\n- Adopt a reversible local sidecar.\n\n"
+                "## Council Result\n\n- Proceed only in shadow mode.\n\n"
+                "## Blocking Issues\n\n- Recovery must remain atomic.\n\n"
+                "## Refinements\n\n- Keep the frontier comparator measurable.\n\n"
+                "## Implementation Shape\n\n- Store immutable local generations.\n\n"
+                "## Persistent Dissent\n\n- A simpler frontier may be sufficient.\n\n"
+                "## Verification\n\n- Run crash-recovery tests.\n\n"
+                "## Audit Notes\n\n- Legacy verdict remains authoritative.\n",
+                encoding="utf-8",
+            )
+            preview = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "cells",
+                    "project",
+                    "--session",
+                    str(session),
+                    "--plan",
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            preview_payload = json.loads(preview.stdout)
+            self.assertEqual(preview_payload["status"], "preview")
+            self.assertFalse(preview_payload["committed"])
+            self.assertFalse((session / "decision-runtime" / "HEAD").exists())
+
+            commit = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "cells",
+                    "project",
+                    "--session",
+                    str(session),
+                    "--commit",
+                    "--plan",
+                    "--json",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            commit_payload = json.loads(commit.stdout)
+            self.assertTrue(commit_payload["committed"])
+            self.assertFalse(commit_payload["authoritative"])
+
+            runtime_doctor = subprocess.run(
+                [sys.executable, str(script), "cells", "doctor", "--session", str(session), "--json"],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            session_doctor = cc.doctor_session(session)
+
+        self.assertEqual(json.loads(runtime_doctor.stdout)["status"], "healthy")
+        self.assertEqual(session_doctor["decision_runtime"]["status"], "healthy")
+        self.assertTrue(session_doctor["ok"], session_doctor["problems"])
+
+    def test_pre_1_0_session_without_intelligence_sidecars_remains_valid(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session("Legacy Compatibility", Path(tmp), session_root=Path(tmp) / "state")
+            metadata_path = session / "session.json"
+            metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+            metadata.pop("intelligence_layer", None)
+            metadata.pop("decision_runtime", None)
+            metadata_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
+            for filename in (
+                "context-capsule.json",
+                "decision-ledger.json",
+                "run-manifest.json",
+                "findings.jsonl",
+                "telemetry.json",
+                "router-decision.json",
+                "compiled-context.json",
+            ):
+                (session / filename).unlink(missing_ok=True)
+
+            validation = cc.validate_session(session)
+            doctor = cc.doctor_session(session)
+
+        self.assertTrue(validation["ok"], validation["problems"])
+        self.assertTrue(doctor["ok"], doctor["problems"])
+        self.assertEqual(doctor["decision_runtime"]["status"], "ignored")
+
     def test_skill_review_session_uses_three_lens_panel(self):
         with tempfile.TemporaryDirectory() as tmp:
             session = init_session(
@@ -531,6 +757,31 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertIn("CODEX COUNCIL", with_banner.stdout)
             self.assertTrue(all(ord(character) < 128 for character in with_banner.stdout))
             self.assertTrue(Path(with_banner.stdout.strip().splitlines()[-1]).exists())
+
+    def test_banner_is_centered_modern_and_never_truncates_session_counts(self):
+        banner = cc.render_council_banner(
+            "standard",
+            "expanded",
+            session_type="architecture",
+        )
+        lines = banner.splitlines()
+        self.assertTrue(lines)
+        self.assertTrue(all(len(line) == 80 for line in lines))
+        for line in lines[1:-1]:
+            inner = line[2:-2]
+            self.assertEqual(inner, inner.strip().center(len(inner)))
+        self.assertIn("INDEPENDENT / ANONYMOUS / EVIDENCE-LED", banner)
+        self.assertIn("FIRST OPINIONS > ANONYMOUS REVIEW > CHAIRMAN VERDICT", banner)
+        self.assertIn("MEMBERS 06 / REVIEWERS 02 / RUNNERS 00", banner)
+
+        forge_banner = cc.render_council_banner(
+            "standard",
+            "expanded",
+            session_type="forge",
+        )
+        self.assertTrue(all(len(line) == 80 for line in forge_banner.splitlines()))
+        self.assertIn("[VON NEUMANN]", forge_banner)
+        self.assertIn("DIVERGE > SYNTHESIZE > RE-BRIEF > CONVERGE", forge_banner)
 
     def test_session_stats_are_estimated_and_privacy_scoped(self):
         with tempfile.TemporaryDirectory() as tmp:

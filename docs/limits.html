@@ -13,7 +13,7 @@
       })();
     </script>
     <title>Limits - Codex Council</title>
-    <meta name="description" content="What Codex Council won't claim: no fake multi-provider diversity, no unverified UI, no real billing telemetry. Plus where its local state lives and what it's based on.">
+    <meta name="description" content="What Codex Council won't claim: fake provider diversity, unverified UI, billing telemetry, measured runtime savings, or authoritative shadow state.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/limits.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/limits.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/limits.html">
@@ -32,7 +32,7 @@
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="styles.css">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
@@ -49,12 +49,9 @@
           <a href="use-cases.html">Use Cases</a>
           <a href="examples.html">Examples</a>
           <a href="usage.html">Usage</a>
-          <a href="alters.html">Alters</a>
-          <a href="limits.html" aria-current="page">Limits</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="runtime.html">Runtime</a>
           <a href="forge.html">Forge</a>
           <a href="mind.html">Mind</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/limits.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -91,6 +88,7 @@
             <li><strong>No real billing data.</strong> Token reports are local estimates, not your actual Codex usage or remaining quota.</li>
             <li><strong>No silent expanded runs.</strong> Expanded can burn a lot of usage, so it won't start without your confirmation.</li>
             <li><strong>No mess in your repo.</strong> Sessions, prompts, stats, and history live in plugin-local state and stay gitignored.</li>
+            <li><strong>No runtime shortcuts.</strong> The shadow cannot change the legacy verdict, and saving targets remain unmeasured until replay proves them.</li>
           </ul>
         </div>
       </section>
@@ -111,6 +109,19 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
       </section>
 
       <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Decision Runtime safety</p>
+          <h2>The shadow may fail. The legacy path must not.</h2>
+          <div class="grid">
+            <article class="card"><h3>Opt-in</h3><p>Nothing is projected until you ask for the extra view. It stays local and off by default.</p></article>
+            <article class="card"><h3>Legacy-safe</h3><p>Unknown or unhealthy shadow state is ignored; the original session and verdict remain usable.</p></article>
+            <article class="card"><h3>Still sensitive</h3><p>Shadow data is local state, not encrypted proof. Treat it with the same care as the source session.</p></article>
+          </div>
+          <p><a class="button secondary" href="runtime.html">See the Decision Runtime overview</a></p>
+        </div>
+      </section>
+
+      <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Where it comes from</p>
           <h2>Built on the LLM Council idea, adapted for Codex.</h2>
@@ -134,6 +145,7 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
         </div>
         <div class="footer-links">
           <a href="usage.html">Install</a>
+          <a href="runtime.html">Runtime</a>
           <a href="examples.html">Examples</a>
           <a href="https://github.com/ercoledevs/codex-council/blob/main/PROVENANCE.md">Provenance</a>
         </div>

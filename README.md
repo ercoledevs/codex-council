@@ -10,15 +10,20 @@
 
 Codex Council turns one Codex request into a small panel review: several reviewers
 answer independently, their work is anonymized and ranked on a rubric, and a Chairman
-writes the final call — with the token cost shown up front. It runs entirely inside
+writes the final call — with a local token estimate shown up front. It runs entirely inside
 Codex and **never calls a third‑party model API**.
 
-📖 **[Website](https://ercoledevs.github.io/codex-council/)** · 🧭 **[Wiki / playbook](https://ercoledevs.github.io/codex-council/wiki.html)** · 🔬 **[Real example](https://ercoledevs.github.io/codex-council/examples.html)** · 🇮🇹 **[Italiano](https://ercoledevs.github.io/codex-council/it/)**
+📖 **[Website](https://ercoledevs.github.io/codex-council/)** · 🧭 **[Wiki / playbook](https://ercoledevs.github.io/codex-council/wiki.html)** · 🧠 **[Decision Runtime](https://ercoledevs.github.io/codex-council/runtime.html)** · 📝 **[Changelog](CHANGELOG.md)** · 🇮🇹 **[Italiano](https://ercoledevs.github.io/codex-council/it/)**
 
 > **One honest caveat, up front.** The "diversity" here comes from isolated role
 > prompts and anonymous review, not from multiple model vendors. That's enough to
 > break single‑pass anchoring and surface dissent — it is **not** the same as a panel
 > of independent labs. The whole project is built around saying that plainly.
+
+> **New in 1.0.0:** an experimental, opt-in Decision Runtime can project completed
+> sessions into deterministic Decision Cells and a simpler frontier log, compare the
+> two, persist transactional shadow generations, validate typed patches, and produce
+> fail-closed impact plans. Legacy Council artifacts and verdicts remain authoritative.
 
 ---
 
@@ -29,9 +34,10 @@ Codex and **never calls a third‑party model API**.
 - [How it works](#how-it-works)
 - [The council](#the-council)
 - [Modes & token budget](#modes--token-budget)
-- [How to prompt it](#how-to-prompt-it)
 - [Forging proposals](#forging-proposals)
 - [Codex Mind](#codex-mind)
+- [Decision Runtime](#decision-runtime)
+- [How to prompt it](#how-to-prompt-it)
 - [Tuning roles (alters)](#tuning-roles-alters)
 - [CLI reference](#cli-reference)
 - [Privacy & local state](#privacy--local-state)
@@ -100,7 +106,8 @@ the verification is how you make it real.
 
 ## The council
 
-Six reviewers answer every standard run. Each one guards a different concern:
+A default full Standard run uses six reviewers. Opt-in adaptive panels may use fewer;
+hard-risk work still returns to full coverage. Each lens guards a different concern:
 
 | Role | Lens |
 | --- | --- |
@@ -207,6 +214,72 @@ Use Codex Mind to forge a proposal for this idea and then run it through the cou
 
 ---
 
+## Decision Runtime
+
+Version 1.0 adds a **local decision-intelligence lab** for completed sessions. It is
+not a second Chairman and it never changes a verdict. It projects allowlisted legacy
+evidence into two representations, compares them, and can persist the result as an
+isolated transactional sidecar:
+
+| Capability | v1.0 status |
+| --- | --- |
+| Decision Cell projection and typed edge patches | experimental, deterministic |
+| `frontier.jsonl` baseline | experimental, deterministic |
+| Cell-vs-frontier export checks and replay | experimental, non-authoritative |
+| Transactional generations, `HEAD`, recovery, rollback | opt-in shadow sidecar |
+| Typed JSON Decision Patches | opt-in, sidecar-only |
+| Fail-closed impact plan | advisory only; never dispatches agents |
+| Legacy session and verdict | stable and authoritative |
+| Learned scheduling, semantic memory, automatic early exit | deferred |
+
+The intended flow is deliberately one-way:
+
+```text
+completed legacy session
+        -> deterministic projection
+        -> Decision Cell <-> frontier.jsonl comparison
+        -> optional shadow generation
+        -> advisory impact plan
+```
+
+Start with a non-committing preview:
+
+```bash
+python3 scripts/codex_council.py cells project \
+  --session <session-dir> --compare frontier --plan --json
+```
+
+When the preview is useful, persist the first transactional shadow generation
+explicitly, then inspect its health:
+
+```bash
+python3 scripts/codex_council.py cells project \
+  --session <session-dir> --compare frontier --commit --plan --json
+python3 scripts/codex_council.py cells doctor \
+  --session <session-dir> --json
+```
+
+A committed generation is required before applying a typed patch or planning from
+`HEAD`.
+
+Opt in at scaffold time with `init --decision-runtime shadow`, or project an older
+completed session explicitly. Runtime data lives inside that session under
+`decision-runtime/`; directories use restrictive permissions, writes are
+single-writer and generational, and every interrupted switch leaves an old-or-new
+valid `HEAD` while every legacy artifact remains unchanged. `ignored` and
+`quarantined` always mean “use legacy”.
+
+Typed patches must be standalone validated JSON. Arbitrary Markdown/model prose is
+never parsed as a patch. Hashes and session-scoped IDs provide integrity and
+pseudonymization, not encryption or correctness. Retention is reported by `doctor`
+and applied only by an explicit purge command.
+
+See the [Decision Runtime showcase](https://ercoledevs.github.io/codex-council/runtime.html)
+for the product view, or the [technical contract](skills/codex-council/references/decision-runtime.md)
+for schemas, recovery states, replay gates, and the deferred roadmap.
+
+---
+
 ## How to prompt it
 
 A council prompt isn't a question — it's a decision to pressure‑test. The shape that
@@ -283,6 +356,9 @@ python3 scripts/codex_council.py profile
 # Estimate before starting, then accept the range.
 python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode standard --token-budget compact
 
+# Optional adaptive router preview. Hard-risk flags still force full coverage.
+python3 scripts/codex_council.py estimate --topic "Docs cleanup" --router auto --panel auto --json
+
 # Is this a real run, or just talking about the council?
 python3 scripts/codex_council.py classify-invocation --text "explain how council works"
 ```
@@ -304,6 +380,10 @@ python3 scripts/codex_council.py init --topic "Modal Review" --root . \
 # Compact skill/tool review session.
 python3 scripts/codex_council.py init --topic "Skill Review" --root . \
   --type skill --skill-review --confirm-estimate
+
+# Optional targeted/triad panel. Recorded in router-decision.json.
+python3 scripts/codex_council.py init --topic "Low-risk docs cleanup" --root . \
+  --router auto --panel auto --confirm-estimate
 
 # Creative proposal forging session.
 python3 scripts/codex_council.py init --topic "Forge a Release Workflow" --root . \
@@ -332,8 +412,18 @@ python3 scripts/codex_council.py forge-convergence --input forge-scores.json
 # Validate a generated session.
 python3 scripts/codex_council.py validate-session --session <printed-session-dir>
 
+# Read-only health check for session integrity and partial coverage.
+python3 scripts/codex_council.py doctor --session <printed-session-dir>
+
 # End-of-session stats; --write persists stats.json and stats.md.
 python3 scripts/codex_council.py stats --session <printed-session-dir> --write
+
+# Dashboard across local session history.
+python3 scripts/codex_council.py dashboard
+
+# Compile/deduplicate a small context packet before dispatch.
+python3 scripts/codex_council.py compile-context --topic "Review handoff reports" \
+  --constraint "No public links" --constraint "No public links" --json
 
 # Optional: path-only raw bundle, and compact pre/post history (with consent).
 python3 scripts/codex_council.py stats --session <printed-session-dir> --write --raw-bundle
@@ -344,6 +434,47 @@ Stats are **local estimates**, not actual Codex token usage, billing telemetry, 
 exact tool‑call accounting. They separate `pre_execution_estimate`,
 `post_execution_estimate`, and `artifact_only_tokens`; if prompts or outputs are
 missing, coverage is reported as `partial`.
+
+Every scaffolded session also writes a compact intelligence layer:
+`context-capsule.json`, `run-manifest.json`, `decision-ledger.json`,
+`findings.jsonl`, `telemetry.json`, `router-decision.json`, and
+`compiled-context.json`.
+</details>
+
+<details>
+<summary><b>Decision Runtime lab</b></summary>
+
+```bash
+# Persist a completed session as a shadow generation and show advisory impact.
+python3 scripts/codex_council.py cells project --session <session-dir> \
+  --compare frontier --commit --plan --json
+
+# Apply a strict standalone JSON patch to the shadow sidecar only.
+python3 scripts/codex_council.py cells apply --session <session-dir> \
+  --patch patch.json --json
+
+# Read-only health and advisory planning.
+python3 scripts/codex_council.py cells doctor --session <session-dir> --json
+python3 scripts/codex_council.py cells plan --session <session-dir> \
+  --changed <cell-id> --json
+
+# Explicit operator actions; none touches legacy artifacts.
+python3 scripts/codex_council.py cells recover --session <session-dir> --json
+python3 scripts/codex_council.py cells rollback --session <session-dir> \
+  --to <generation> --json
+python3 scripts/codex_council.py cells purge --session <session-dir> \
+  --expired --json
+
+# Reproducible evaluation on a sanitized local corpus.
+python3 scripts/codex_council.py cells replay --corpus <corpus-dir> \
+  --compare frontier --repetitions 10 --json
+python3 scripts/codex_council.py cells fault-test --corpus <corpus-dir> --json
+```
+
+Persisted health states are `healthy`, `ignored`, `recovered`, or `quarantined`. Impact plans
+are always `advisory_only: true` and `authoritative: false`. Privacy/security/data-loss
+or ambiguous dependencies force full coverage. No v1 command automatically reruns a
+reviewer, changes a verdict, or deletes expired data.
 </details>
 
 <details>
@@ -399,6 +530,13 @@ and learning history across projects without polluting any repo.
 - State lives in a stable parent (`codex-council/.codex-council/`) so tuning and
   history survive plugin updates. Override paths with `CODEX_COUNCIL_STATE_ROOT`,
   `CODEX_COUNCIL_HOME`, or `CODEX_COUNCIL_SESSION_ROOT`.
+- Experimental Decision Runtime state is session-scoped and opt-in; IDs and source
+  references are session-pseudonymous, while decision text remains readable local
+  data. It is excluded from legacy token stats. Runtime directories/files use `0700`/`0600`,
+  reject symlinks/path escape, and fail closed to legacy on unsafe state.
+- Runtime retention never deletes automatically. `doctor` only reports expiry;
+  explicit purge never touches legacy artifacts and preserves current `HEAD` unless
+  the operator confirms a full runtime purge with the session ID.
 
 ---
 
@@ -418,6 +556,10 @@ Read these before you rely on it:
   explicit confirmation. Prefer expanding one blocker over a whole session.
 - Use **Deep mode** for sensitive, irreversible, privacy, security, migration, or
   data‑loss decisions.
+- **Decision Runtime is experimental.** Its patches and impact plans are sidecar-only
+  and advisory. `healthy` is integrity evidence, not proof that a decision is true.
+- **No efficiency promise yet.** Cell/frontier size and replay timing can be measured,
+  but token/latency improvements require paired workloads and are not release claims.
 
 ---
 
@@ -453,6 +595,10 @@ Then reload Codex. To get notified of new versions, **Watch** the repo →
 ```bash
 python3 scripts/codex_council.py check-update
 ```
+
+Upgrading from 0.x to 1.0 is additive: existing sessions, profiles, alters, Markdown,
+ledger, findings, and stats need no migration. Decision Runtime is off by default;
+old sessions participate only when you explicitly run `cells project`.
 </details>
 
 <details>
@@ -487,6 +633,12 @@ Restart or reload Codex after adding the plugin.
 # Tests
 python3 -m unittest discover -s tests -v
 
+# Decision Runtime replay/fault harness on sanitized fixtures
+python3 scripts/codex_council.py cells replay \
+  --corpus tests/fixtures/council_cells --compare frontier --repetitions 10 --json
+python3 scripts/codex_council.py cells fault-test \
+  --corpus tests/fixtures/council_cells --json
+
 # Strict validation
 python3 scripts/codex_council.py validate --plugin-root . --strict
 
@@ -500,12 +652,14 @@ Repository layout:
 codex-council/
 ├── .codex-plugin/plugin.json        # plugin manifest
 ├── scripts/codex_council.py         # stdlib-only helper CLI
+├── scripts/council_cells.py         # experimental shadow Decision Runtime
 ├── skills/codex-council/            # the skill + reference docs
 │   ├── SKILL.md
 │   └── references/                  # roles, rubric, protocol, token budget, …
 ├── skills/codex-council-alters/     # role-tuning skill
 ├── skills/codex-forge/              # creative proposal forging skill
 ├── docs/                            # the website (GitHub Pages)
+├── CHANGELOG.md
 ├── assets/
 ├── tests/
 └── PROVENANCE.md

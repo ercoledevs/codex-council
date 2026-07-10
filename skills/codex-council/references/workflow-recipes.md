@@ -83,3 +83,15 @@ Prompt: "Generate Codex Council session stats. Compare pre_execution_estimate an
 Use `--record-history` after the session only when the user consented to local learning history.
 
 Use `--raw-bundle` only for audit handoff; it writes relative artifact paths, not raw transcripts.
+
+## Offline Decision Runtime Evaluation
+
+Mode: no new council dispatch. Use only after a completed session and explicit opt-in.
+
+Prompt: "Project this completed session into the shadow Decision Runtime, compare
+Decision Cell with frontier.jsonl, preserve legacy authority, and report determinism,
+recall, fallback, quarantine, and measured overhead."
+
+Load `decision-runtime.md`. Run `cells project` or `cells replay`; use `cells doctor`
+for read-only health. Patch and impact planning remain sidecar-only and advisory.
+Hard-risk or ambiguous impact must return full coverage, never a reduced panel.

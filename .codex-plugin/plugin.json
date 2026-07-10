@@ -1,10 +1,9 @@
 {
   "name": "codex-council",
-  "version": "0.8.0",
-  "description": "Token-aware Codex Council review plus Codex Forge creative proposal generation with bounded multi-agent synthesis.",
+  "version": "1.0.0",
+  "description": "Token-aware Codex Council, Forge and Mind workflows with a local experimental Decision Runtime for replayable decision evidence.",
   "author": {
     "name": "ercoledevs",
-    "email": "local@example.invalid",
     "url": "https://github.com/ercoledevs"
   },
   "homepage": "https://ercoledevs.github.io/codex-council/",
@@ -15,31 +14,28 @@
     "council",
     "multi-agent",
     "review",
-    "governance"
+    "governance",
+    "decision-runtime"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex Council",
     "shortDescription": "Run token-aware multi-agent deliberation inside Codex.",
-    "longDescription": "Codex Council adapts council-style review to Codex-only workflows: six historically named council roles, bounded local role tuning, compact skill-review mode, typed synthesis templates, separate Chairman synthesis, pre-session estimates, expanded-mode confirmation, local learning history, performance analysis, optional frontend UX critique, Bob browser evidence, anonymized review, rubric scoring, dissent capture, ASCII banner, compact invocation logging, path-only raw bundles, pre/post stats, and Codex Forge for bounded creative proposal generation.",
+    "longDescription": "Codex Council adapts council-style review to Codex-only workflows: six independent role lenses, anonymous rubric review, blockers and dissent, Forge proposal generation, Mind end-to-end judgment, adaptive routing, local intelligence artifacts, health and stats tooling, and an experimental shadow-only Decision Runtime with deterministic cells, frontier comparison, transactional generations, typed patches, recovery and fail-closed impact planning.",
     "developerName": "ercoledevs",
     "category": "Productivity",
     "capabilities": [
       "Interactive",
       "Code Review",
       "Decision Support",
-      "Structured Review"
+      "Structured Review",
+      "Local Decision Intelligence"
     ],
     "websiteURL": "https://ercoledevs.github.io/codex-council/",
-    "privacyPolicyURL": "https://openai.com/policies/row-privacy-policy/",
-    "termsOfServiceURL": "https://openai.com/policies/row-terms-of-use/",
     "defaultPrompt": [
-      "Use Codex Council to review this architecture decision.",
-      "Run a council review on my implementation plan.",
-      "Use Codex Council to review this diff for blockers.",
-      "Run a frontend council review with Leonardo and Bob.",
-      "Tune Ada's Codex Council alter with a compact role behavior preview.",
-      "Use Codex Forge to design a bounded implementation proposal for this idea."
+      "Use Codex Mind to forge this idea and judge it end to end.",
+      "Use Codex Council to review this change for blockers and verification.",
+      "Project this completed session into the experimental Decision Runtime."
     ],
     "brandColor": "#111827",
     "composerIcon": "./assets/icon.png",

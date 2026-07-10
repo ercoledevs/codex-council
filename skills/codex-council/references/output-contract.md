@@ -19,6 +19,10 @@ Use this structure for Codex Council final synthesis.
 - Session Stats: include only when requested or closing a scaffolded session. Show pre-execution estimate, post-execution estimate, artifact-only tokens, delta, ratio, calibration, and coverage. Never present them as billing-token telemetry.
 - Preflight Estimate: include before dispatch, not at the end. Label it as local heuristic range and ask user acceptance. For `expanded`, require explicit confirmation.
 - Raw Output Bundle: optional audit artifact with relative paths only; do not paste raw transcripts unless explicitly requested.
+- Decision Runtime Evidence: when explicitly requested, report representation
+  compared, corpus/repetitions, determinism, blocker/dissent/verification recall,
+  impact-plan fallback, runtime state, quarantine/recovery, and measured overhead.
+  Keep local estimates separate from billing telemetry and unmeasured claims.
 
 ## Style
 

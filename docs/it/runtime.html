@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Decision Runtime - Codex Council</title>
+    <meta name="description" content="Guarda il ragionamento dietro un verdetto Codex Council con una vista shadow sperimentale e opt-in che lascia intatta la decisione originale.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/runtime.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/runtime.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/runtime.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/runtime.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:title" content="Decision Runtime di Codex Council">
+    <meta property="og:description" content="Segui rischi, dissenso, evidenza e verifica in una vista shadow sperimentale mentre il verdetto Council originale resta autorevole.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/runtime.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Decision Runtime di Codex Council">
+    <meta name="twitter:description" content="Guarda il ragionamento dietro il verdetto senza cambiare la decisione Council originale.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="../assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
+    <link rel="stylesheet" href="../styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Vai al contenuto</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Navigazione principale">
+        <a class="brand" href="index.html">
+          <img src="../assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html">Casi d'uso</a>
+          <a href="examples.html">Esempi</a>
+          <a href="usage.html">Uso</a>
+          <a href="runtime.html" aria-current="page">Runtime</a>
+          <a href="forge.html">Forge</a>
+          <a href="mind.html">Mind</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="../runtime.html" hreflang="en" aria-label="English version">EN</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Attiva o disattiva il tema scuro" aria-pressed="false">
+            <svg class="moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Apri o chiudi il menu" aria-controls="nav-links" aria-expanded="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section section-tight">
+        <div class="section-inner">
+          <p class="eyebrow">Decision intelligence nella 1.0</p>
+          <h1>Guarda il ragionamento dietro il verdetto.</h1>
+          <p class="lead">
+            Codex Council fa già emergere blocker, dissenso e verifica. Decision Runtime trasforma
+            quella traccia salvata in uno shadow ispezionabile, così puoi seguire cosa è cambiato,
+            confrontare una vista ricca con una più semplice e lasciare intatta la decisione originale.
+          </p>
+
+          <figure class="ascii-frame" role="img" aria-label="Banner terminale centrato di Codex Council con sei membri, due revisori e il flusso di review guidato dall'evidenza.">
+            <pre class="ascii-art" aria-hidden="true"><code>+------------------------------------------------------------------------------+
+|                                CODEX COUNCIL                                 |
+|                    INDEPENDENT / ANONYMOUS / EVIDENCE-LED                    |
+|                                                                              |
+|           [ADA]  [GRACE]  [HYPATIA]  [FLORENCE]  [TURING]  [CRAY]            |
+|                  \       \       \       /       /       /                   |
+|       +--------------------------------------------------------------+       |
+|       |     FIRST OPINIONS &gt; ANONYMOUS REVIEW &gt; CHAIRMAN VERDICT     |       |
+|       +--------------------------------------------------------------+       |
+|                                                                              |
+|                         STANDARD / GENERAL / COMPACT                         |
+|                    MEMBERS 06 / REVIEWERS 02 / RUNNERS 00                    |
+|                             GATES / PERFORMANCE                              |
++------------------------------------------------------------------------------+</code></pre>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Perché conta</p>
+          <h2>Più segnale. Meno archeologia decisionale.</h2>
+          <div class="grid two">
+            <article class="card">
+              <h3>Segui la decisione</h3>
+              <p>Riunisci claim, rischi, dissenso e verifiche in una sola traccia; gli aggiornamenti tipizzati aggiungono link espliciti quando servono.</p>
+            </article>
+            <article class="card">
+              <h3>Conserva il dissenso</h3>
+              <p>Una posizione perdente non sparisce. Resta accanto alla direzione scelta e all'evidenza che potrebbe riaprirla.</p>
+            </article>
+            <article class="card">
+              <h3>Confronta prima di impegnarti</h3>
+              <p>Le Decision Cell vengono verificate contro un export frontier compatto degli stessi fatti, confrontando fedeltà e dimensione.</p>
+            </article>
+            <article class="card">
+              <h3>Recupera senza drammi</h3>
+              <p>Lo shadow può essere ispezionato, ignorato o rimosso mentre la sessione Council originale resta utilizzabile.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Come si inserisce</p>
+          <h2>Prima il verdetto. L'insight gli resta accanto.</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">01</div>
+              <h3>Esegui Council</h3>
+              <p>Review, punteggio, dissenso e sintesi del Chairman funzionano esattamente come prima.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">02</div>
+              <h3>Salva la traccia</h3>
+              <p>La sessione conserva una traccia compatta delle evidenze, facile da ispezionare anche dopo.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">03</div>
+              <h3>Attiva lo shadow</h3>
+              <p>Decision Runtime proietta una vista aggiuntiva solo quando lo chiedi esplicitamente.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">04</div>
+              <h3>Ispeziona e confronta</h3>
+              <p>Esplora la vista strutturata senza cambiare il verdetto salvato né forzare una migrazione.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Stato onesto</p>
+          <h2>Sperimentale per scelta.</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Core stabile</h3>
+              <p>Sessioni, artefatti, punteggio e verdetti esistenti restano la fonte di verità.</p>
+            </article>
+            <article class="card">
+              <h3>Shadow opt-in</h3>
+              <p>La nuova vista resta locale, spenta di default e fuori dal percorso decisionale autorevole.</p>
+            </article>
+            <article class="card">
+              <h3>Evidenza prima dei claim</h3>
+              <p>La 1.0 non promette risparmi misurati di token o latenza. Prima vengono replay e benchmark.</p>
+            </article>
+          </div>
+          <div class="callout">
+            <strong>Legacy autorevole</strong>
+            Se lo shadow manca, è ignoto o non è sano, Codex Council continua a usare sessione e verdetto originali.
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Esplora la 1.0</p>
+          <h2>Parti dal valore. Apri gli internals solo quando servono.</h2>
+          <p class="lead">
+            Aggiorna senza convertire le sessioni esistenti, poi esplora lo shadow alle tue condizioni.
+            La Wiki conserva il contratto completo di CLI, sicurezza e recovery.
+          </p>
+          <div class="actions">
+            <a class="button" href="usage.html#upgrade-1-0">Aggiorna alla 1.0</a>
+            <a class="button secondary" href="wiki.html#runtime">Apri la guida tecnica</a>
+            <a class="button secondary" href="limits.html">Leggi sicurezza e limiti</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>Un workflow a council per Codex. Licenza MIT.</p>
+        </div>
+        <div class="footer-links">
+          <a href="usage.html#upgrade-1-0">Aggiornamento</a>
+          <a href="limits.html">Sicurezza e limiti</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+      </div>
+    </footer>
+    <script src="../site.js" defer></script>
+  </body>
+</html>

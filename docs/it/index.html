@@ -21,19 +21,19 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:title" content="Codex Council">
-    <meta property="og:description" content="Fai litigare Codex con se stesso prima di spedire. Più revisori, un dibattito con punteggio, il verdetto di un Presidente e il costo in token in anticipo.">
+    <meta property="og:description" content="Fai litigare Codex con se stesso prima di spedire. Più revisori, un dibattito con punteggio, il verdetto di un Presidente e una stima locale dei token in anticipo.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Council">
-    <meta name="twitter:description" content="Fai litigare Codex con se stesso prima di spedire. Più revisori, un dibattito con punteggio, il verdetto di un Presidente e il costo in token in anticipo.">
+    <meta name="twitter:description" content="Fai litigare Codex con se stesso prima di spedire. Più revisori, un dibattito con punteggio, il verdetto di un Presidente e una stima locale dei token in anticipo.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="../styles.css">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
@@ -50,12 +50,9 @@
           <a href="use-cases.html">Casi d'uso</a>
           <a href="examples.html">Esempi</a>
           <a href="usage.html">Uso</a>
-          <a href="alters.html">Alters</a>
-          <a href="limits.html">Limiti</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="runtime.html">Runtime</a>
           <a href="forge.html">Forge</a>
           <a href="mind.html">Mind</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../index.html" hreflang="en" aria-label="English version">EN</a>
@@ -74,22 +71,22 @@
       <section class="hero">
         <div class="hero-inner">
           <div class="hero-content">
-            <p class="eyebrow">Review in council, solo Codex</p>
+            <p class="eyebrow">Codex Council 1.0 — valuta, forgia, decidi</p>
             <h1>Codex Council</h1>
             <p class="hero-copy">
-              Un singolo passaggio di Codex ti dà un solo ragionamento. Questo ne fa girare
-              diversi in parallelo, li mette a discutere, assegna un punteggio e ti restituisce
-              una decisione che regge.
+              Un passaggio di Codex dà un solo ragionamento. Forge costruisce una proposta con
+              specialisti creativi; Council la mette sotto pressione prima che tu la spedisca.
             </p>
             <div class="actions">
               <a class="button" href="usage.html#install">Installa il plugin</a>
               <a class="button secondary" href="examples.html">Guarda un caso reale</a>
             </div>
             <ul class="hero-trust">
-              <li>6 revisori</li>
-              <li>Prima la stima dei costi</li>
+              <li>Fino a 6 revisori</li>
+              <li>5 creatori Forge</li>
+              <li>Prima la stima locale</li>
               <li>Prove dal browser</li>
-              <li>Nessuna API esterna</li>
+              <li>Nessuna API di modelli esterni</li>
             </ul>
           </div>
         </div>
@@ -102,17 +99,23 @@
           <p class="lead">
             Ogni revisore parte da un mandato fisso: architettura, affidabilità, sicurezza,
             prodotto, red team, performance. Le risposte vengono rese anonime e ordinate, un
-            Presidente scrive il verdetto e tu vedi il costo in token prima che parta qualcosa.
+            Presidente scrive il verdetto e tu vedi una stima locale dei token prima che parta qualcosa.
             Resta un solo modello che cambia cappello, non laboratori rivali. Ma il disaccordo è
             reale, e cattura quello che un singolo passaggio si lascia scivolare.
           </p>
+          <div class="callout">
+            <strong>Novità della 1.0: decision intelligence</strong>
+            Le sessioni conservano una traccia compatta delle evidenze, pronta da ispezionare.
+            Il <a href="runtime.html">Decision Runtime</a> sperimentale aggiunge una vista shadow
+            senza cambiare il verdetto originale.
+          </div>
           <div class="metric-row">
             <div class="metric">
               <strong>6</strong>
-              <span>revisori principali</span>
+              <span>lenti di review principali</span>
             </div>
             <div class="metric">
-              <strong>3</strong>
+              <strong>2</strong>
               <span>lane di revisione in modalità standard</span>
             </div>
             <div class="metric">
@@ -130,22 +133,22 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Com'è fatta una run</p>
-          <h2>Quattro passi, sempre gli stessi.</h2>
+          <h2>Quattro fasi in una run Council completa.</h2>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>Preflight</h3>
-              <p>Prima che parta qualcosa vedi la modalità, il numero di agenti e una stima dei token. Nessuna sorpresa sul conto.</p>
+              <p>Prima che parta qualcosa vedi modalità, agenti e una stima euristica locale — mai dati di fatturazione.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>Prime opinioni</h3>
-              <p>Sei revisori, ognuno col suo nome, affrontano il problema in autonomia, a guardia di una preoccupazione diversa.</p>
+              <p>Fino a sei revisori affrontano il problema in autonomia, ognuno a guardia di una preoccupazione diversa.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Revisione</h3>
-              <p>Le risposte perdono la firma, prendono un punteggio su rubrica e vengono controllate per i buchi. Solo i punti deboli vanno al secondo giro.</p>
+              <p>Le risposte perdono la firma, prendono un punteggio su rubrica e vengono controllate da lane di revisione dedicate.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>

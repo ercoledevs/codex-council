@@ -33,7 +33,7 @@
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="../styles.css">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
@@ -50,12 +50,9 @@
           <a href="use-cases.html">Casi d'uso</a>
           <a href="examples.html">Esempi</a>
           <a href="usage.html">Uso</a>
-          <a href="alters.html">Alters</a>
-          <a href="limits.html">Limiti</a>
-          <a href="wiki.html" aria-current="page">Wiki</a>
+          <a href="runtime.html">Runtime</a>
           <a href="forge.html">Forge</a>
           <a href="mind.html">Mind</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../wiki.html" hreflang="en" aria-label="English version">EN</a>
@@ -110,6 +107,7 @@
             <div class="wiki-toc-group">
               <strong>Operazioni</strong>
               <a href="#budget">Disciplina dei token</a>
+              <a href="#runtime">Decision Runtime</a>
               <a href="#governance">Governance</a>
               <a href="#cli">Riferimento CLI</a>
             </div>
@@ -167,6 +165,7 @@
                     <tr><td>Sicurezza, migrazione, perdita dati, parità di voti</td><td><code>deep</code></td><td>Aggiunge revisori di rubrica, bias e implementazione.</td></tr>
                     <tr><td>Frontend / UI / comportamento del browser</td><td><code>--frontend-review</code></td><td>Aggiunge Leonardo (UX) e Bob (prove dal browser).</td></tr>
                     <tr><td>Usabilità di plugin o skill</td><td><code>--type skill --skill-review</code></td><td>Un panel economico a tre lenti, senza revisori di default.</td></tr>
+                    <tr><td>Una review a basso rischio che vuoi limitare esplicitamente</td><td><code>--router auto --panel auto</code></td><td>Routing solo consultivo; privacy, sicurezza, perdita dati e rischio browser forzano la copertura completa.</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -444,6 +443,19 @@ richiede un threat model prima di spedire.</code></div>
               </ul>
             </section>
 
+            <section id="runtime">
+              <h2>Decision Runtime <a class="anchor" href="#runtime" aria-label="Link a questa sezione">#</a></h2>
+              <p class="wiki-lead">Un laboratorio shadow della 1.0 per ispezionare decisioni strutturate senza cambiare il percorso decisionale.</p>
+              <ul class="wide-list">
+                <li><strong>Legacy autorevole.</strong> Gli artefatti salvati del Council e il verdetto del Chairman restano la fonte di verità.</li>
+                <li><strong>Sperimentale e opt-in.</strong> Lo shadow nasce solo dopo un comando <code class="inline-code">cells</code> esplicito.</li>
+                <li><strong>Appaiato per progetto.</strong> Le Decision Cell vengono confrontate con una rappresentazione <code class="inline-code">frontier.jsonl</code> più semplice ricavata dallo stesso input.</li>
+                <li><strong>Fail-closed.</strong> Stato ignoto, corrotto o incompleto viene ignorato o messo in quarantena; non influenza mai silenziosamente un verdetto.</li>
+                <li><strong>Nessun claim di risparmio.</strong> I target su token, latenza e densità di segnale restano ipotesi finché il replay appaiato non li misura.</li>
+              </ul>
+              <p>I comandi coprono proiezione, validazione delle patch, impact planning, salute, recovery, rollback, purge, replay e fault test. La <a href="runtime.html">panoramica Runtime</a> presenta il valore del prodotto e il modello operativo.</p>
+            </section>
+
             <section id="governance">
               <h2>Governance e privacy <a class="anchor" href="#governance" aria-label="Link a questa sezione">#</a></h2>
               <p class="wiki-lead">Fai questa checklist prima del lavoro Standard/Deep che tocca dati sensibili, subagent o qualcosa che pubblicherai.</p>
@@ -454,7 +466,7 @@ richiede un threat model prima di spedire.</code></div>
                 <li>Conosci i comandi di verifica prima della sintesi e lo stato finale a cui punti: approvato, approvato-con-rischio o bloccato.</li>
                 <li>Usa la modalità Deep per sicurezza, privacy, perdita dati, migrazioni, modifiche irreversibili o pubblicazione.</li>
               </ul>
-              <p>Gli artefatti runtime (sessioni, prompt, statistiche, cronologia) vivono nello stato locale del plugin in <code class="inline-code">.codex-council/</code> e restano gitignorati — non sporcano il repo. I log di invocazione sono compatti e non salvano mai testo dei prompt, segreti, topic o percorsi assoluti.</p>
+              <p>Gli artefatti runtime (sessioni, prompt, statistiche, cronologia e shadow Cell opt-in) vivono nello stato locale del plugin in <code class="inline-code">.codex-council/</code> e restano gitignorati — non sporcano il repo. I log di invocazione sono compatti e non salvano mai testo dei prompt, segreti, topic o percorsi assoluti.</p>
             </section>
 
             <section id="cli">
@@ -472,6 +484,9 @@ python3 scripts/codex_council.py classify-invocation --text "explain how council
 # Avvia una sessione tracciabile dopo aver accettato la stima.
 python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --confirm-estimate
 
+# Anteprima del routing opt-in; i rischi hard forzano la copertura completa.
+python3 scripts/codex_council.py estimate --topic "Docs cleanup" --router auto --panel auto --json
+
 # Sessione frontend (Leonardo + Bob); sessione skill-review.
 python3 scripts/codex_council.py init --topic "Modal Review" --root . --mode standard --frontend-review --confirm-estimate
 python3 scripts/codex_council.py init --topic "Skill Review" --root . --type skill --skill-review --confirm-estimate
@@ -483,6 +498,22 @@ python3 scripts/codex_council.py init --topic "Migration" --root . --mode deep -
 python3 scripts/codex_council.py score --input reviews.json
 python3 scripts/codex_council.py validate-session --session &lt;session-dir&gt;
 python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write
+
+# Compatta il contesto ripetuto; ispeziona una sessione e la cronologia locale.
+python3 scripts/codex_council.py compile-context --topic "Review handoff" --constraint "No public links" --json
+python3 scripts/codex_council.py doctor --session &lt;session-dir&gt;
+python3 scripts/codex_council.py dashboard
+
+# Comandi sperimentali e opt-in del Decision Runtime.
+python3 scripts/codex_council.py cells project --help
+python3 scripts/codex_council.py cells apply --help
+python3 scripts/codex_council.py cells plan --help
+python3 scripts/codex_council.py cells doctor --help
+python3 scripts/codex_council.py cells recover --help
+python3 scripts/codex_council.py cells rollback --help
+python3 scripts/codex_council.py cells purge --help
+python3 scripts/codex_council.py cells replay --help
+python3 scripts/codex_council.py cells fault-test --help
 
 # Controlla se c'è una release più recente.
 python3 scripts/codex_council.py check-update</code></pre>
@@ -512,6 +543,8 @@ python3 scripts/codex_council.py check-update</code></pre>
               <p>No. Per l'uso quotidiano chiedi in chat («Standard Council: valuta…»). La CLI serve per sessioni tracciabili, stime, punteggi e statistiche che vuoi conservare.</p>
               <h3>Posso rendere un revisore più severo?</h3>
               <p>Sì — regola il suo alter (prima l'anteprima). Il tuning è un consiglio e non può mai togliere una garanzia del council. Bob non è regolabile.</p>
+              <h3>Decision Runtime cambia il verdetto?</h3>
+              <p>No. Nella 1.0 è una proiezione shadow sperimentale. La sessione legacy e il verdetto del Chairman restano autorevoli; lo stato shadow corrotto o ignoto viene ignorato o messo in quarantena.</p>
             </section>
 
             <section id="glossary">
@@ -525,6 +558,10 @@ python3 scripts/codex_council.py check-update</code></pre>
                 <li><strong>Alter</strong> — una modifica locale, limitata e consultiva al comportamento di un revisore.</li>
                 <li><strong>Evidence runner</strong> — Bob: guida il browser, riporta pass/fail, non vota mai.</li>
                 <li><strong>coverage: partial</strong> — un flag delle statistiche: mancano alcuni prompt o output, quindi la stima post-run è incompleta.</li>
+                <li><strong>Decision Cell</strong> — un record shadow strutturato e sperimentale per claim, opzione, evidenza, rischio, dissenso, verifica o decisione.</li>
+                <li><strong>frontier</strong> — la baseline append-only più semplice generata dallo stesso input legacy delle Cell.</li>
+                <li><strong>generation / HEAD</strong> — uno snapshot shadow immutabile e il puntatore all'ultimo snapshot valido selezionato.</li>
+                <li><strong>quarantine</strong> — uno stato esplicito per dati shadow ignoti, corrotti, incompleti o non conformi che non devono essere usati.</li>
               </ul>
             </section>
           </div>

@@ -32,6 +32,14 @@ Use `--announce` when a terminal run should print a one-line dispatch status, fo
 
 Use `--type architecture|implementation|decision|skill|frontend` for typed synthesis templates. `--type frontend` activates the frontend gate. `--type skill` or `--skill-review` uses a compact three-member skill/tool panel: skill engineer, UX-for-tools, and non-expert adoption.
 
+Optional intelligence layer:
+
+- `--router auto --panel auto|targeted|triad|solo` records an adaptive routing decision. Privacy, security, data loss, or browser-verification risks force full coverage.
+- `init` writes `context-capsule.json`, `run-manifest.json`, `decision-ledger.json`, `findings.jsonl`, `telemetry.json`, `router-decision.json`, and `compiled-context.json`.
+- `doctor --session <dir>` is read-only and reports missing artifacts, schema problems, validation problems, and partial post-execution coverage.
+- `dashboard [--state-root <dir>]` summarizes local pre/post/artifact estimates and signal density across stored sessions.
+- `compile-context` deduplicates repeated constraints/context before dispatch; it does not replace source evidence when risk is high.
+
 If local role tuning exists, disclose active tuned alters before dispatch. Tuning is advisory, lower priority than all council non-negotiables, and must never be treated as evidence of true multi-provider diversity.
 
 ## Stage 1: Independent First Opinions
@@ -123,6 +131,15 @@ Final output includes:
 - blockers vs refinements
 - preserved dissent
 - implementation/verification steps
+
+## Stage 5b: Optional Decision Runtime Shadow
+
+Only after the authoritative legacy synthesis is complete, and only when the user
+opted in, load `decision-runtime.md` and run a shadow projection. It may derive and
+compare Decision Cell and `frontier.jsonl`, persist a transactional sidecar, validate
+typed JSON patches, or produce an advisory impact plan. It must never rewrite the
+verdict, reduce the completed panel, parse arbitrary prose as a patch, or hide a
+runtime failure. `ignored` and `quarantined` both fall back to legacy.
 
 ## Stage 6: Optional Session Stats
 

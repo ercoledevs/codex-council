@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          if (t) document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Decision Runtime - Codex Council</title>
+    <meta name="description" content="See the reasoning behind a Codex Council verdict through an experimental, opt-in shadow view that leaves the original decision untouched.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/runtime.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/runtime.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/runtime.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/runtime.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Codex Council Decision Runtime">
+    <meta property="og:description" content="Trace risks, dissent, evidence, and verification in an experimental shadow view while the original Council verdict stays authoritative.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/runtime.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Codex Council Decision Runtime">
+    <meta name="twitter:description" content="See the reasoning behind the verdict without changing the original Council decision.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="index.html">
+          <img src="assets/icon.png" alt="">
+          <span>Codex Council</span>
+        </a>
+        <div class="nav-links" id="nav-links">
+          <a href="use-cases.html">Use Cases</a>
+          <a href="examples.html">Examples</a>
+          <a href="usage.html">Usage</a>
+          <a href="runtime.html" aria-current="page">Runtime</a>
+          <a href="forge.html">Forge</a>
+          <a href="mind.html">Mind</a>
+        </div>
+        <div class="nav-actions">
+          <a class="lang-switch" href="it/runtime.html" hreflang="it" aria-label="Versione italiana">IT</a>
+          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
+            <svg class="moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg class="sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="section section-tight">
+        <div class="section-inner">
+          <p class="eyebrow">Decision intelligence in 1.0</p>
+          <h1>See the reasoning behind the verdict.</h1>
+          <p class="lead">
+            Codex Council already surfaces blockers, dissent, and verification. Decision Runtime
+            turns that saved trail into an inspectable shadow, so you can follow what changed,
+            compare a richer view with a simpler one, and keep the original decision untouched.
+          </p>
+
+          <figure class="ascii-frame" role="img" aria-label="A centered Codex Council terminal banner showing six members, two reviewers, and the evidence-led review flow.">
+            <pre class="ascii-art" aria-hidden="true"><code>+------------------------------------------------------------------------------+
+|                                CODEX COUNCIL                                 |
+|                    INDEPENDENT / ANONYMOUS / EVIDENCE-LED                    |
+|                                                                              |
+|           [ADA]  [GRACE]  [HYPATIA]  [FLORENCE]  [TURING]  [CRAY]            |
+|                  \       \       \       /       /       /                   |
+|       +--------------------------------------------------------------+       |
+|       |     FIRST OPINIONS &gt; ANONYMOUS REVIEW &gt; CHAIRMAN VERDICT     |       |
+|       +--------------------------------------------------------------+       |
+|                                                                              |
+|                         STANDARD / GENERAL / COMPACT                         |
+|                    MEMBERS 06 / REVIEWERS 02 / RUNNERS 00                    |
+|                             GATES / PERFORMANCE                              |
++------------------------------------------------------------------------------+</code></pre>
+          </figure>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Why it matters</p>
+          <h2>More signal. Less decision archaeology.</h2>
+          <div class="grid two">
+            <article class="card">
+              <h3>Trace the decision</h3>
+              <p>Bring claims, risks, dissent, and verification into one trail; typed updates can add explicit links when they matter.</p>
+            </article>
+            <article class="card">
+              <h3>Keep dissent visible</h3>
+              <p>A losing view does not disappear. It stays available beside the selected direction and the evidence that could reopen it.</p>
+            </article>
+            <article class="card">
+              <h3>Compare before committing</h3>
+              <p>Decision Cells are checked against a compact frontier export from the same facts, with fidelity and size reported side by side.</p>
+            </article>
+            <article class="card">
+              <h3>Recover without drama</h3>
+              <p>The shadow can be inspected, ignored, or removed while the original Council session remains usable.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">How it fits</p>
+          <h2>The verdict stays first. Insight sits beside it.</h2>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">01</div>
+              <h3>Run Council</h3>
+              <p>Review, scoring, dissent, and Chairman synthesis work exactly as before.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">02</div>
+              <h3>Save the trail</h3>
+              <p>The session keeps a compact evidence trail that stays easy to inspect later.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">03</div>
+              <h3>Opt into shadow</h3>
+              <p>Decision Runtime projects an additional view only when you explicitly ask for it.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">04</div>
+              <h3>Inspect and compare</h3>
+              <p>Explore the structured view without changing the saved verdict or forcing a migration.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Honest status</p>
+          <h2>Experimental by choice.</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Stable core</h3>
+              <p>Existing sessions, artifacts, scoring, and verdicts remain the source of truth.</p>
+            </article>
+            <article class="card">
+              <h3>Opt-in shadow</h3>
+              <p>The new view stays local, off by default, and outside the authoritative decision path.</p>
+            </article>
+            <article class="card">
+              <h3>Evidence before claims</h3>
+              <p>1.0 makes no promise of measured token or latency savings. Replay and benchmarks come first.</p>
+            </article>
+          </div>
+          <div class="callout">
+            <strong>Legacy-authoritative</strong>
+            If the shadow is missing, unknown, or unhealthy, Codex Council keeps using the original session and verdict.
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <p class="eyebrow">Explore 1.0</p>
+          <h2>Start with the value. Open the internals only when you need them.</h2>
+          <p class="lead">
+            Upgrade without converting existing sessions, then explore the shadow on your terms.
+            The Wiki keeps the full CLI, safety, and recovery contract.
+          </p>
+          <div class="actions">
+            <a class="button" href="usage.html#upgrade-1-0">Upgrade to 1.0</a>
+            <a class="button secondary" href="wiki.html#runtime">Open the technical guide</a>
+            <a class="button secondary" href="limits.html">Read safety &amp; limits</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-grid">
+        <div>
+          <strong>Codex Council</strong>
+          <p>A council workflow for Codex. MIT licensed.</p>
+        </div>
+        <div class="footer-links">
+          <a href="usage.html#upgrade-1-0">Upgrade</a>
+          <a href="limits.html">Safety &amp; limits</a>
+          <a href="wiki.html">Wiki</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
+        </div>
+      </div>
+    </footer>
+    <script src="site.js" defer></script>
+  </body>
+</html>

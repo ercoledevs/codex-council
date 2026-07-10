@@ -95,3 +95,10 @@ Load the smallest reference set that can preserve correctness. Do not force "one
 - Use `--raw-bundle` only as path-only audit metadata; avoid raw transcript payloads by default.
 - Run `estimate` before Standard/Deep dispatch and ask acceptance in chat; this preflight is deliberately short.
 - Record only compact pre/post ratios with `stats --record-history`; never store raw prompts, transcripts, paths, or secrets in consumer history.
+- Use `--router auto --panel auto` only as an opt-in budget governor. It may recommend solo/triad/targeted panels for low-risk work, but privacy, security, data loss, and browser-evidence risk force full coverage.
+- Prefer `compile-context` for duplicate constraints and noisy brief text; never use it to discard source evidence behind a blocker.
+- Use `doctor` and `dashboard` to measure overhead before adding new orchestration layers.
+- Decision Runtime metrics are local artifact/workload measurements, never billing
+  telemetry. Do not advertise token, latency, or signal-density improvements until a
+  paired, repeated Cell-vs-frontier replay establishes them without losing blockers,
+  dissent, verification, or hard-risk escalation.

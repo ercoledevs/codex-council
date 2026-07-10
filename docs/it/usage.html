@@ -33,7 +33,7 @@
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="../styles.css">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
@@ -50,12 +50,9 @@
           <a href="use-cases.html">Casi d'uso</a>
           <a href="examples.html">Esempi</a>
           <a href="usage.html" aria-current="page">Uso</a>
-          <a href="alters.html">Alters</a>
-          <a href="limits.html">Limiti</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="runtime.html">Runtime</a>
           <a href="forge.html">Forge</a>
           <a href="mind.html">Mind</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../usage.html" hreflang="en" aria-label="English version">EN</a>
@@ -89,6 +86,11 @@
           <h2>Dai al council una decisione, non una sensazione.</h2>
           <div class="prompt-stack">
             <article class="card">
+              <h3>Forge</h3>
+              <pre><code>Use Codex Forge to design a bounded implementation proposal.
+Return convergence, dissent, safety notes, and next Council prompt.</code></pre>
+            </article>
+            <article class="card">
               <h3>Architettura</h3>
               <pre><code>Use Codex Council to review this architecture decision.
 Focus on blockers, rollback, and verification.</code></pre>
@@ -120,7 +122,19 @@ python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode s
 # Avvia una sessione dopo aver accettato la stima.
 python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --confirm-estimate
 
-# Valida e scrivi le statistiche alla fine.
+# Anteprima del router opt-in. I rischi hard forzano comunque la copertura completa.
+python3 scripts/codex_council.py estimate --topic "Docs cleanup" --router auto --panel auto --json
+
+# Forgia una proposta creativa, poi passala al Council per il giudizio.
+python3 scripts/codex_council.py estimate --topic "Forge a Release Workflow" --mode standard --type forge --token-budget compact
+python3 scripts/codex_council.py init --topic "Forge a Release Workflow" --root . --mode standard --type forge --confirm-estimate
+
+# Compila il contesto ripetuto, poi controlla salute e metriche locali.
+python3 scripts/codex_council.py compile-context --topic "Review handoff" --constraint "No public links" --json
+python3 scripts/codex_council.py doctor --session &lt;session-dir&gt;
+python3 scripts/codex_council.py dashboard
+
+# Valida e scrivi alla fine le statistiche delle stime locali.
 python3 scripts/codex_council.py validate-session --session &lt;session-dir&gt;
 python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write</code></pre>
           <div class="callout">
@@ -132,12 +146,32 @@ python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write</co
 
       <section class="section band">
         <div class="section-inner">
-          <p class="eyebrow">Aggiornamento</p>
-          <h2>Resta aggiornato.</h2>
-          <p>Ri-lancia il comando di installazione per prendere l'ultima versione:</p>
-          <pre><code>npx codex-marketplace add ercoledevs/codex-council --plugin --global -y</code></pre>
-          <p>Oppure controlla se c'è una nuova release su GitHub dallo script di supporto:</p>
-          <pre><code>python3 scripts/codex_council.py check-update</code></pre>
+          <p class="eyebrow">Decision Runtime sperimentale</p>
+          <h2>Proietta uno shadow. Lascia intatto il verdetto.</h2>
+          <p class="lead">
+            Il Decision Runtime della 1.0 è opt-in e mantiene autorevole il legacy. Avvia uno shadow
+            solo quando vuoi la vista aggiuntiva; non cambia mai il verdetto del Council.
+          </p>
+          <pre><code>python3 scripts/codex_council.py cells project --help
+python3 scripts/codex_council.py cells doctor --help</code></pre>
+          <p><a class="button secondary" href="runtime.html">Scopri cosa aggiunge Decision Runtime</a> <a href="wiki.html#runtime">Apri il riferimento tecnico completo →</a></p>
+        </div>
+      </section>
+
+      <section class="section" id="upgrade-1-0">
+        <div class="section-inner">
+          <p class="eyebrow">Aggiorna alla 1.0</p>
+          <h2>Resta aggiornato senza migrare forzatamente una sessione.</h2>
+          <pre><code># Installa la 1.0 e ricarica Codex.
+npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
+
+# Valida il plugin installato e controlla lo stato della release.
+python3 scripts/codex_council.py validate --plugin-root . --strict
+python3 scripts/codex_council.py check-update</code></pre>
+          <div class="callout">
+            <strong>Nessuna conversione forzata</strong>
+            Profili, alter, cronologia, sessioni e verdetti legacy restano utilizzabili dalla root stabile del plugin. Le Decision Cell compaiono solo quando le attivi.
+          </div>
         </div>
       </section>
     </main>
@@ -150,6 +184,7 @@ python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write</co
         </div>
         <div class="footer-links">
           <a href="examples.html">Esempi</a>
+          <a href="runtime.html">Runtime</a>
           <a href="alters.html">Alters</a>
           <a href="https://github.com/ercoledevs/codex-council/releases">Release</a>
         </div>

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "name": "standard-recovery",
+  "session": {
+    "topic": "Atomic recovery",
+    "mode": "standard",
+    "session_type": "general",
+    "risk_flags": [],
+    "frontend_review": false
+  },
+  "artifacts": {
+    "final.md": "# Chairman Synthesis\n\n## Recommendation\n\n- Use an atomic local shadow runtime.\n\n## Blocking Issues\n\n- Recovery must remain atomic.\n\n## Persistent Dissent\n\n- A simple frontier log remains viable.\n\n## Verification\n\n- Run deterministic crash tests.\n"
+  },
+  "expected": {
+    "blockers": 1,
+    "dissent": 1,
+    "verification": 1,
+    "forced_full": true
+  }
+}

@@ -1307,6 +1307,34 @@ td code,
 }
 
 /* --------------------------------------------------------------------------
+   Decision Runtime showcase
+   -------------------------------------------------------------------------- */
+
+.ascii-frame {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 34px auto 0;
+  overflow: hidden;
+}
+
+.ascii-art {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+}
+
+.ascii-art code {
+  width: max-content;
+  min-width: 80ch;
+  margin: 0 auto;
+  color: #5fe3c0;
+  font-size: clamp(0.58rem, 1.15vw, 0.8rem);
+  line-height: 1.35;
+}
+
+/* --------------------------------------------------------------------------
    Mind: ASCII brain banner rendered as a halftone in a terminal frame
    -------------------------------------------------------------------------- */
 
@@ -1377,22 +1405,7 @@ td code,
   .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-@media (max-width: 860px) {
-  .hero {
-    background:
-      var(--hero-glow),
-      var(--hero-scrim-v),
-      var(--hero-image) center bottom / 720px auto no-repeat,
-      var(--bg);
-  }
-
-  .hero-inner {
-    min-height: 0;
-    padding-bottom: clamp(210px, 56vw, 320px);
-  }
-
-  .hero-content { max-width: none; }
-
+@media (max-width: 1120px) {
   .nav-toggle { display: inline-flex; }
 
   .nav-links {
@@ -1414,6 +1427,23 @@ td code,
   .nav-open .nav-links { display: flex; }
 
   .nav-links a { padding: 11px 14px; }
+}
+
+@media (max-width: 860px) {
+  .hero {
+    background:
+      var(--hero-glow),
+      var(--hero-scrim-v),
+      var(--hero-image) center bottom / 720px auto no-repeat,
+      var(--bg);
+  }
+
+  .hero-inner {
+    min-height: 0;
+    padding-bottom: clamp(210px, 56vw, 320px);
+  }
+
+  .hero-content { max-width: none; }
 }
 
 @media (max-width: 640px) {

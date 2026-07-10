@@ -21,6 +21,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
+try:
+    from . import council_cells
+except ImportError:  # Direct execution: python3 scripts/codex_council.py
+    import council_cells  # type: ignore[no-redef]
+
 
 WEIGHTS = {
     "accuracy": 0.35,
@@ -104,11 +109,22 @@ EVIDENCE_RUNNER_FILES = {
 MODES = {"fast", "standard", "deep"}
 TOKEN_BUDGETS = {"compact", "balanced", "expanded"}
 SESSION_TYPES = {"general", "architecture", "implementation", "decision", "skill", "frontend", "forge"}
+DECISION_RUNTIME_MODES = {"off", "shadow"}
+PANELS = {"full", "targeted", "triad", "solo", "auto"}
 TEXT_ARTIFACT_SUFFIXES = {".json", ".md", ".txt"}
 GENERATED_STATS_FILES = {"stats.json", "stats.md"}
 PREFLIGHT_FILES = {"preflight-estimate.json", "preflight-estimate.md"}
 SYNTHESIS_INPUT_MANIFEST = "synthesis-inputs.json"
 RAW_OUTPUT_BUNDLE = "raw-output-bundle.json"
+CONTEXT_CAPSULE_FILE = "context-capsule.json"
+DECISION_LEDGER_FILE = "decision-ledger.json"
+RUN_MANIFEST_FILE = "run-manifest.json"
+FINDINGS_FILE = "findings.jsonl"
+TELEMETRY_FILE = "telemetry.json"
+ROUTER_DECISION_FILE = "router-decision.json"
+COMPILED_CONTEXT_FILE = "compiled-context.json"
+DECISION_RUNTIME_DIR = "decision-runtime"
+INTELLIGENCE_SCHEMA_VERSION = 1
 TOKEN_ESTIMATE_CHARS_PER_TOKEN = 4
 CONSUMER_FILE_VERSION = 1
 ALTER_CONFIG_VERSION = 1
@@ -134,6 +150,14 @@ FORGE_SCORE_STDEV_THRESHOLD = 1.25
 # a near-miss below the convergence bar stays opt-in.
 FORGE_STRONG_DISCORD_ALIGNMENT = 5.0
 FORGE_STRONG_DISCORD_STDEV = 2.0
+
+ROUTER_RISK_PATTERNS = {
+    "privacy": r"\b(privacy|redaction|redact|pii|personal data|public link|shareable|handoff|team link)\b",
+    "security": r"\b(security|secrets?|token|credentials?|permissions?|auth(?:entication|orization)?|oauth|csp|xss|csrf)\b",
+    "data_loss": r"\b(data loss|delete|migration|rollback|irreversible|production|billing|payment)\b",
+    "frontend_evidence": r"\b(frontend|ui|ux|browser|modal|click|focus|accessibility)\b",
+    "performance": r"\b(performance|latency|throughput|memory|scale|cache|cost)\b",
+}
 
 FORGE_WEIGHTS = {
     "novelty": 0.18,
@@ -262,6 +286,7 @@ REQUIRED_FORGE_FINAL_SECTIONS = [
 
 REQUIRED_REFERENCES = [
     "competency-packs.md",
+    "decision-runtime.md",
     "execution-protocol.md",
     "frontend-ux-browser.md",
     "governance-preflight.md",
@@ -444,20 +469,74 @@ def classify_council_invocation(text: str, explicit: bool = False) -> str:
     return "meta"
 
 
-def active_role_files(skill_review: bool = False, session_type: str = "general") -> dict[str, str]:
+def _select_panel_filenames(
+    filenames: list[str],
+    topic: str = "",
+    session_type: str = "general",
+    panel: str = "full",
+) -> list[str]:
+    if panel in {"full", "auto"} or len(filenames) <= 1:
+        return filenames
+    if panel == "solo":
+        return filenames[:1]
+    normalized = f"{topic} {session_type}".lower()
+    preferred: list[str]
+    if re.search(ROUTER_RISK_PATTERNS["frontend_evidence"], normalized):
+        preferred = [
+            "01-ada-principal-architect.md",
+            "04-florence-product-operator.md",
+            "06-seymour-performance-engineer.md",
+        ]
+    elif re.search(ROUTER_RISK_PATTERNS["performance"], normalized):
+        preferred = [
+            "01-ada-principal-architect.md",
+            "02-grace-reliability-engineer.md",
+            "06-seymour-performance-engineer.md",
+        ]
+    elif re.search(ROUTER_RISK_PATTERNS["security"], normalized):
+        preferred = [
+            "01-ada-principal-architect.md",
+            "02-grace-reliability-engineer.md",
+            "03-hypatia-security-governance.md",
+        ]
+    else:
+        preferred = [
+            "01-ada-principal-architect.md",
+            "02-grace-reliability-engineer.md",
+            "06-seymour-performance-engineer.md",
+        ]
+    cap = 3 if panel == "triad" else 4
+    selected = [filename for filename in preferred if filename in filenames]
+    selected.extend(filename for filename in filenames if filename not in selected)
+    return selected[:cap]
+
+
+def active_role_files(
+    skill_review: bool = False,
+    session_type: str = "general",
+    panel: str = "full",
+    topic: str = "",
+) -> dict[str, str]:
     if skill_review:
         return SKILL_REVIEW_ROLE_FILES
     if session_type == "forge":
         return FORGE_ROLE_FILES
-    return ROLE_FILES
+    selected = set(_select_panel_filenames(list(ROLE_FILES), topic, session_type, panel))
+    return {filename: role for filename, role in ROLE_FILES.items() if filename in selected}
 
 
-def active_member_prompt_files(skill_review: bool = False, session_type: str = "general") -> dict[str, str]:
+def active_member_prompt_files(
+    skill_review: bool = False,
+    session_type: str = "general",
+    panel: str = "full",
+    topic: str = "",
+) -> dict[str, str]:
     if skill_review:
         return SKILL_REVIEW_PROMPT_FILES
     if session_type == "forge":
         return FORGE_PROMPT_FILES
-    return MEMBER_PROMPT_FILES
+    selected = set(_select_panel_filenames(list(MEMBER_PROMPT_FILES), topic, session_type, panel))
+    return {filename: prompt for filename, prompt in MEMBER_PROMPT_FILES.items() if filename in selected}
 
 
 def normalize_session_options(
@@ -475,6 +554,154 @@ def normalize_session_options(
         session_type = "skill"
         frontend_review = False
     return session_type, frontend_review, skill_review
+
+
+def detect_risk_flags(topic: str, session_type: str = "general", frontend_review: bool = False) -> list[str]:
+    text = f"{topic} {session_type}".lower()
+    flags = [name for name, pattern in ROUTER_RISK_PATTERNS.items() if re.search(pattern, text)]
+    if frontend_review and "frontend_evidence" not in flags:
+        flags.append("frontend_evidence")
+    return sorted(set(flags))
+
+
+def route_council_panel(
+    topic: str,
+    mode: str = "standard",
+    session_type: str = "general",
+    frontend_review: bool = False,
+    skill_review: bool = False,
+    requested_panel: str = "full",
+    router: str = "off",
+    max_agents: Optional[int] = None,
+    early_exit: bool = False,
+) -> dict[str, Any]:
+    if requested_panel not in PANELS:
+        raise ValueError(f"panel must be one of: {', '.join(sorted(PANELS))}")
+    if router not in {"off", "auto"}:
+        raise ValueError("router must be off or auto")
+    session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
+    risk_flags = detect_risk_flags(topic, session_type, frontend_review)
+    hard_full_flags = {"privacy", "security", "data_loss", "frontend_evidence"}
+    forced_full = bool(hard_full_flags.intersection(risk_flags)) and not skill_review and session_type != "forge"
+    reasons: list[str] = []
+    if forced_full:
+        reasons.append("Hard-risk flags require full council coverage.")
+    if forced_full:
+        selected_panel = "full"
+        reasons.append("Hard-risk safety floor overrides panel reduction whether routing is on or off.")
+    elif router == "off":
+        selected_panel = "full" if requested_panel in {"auto", "full"} else requested_panel
+        reasons.append("Router is off; selected panel follows the explicit request.")
+    elif requested_panel == "auto":
+        if mode == "fast":
+            selected_panel = "solo"
+        elif "performance" in risk_flags:
+            selected_panel = "triad"
+        else:
+            selected_panel = "triad"
+        reasons.append("Router auto selected the smallest advisory panel that preserves relevant lenses.")
+    else:
+        selected_panel = requested_panel
+        reasons.append("Router auto accepted the requested panel because no hard-risk flag was detected.")
+    if max_agents is not None and max_agents > 0 and selected_panel == "full":
+        reasons.append("max_agents recorded as advisory only; hard/full coverage is not silently reduced.")
+    role_count = len(active_role_files(skill_review, session_type, selected_panel, topic))
+    if selected_panel == "full":
+        role_count = len(active_role_files(skill_review, session_type, "full", topic))
+    return {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "router": router,
+        "requested_panel": requested_panel,
+        "selected_panel": selected_panel,
+        "forced_full": forced_full,
+        "mode": mode,
+        "session_type": session_type,
+        "risk_flags": risk_flags,
+        "max_agents": max_agents,
+        "early_exit": bool(early_exit),
+        "estimated_role_count": role_count,
+        "requires_acceptance": selected_panel != "full" or router == "auto",
+        "reasons": reasons,
+        "policy": "Advisory routing only; never reduce coverage silently.",
+    }
+
+
+def _compact_lines(values: list[str]) -> tuple[list[str], int]:
+    seen: set[str] = set()
+    compacted: list[str] = []
+    duplicates = 0
+    for value in values:
+        line = re.sub(r"\s+", " ", str(value).strip())
+        if not line:
+            continue
+        key = line.lower().rstrip(".")
+        if key in seen:
+            duplicates += 1
+            continue
+        seen.add(key)
+        compacted.append(line)
+    return compacted, duplicates
+
+
+def compile_context_capsule(
+    topic: str,
+    constraints: Optional[list[str]] = None,
+    context: str = "",
+) -> dict[str, Any]:
+    raw_parts = [topic]
+    if constraints:
+        raw_parts.extend(constraints)
+    if context:
+        raw_parts.append(context)
+    raw_text = "\n".join(raw_parts)
+    context_lines = context.splitlines() if context else []
+    compact_constraints, duplicate_constraints = _compact_lines(constraints or [])
+    compact_context, duplicate_context = _compact_lines(context_lines)
+    compact_topic = re.sub(r"\s+", " ", topic).strip()
+    compiled_sections = [f"Topic: {compact_topic}"]
+    if compact_constraints:
+        compiled_sections.append("Constraints: " + "; ".join(compact_constraints))
+    if compact_context:
+        compiled_sections.append("Context: " + " / ".join(compact_context))
+    compiled_text = "\n".join(compiled_sections)
+    return {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "raw_tokens": estimate_tokens(len(raw_text)),
+        "compiled_tokens": estimate_tokens(len(compiled_text)),
+        "duplicates_removed": duplicate_constraints + duplicate_context,
+        "compiled_text": compiled_text,
+    }
+
+
+def _normalize_finding_claim(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def deduplicate_findings(findings: list[dict[str, Any]]) -> dict[str, Any]:
+    merged: dict[str, dict[str, Any]] = {}
+    for finding in findings:
+        claim = re.sub(r"\s+", " ", str(finding.get("claim", "")).strip()).rstrip(".")
+        if not claim:
+            continue
+        key = _normalize_finding_claim(claim)
+        source = str(finding.get("source", "")).strip()
+        if key not in merged:
+            merged[key] = {
+                "claim": claim,
+                "sources": [],
+                "count": 0,
+            }
+        merged[key]["count"] += 1
+        if source and source not in merged[key]["sources"]:
+            merged[key]["sources"].append(source)
+    results = list(merged.values())
+    return {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "input_count": len(findings),
+        "unique_count": len(results),
+        "duplicates_removed": max(len(findings) - len(results), 0),
+        "findings": results,
+    }
 
 
 def default_alter_config() -> dict[str, Any]:
@@ -991,12 +1218,28 @@ def estimate_pre_session(
     context_tokens: int = 0,
     consumer_data: Optional[dict[str, Any]] = None,
     alter_config: Optional[dict[str, Any]] = None,
+    panel: str = "full",
+    router: str = "off",
+    max_agents: Optional[int] = None,
+    early_exit: bool = False,
 ) -> dict[str, Any]:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
     if token_budget not in TOKEN_BUDGETS:
         raise ValueError(f"token_budget must be one of: {', '.join(sorted(TOKEN_BUDGETS))}")
     session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
+    route_decision = route_council_panel(
+        topic,
+        mode=mode,
+        session_type=session_type,
+        frontend_review=frontend_review,
+        skill_review=skill_review,
+        requested_panel=panel,
+        router=router,
+        max_agents=max_agents,
+        early_exit=early_exit,
+    )
+    active_panel = route_decision["selected_panel"]
     consumer_data = consumer_data or default_consumer_data()
     alter_config = alter_config or default_alter_config()
     profile = consumer_data["profile"]
@@ -1007,8 +1250,8 @@ def estimate_pre_session(
         member_count = len(FORGE_ROLE_FILES)
         reviewer_count = 0
     else:
-        member_count = 1 if mode == "fast" else len(ROLE_FILES)
-        reviewer_count = 0 if mode == "fast" else len(session_reviewers(mode, frontend_review, session_type=session_type))
+        member_count = 1 if mode == "fast" else len(active_role_files(False, session_type, active_panel, topic))
+        reviewer_count = 0 if mode == "fast" else len(session_reviewers(mode, frontend_review, session_type=session_type, panel=active_panel))
     evidence_count = len(session_evidence_runners(frontend_review))
     topic_tokens = estimate_tokens(len(topic))
     budget_factor = {"compact": 1.0, "balanced": 1.55, "expanded": 3.2}[token_budget]
@@ -1034,11 +1277,12 @@ def estimate_pre_session(
     if session_type == "forge":
         forge_rebrief_overhead = int((180 + (member_count * 40)) * factor_out)
         chairman_input += 160
-    active_labels = list(active_role_files(skill_review, session_type).values()) + session_reviewers(
+    active_labels = list(active_role_files(skill_review, session_type, active_panel, topic).values()) + session_reviewers(
         mode,
         frontend_review,
         skill_review,
         session_type,
+        active_panel,
     )
     alter_tuning_prompt_tokens = sum(
         int(entry.get("estimated_added_tokens", estimate_tokens(len(str(entry.get("compiled_instruction", ""))))))
@@ -1117,6 +1361,9 @@ def estimate_pre_session(
         "skill_review": skill_review,
         "token_budget": token_budget,
         "frontend_review": frontend_review,
+        "panel": active_panel,
+        "requested_panel": panel,
+        "router_decision": route_decision,
         "role_count": member_count,
         "reviewer_count": reviewer_count,
         "evidence_runner_count": evidence_count,
@@ -1288,19 +1535,20 @@ def write_prompt_scaffold(
     session_type: str = "general",
     skill_review: bool = False,
     alter_config: Optional[dict[str, Any]] = None,
+    panel: str = "full",
 ) -> None:
     member_prompts_dir = session_dir / "prompts" / "members"
     reviewer_prompts_dir = session_dir / "prompts" / "reviewers"
     member_prompts_dir.mkdir(parents=True, exist_ok=True)
     reviewer_prompts_dir.mkdir(parents=True, exist_ok=True)
-    role_files = active_role_files(skill_review, session_type)
-    prompt_files = active_member_prompt_files(skill_review, session_type)
+    role_files = active_role_files(skill_review, session_type, panel, topic)
+    prompt_files = active_member_prompt_files(skill_review, session_type, panel, topic)
     for member_file, role in role_files.items():
         (member_prompts_dir / prompt_files[member_file]).write_text(
             render_member_prompt(role, topic, mode, token_budget, session_type, skill_review, alter_config),
             encoding="utf-8",
         )
-    for reviewer in session_reviewers(mode, frontend_review, skill_review, session_type):
+    for reviewer in session_reviewers(mode, frontend_review, skill_review, session_type, panel):
         reviewer_slug = slugify(reviewer)
         if reviewer in BASE_REVIEWERS or reviewer in DEEP_REVIEWERS:
             reviewer_slug = reviewer
@@ -1611,9 +1859,15 @@ def session_reviewers(
     frontend_review: bool = False,
     skill_review: bool = False,
     session_type: str = "general",
+    panel: str = "full",
 ) -> list[str]:
     if skill_review or session_type == "forge":
         return []
+    if panel in {"solo", "triad", "targeted"}:
+        reviewers = ["coverage-integrator"] if mode != "fast" else []
+        if frontend_review:
+            reviewers.extend(FRONTEND_REVIEWER_FILES.values())
+        return reviewers
     reviewers = BASE_REVIEWERS.copy()
     if mode == "deep":
         reviewers = DEEP_REVIEWERS + reviewers
@@ -1643,13 +1897,16 @@ def render_dispatch_announcement(
     frontend_review: bool = False,
     skill_review: bool = False,
     session_type: str = "general",
+    panel: str = "full",
 ) -> str:
-    panel = "skill-review" if skill_review else session_type if session_type != "general" else mode
-    members = len(active_role_files(skill_review, session_type))
-    reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type))
+    panel_label = "skill-review" if skill_review else session_type if session_type != "general" else mode
+    if panel != "full":
+        panel_label = f"{panel_label}/{panel}"
+    members = len(active_role_files(skill_review, session_type, panel))
+    reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type, panel))
     runners = len(session_evidence_runners(frontend_review))
     suffix = f", {runners} evidence runners" if runners else ""
-    return f"{panel} panel: dispatched {members} members, {reviewers} reviewers{suffix} ({token_budget})"
+    return f"{panel_label} panel: dispatched {members} members, {reviewers} reviewers{suffix} ({token_budget})"
 
 
 def render_council_banner(
@@ -1658,35 +1915,66 @@ def render_council_banner(
     frontend_review: bool = False,
     skill_review: bool = False,
     session_type: str = "general",
+    panel: str = "full",
 ) -> str:
-    reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type))
+    reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type, panel))
     runners = len(session_evidence_runners(frontend_review))
     gates = "performance"
-    roles = len(active_role_files(skill_review, session_type))
+    roles = len(active_role_files(skill_review, session_type, panel))
     if skill_review:
         gates = "skill-review"
     if session_type == "forge":
         gates = "bounded creation"
     if frontend_review:
         gates += " + UX + Bob"
-    width = 76
+    width = 80
     border = "+" + "-" * (width - 2) + "+"
 
     def row(text: str = "") -> str:
-        return f"| {text[: width - 4]:<{width - 4}} |"
+        inner_width = width - 4
+        if len(text) > inner_width:
+            raise ValueError(f"Banner row is too wide ({len(text)} > {inner_width}): {text}")
+        return f"| {text.center(inner_width)} |"
+
+    is_forge = session_type == "forge"
+    title = "CODEX FORGE" if is_forge else "CODEX COUNCIL"
+    tagline = "IMAGINE / SHAPE / CONVERGE" if is_forge else "INDEPENDENT / ANONYMOUS / EVIDENCE-LED"
+    members = (
+        "[FULLER]  [HEDY]  [KATHERINE]  [HAMILTON]  [VON NEUMANN]"
+        if is_forge
+        else "[ADA]  [GRACE]  [HYPATIA]  [FLORENCE]  [TURING]  [CRAY]"
+    )
+    connectors = (
+        r"\       \           |           /       /"
+        if is_forge
+        else r"\       \       \       /       /       /"
+    )
+    flow = (
+        "DIVERGE > SYNTHESIZE > RE-BRIEF > CONVERGE"
+        if is_forge
+        else "FIRST OPINIONS > ANONYMOUS REVIEW > CHAIRMAN VERDICT"
+    )
+    core_width = 64
+    core_border = "+" + "-" * (core_width - 2) + "+"
+    core_row = f"| {flow.center(core_width - 4)} |"
+    configuration = f"{mode.upper()} / {session_type.upper()} / {token_budget.upper()}"
+    counts = f"MEMBERS {roles:02d} / REVIEWERS {reviewers:02d} / RUNNERS {runners:02d}"
 
     return "\n".join(
         [
             border,
-            row(("CODEX FORGE" if session_type == "forge" else "CODEX COUNCIL").center(width - 4)),
-            row(" [Fuller]   [Hedy]   [Katherine]   [Hamilton]   [von Neumann]" if session_type == "forge" else "     [Ada]      [Grace]    [Hypatia]    [Seymour]"),
-            row("       \\        |          |             |          /" if session_type == "forge" else "         \\         |          |          /"),
-            row("            .-------------------------------."),
-            row("            | forge table: create methods   |" if session_type == "forge" else " [Turing] --|  council table: judge methods |-- [Florence]"),
-            row("            '-------------------------------'"),
-            row("method: diverge -> synthesize -> re-brief -> converge" if session_type == "forge" else "method: first opinions -> anonymous review -> synthesis"),
-            row(f"mode: {mode} | type: {session_type} | budget: {token_budget} | roles: {roles} | reviewers: {reviewers}"),
-            row(f"gates: {gates} | runners: {runners}"),
+            row(title),
+            row(tagline),
+            row(),
+            row(members),
+            row(connectors),
+            row(core_border),
+            row(core_row),
+            row(core_border),
+            row(),
+            row(configuration),
+            row(counts),
+            row(f"GATES / {gates.upper()}"),
             border,
         ]
     )
@@ -1712,6 +2000,8 @@ def _session_artifacts(session_dir: Path) -> list[Path]:
     artifacts: list[Path] = []
     for path in sorted(session_dir.rglob("*")):
         if not path.is_file():
+            continue
+        if DECISION_RUNTIME_DIR in path.relative_to(session_dir).parts:
             continue
         if path.name in GENERATED_STATS_FILES:
             continue
@@ -2067,6 +2357,148 @@ def write_session_stats(session_dir: Path, stats: dict[str, Any]) -> None:
     (session_dir / "stats.md").write_text(render_session_stats(stats) + "\n", encoding="utf-8")
 
 
+def doctor_session(session_dir: Path) -> dict[str, Any]:
+    session_dir = Path(session_dir)
+    problems: list[dict[str, str]] = []
+    validation = validate_session(session_dir)
+    for problem in validation["problems"]:
+        problems.append({"severity": "error", "code": "session_validation", "message": problem})
+    metadata_path = session_dir / "session.json"
+    metadata = _read_json_object(metadata_path) if metadata_path.exists() else {}
+    intelligence_files = (CONTEXT_CAPSULE_FILE, RUN_MANIFEST_FILE, DECISION_LEDGER_FILE, TELEMETRY_FILE)
+    has_intelligence_layer = isinstance(metadata.get("intelligence_layer"), dict) or any(
+        (session_dir / filename).exists() for filename in intelligence_files
+    )
+    if has_intelligence_layer:
+        for filename in intelligence_files:
+            path = session_dir / filename
+            if not path.exists():
+                problems.append({"severity": "error", "code": "missing_intelligence_artifact", "message": filename})
+                continue
+            data = _read_json_object(path)
+            if data.get("schema_version") != INTELLIGENCE_SCHEMA_VERSION:
+                problems.append({"severity": "error", "code": "schema_version", "message": filename})
+    try:
+        runtime_health = council_cells.doctor_runtime(session_dir)
+    except (council_cells.DecisionRuntimeError, OSError, TypeError, ValueError) as exc:
+        runtime_health = {
+            "ok": False,
+            "status": "quarantined",
+            "fallback_reason": "runtime_diagnostic_failed",
+            "problems": [{"code": "runtime_diagnostic_failed", "message": str(exc)}],
+            "generation": None,
+            "authoritative": False,
+            "read_only": True,
+        }
+    if runtime_health["status"] == "quarantined":
+        problems.append(
+            {
+                "severity": "error",
+                "code": "decision_runtime_quarantined",
+                "message": runtime_health.get("fallback_reason") or "Decision Runtime failed closed to legacy artifacts.",
+            }
+        )
+    stats = collect_session_stats(session_dir)
+    coverage = stats.get("post_execution_estimate", {}).get("coverage", "partial")
+    if coverage != "full":
+        problems.append(
+            {
+                "severity": "warn",
+                "code": "partial_coverage",
+                "message": "Post estimate is partial until prompts and outputs contain real body content.",
+            }
+        )
+    ok = not any(problem["severity"] == "error" for problem in problems)
+    return {
+        "ok": ok,
+        "session": session_dir.name,
+        "coverage": coverage,
+        "problems": problems,
+        "decision_runtime": runtime_health,
+        "pre_execution_total_tokens": stats["pre_execution_estimate"].get("total_tokens", 0),
+        "post_execution_total_tokens": stats["post_execution_estimate"].get("total_tokens", 0),
+    }
+
+
+def collect_state_dashboard(state_root: Path) -> dict[str, Any]:
+    state_root = Path(state_root)
+    sessions_dir = state_root / DEFAULT_SESSION_SUBDIR
+    if not sessions_dir.exists() and state_root.name == DEFAULT_SESSION_SUBDIR:
+        sessions_dir = state_root
+    elif (
+        not sessions_dir.exists()
+        and state_root.exists()
+        and any((child / "session.json").exists() for child in state_root.iterdir() if child.is_dir())
+    ):
+        sessions_dir = state_root
+    sessions = [path for path in sorted(sessions_dir.iterdir()) if path.is_dir()] if sessions_dir.exists() else []
+    totals = {
+        "pre_execution_tokens": 0,
+        "post_execution_tokens": 0,
+        "artifact_only_tokens": 0,
+    }
+    coverage: dict[str, int] = {}
+    session_rows: list[dict[str, Any]] = []
+    unique_findings = 0
+    for session in sessions:
+        stats_path = session / "stats.json"
+        stats = _read_json_object(stats_path) if stats_path.exists() else collect_session_stats(session)
+        pre_total = int(stats.get("pre_execution_estimate", {}).get("total_tokens") or 0)
+        post_total = int(stats.get("post_execution_estimate", {}).get("total_tokens") or 0)
+        artifact_total = int(stats.get("artifact_only_tokens", {}).get("total_tokens") or 0)
+        cov = str(stats.get("post_execution_estimate", {}).get("coverage", "partial"))
+        totals["pre_execution_tokens"] += pre_total
+        totals["post_execution_tokens"] += post_total
+        totals["artifact_only_tokens"] += artifact_total
+        coverage[cov] = coverage.get(cov, 0) + 1
+        findings = []
+        findings_path = session / FINDINGS_FILE
+        if findings_path.exists():
+            for line in findings_path.read_text(encoding="utf-8", errors="replace").splitlines():
+                try:
+                    findings.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+        unique_findings += deduplicate_findings(findings).get("unique_count", 0)
+        session_rows.append(
+            {
+                "session": session.name,
+                "pre_execution_tokens": pre_total,
+                "post_execution_tokens": post_total,
+                "coverage": cov,
+            }
+        )
+    denominator = max(totals["post_execution_tokens"], 1)
+    return {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "state_root": str(state_root),
+        "session_count": len(session_rows),
+        "totals": totals,
+        "coverage": coverage,
+        "efficiency": {
+            "unique_signal_per_1k_tokens": round(unique_findings / denominator * 1000, 4),
+            "unique_findings": unique_findings,
+        },
+        "sessions": session_rows,
+    }
+
+
+def render_state_dashboard(dashboard: dict[str, Any]) -> str:
+    totals = dashboard["totals"]
+    efficiency = dashboard["efficiency"]
+    return "\n".join(
+        [
+            "# Codex Council Dashboard",
+            "",
+            f"- Sessions: {dashboard['session_count']}",
+            f"- Pre-execution tokens: {totals['pre_execution_tokens']}",
+            f"- Post-execution tokens: {totals['post_execution_tokens']}",
+            f"- Artifact-only tokens: {totals['artifact_only_tokens']}",
+            f"- Unique signal / 1k tokens: {efficiency['unique_signal_per_1k_tokens']}",
+        ]
+    )
+
+
 def write_raw_output_bundle(session_dir: Path) -> Path:
     metadata = _read_json_object(session_dir / "session.json")
     paths: list[str] = []
@@ -2109,6 +2541,105 @@ def record_invocation_log(session_dir: Path, storage_root: Path, metadata: dict[
     return path
 
 
+def build_context_capsule(
+    topic: str,
+    root: Path,
+    metadata: dict[str, Any],
+    route_decision: dict[str, Any],
+    compiled_context: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "created_at": metadata.get("created_at", utc_now()),
+        "topic": topic,
+        "session_type": metadata.get("session_type", "general"),
+        "mode": metadata.get("mode", "standard"),
+        "token_budget": metadata.get("token_budget", "compact"),
+        "panel": metadata.get("panel", "full"),
+        "workspace_root": str(root),
+        "risk_flags": route_decision.get("risk_flags", []),
+        "constraints": [
+            "Preserve blockers, dissent, verification, and confidence.",
+            "Do not claim real billing/API token usage.",
+            "Keep routing advisory unless explicitly requested.",
+        ],
+        "source_metadata": {
+            "storage_scope": metadata.get("storage_scope", "plugin-local"),
+            "role_count": len(metadata.get("roles", [])),
+            "reviewer_count": len(metadata.get("reviewers", [])),
+            "evidence_runner_count": len(metadata.get("evidence_runners", [])),
+        },
+        "compiled_context": compiled_context,
+    }
+
+
+def write_intelligence_artifacts(
+    session_dir: Path,
+    root: Path,
+    metadata: dict[str, Any],
+    pre_session_estimate: dict[str, Any],
+    route_decision: dict[str, Any],
+    compiled_context: dict[str, Any],
+) -> None:
+    capsule = build_context_capsule(metadata.get("topic", ""), root, metadata, route_decision, compiled_context)
+    manifest = {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "session_id": session_dir.name,
+        "created_at": metadata.get("created_at", utc_now()),
+        "mode": metadata.get("mode", "standard"),
+        "session_type": metadata.get("session_type", "general"),
+        "panel": metadata.get("panel", "full"),
+        "router": route_decision,
+        "privacy": {
+            "state_scope": metadata.get("storage_scope", "plugin-local"),
+            "raw_prompt_logging": "session-local only",
+            "invocation_log": "sanitized metadata only",
+        },
+        "artifacts": {
+            "context_capsule": CONTEXT_CAPSULE_FILE,
+            "decision_ledger": DECISION_LEDGER_FILE,
+            "findings": FINDINGS_FILE,
+            "telemetry": TELEMETRY_FILE,
+        },
+    }
+    ledger = {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "session_id": session_dir.name,
+        "status": metadata.get("status", "scaffolded"),
+        "decisions": [],
+        "blockers": [],
+        "dissent": [],
+        "verification": [],
+        "confidence": "pending",
+        "next_prompt": "",
+    }
+    telemetry = {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "session_id": session_dir.name,
+        "created_at": metadata.get("created_at", utc_now()),
+        "pre_execution_estimate": pre_session_estimate.get("pre_execution_estimate", {}),
+        "counts": {
+            "roles": len(metadata.get("roles", [])),
+            "reviewers": len(metadata.get("reviewers", [])),
+            "evidence_runners": len(metadata.get("evidence_runners", [])),
+        },
+        "timings": {},
+        "coverage": "preflight_only",
+    }
+    placeholder_finding = {
+        "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+        "kind": "placeholder",
+        "message": "Normalized findings are appended here after member/reviewer outputs exist.",
+    }
+    (session_dir / CONTEXT_CAPSULE_FILE).write_text(json.dumps(capsule, indent=2) + "\n", encoding="utf-8")
+    (session_dir / RUN_MANIFEST_FILE).write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (session_dir / DECISION_LEDGER_FILE).write_text(json.dumps(ledger, indent=2) + "\n", encoding="utf-8")
+    (session_dir / TELEMETRY_FILE).write_text(json.dumps(telemetry, indent=2) + "\n", encoding="utf-8")
+    (session_dir / ROUTER_DECISION_FILE).write_text(json.dumps(route_decision, indent=2) + "\n", encoding="utf-8")
+    (session_dir / COMPILED_CONTEXT_FILE).write_text(json.dumps(compiled_context, indent=2) + "\n", encoding="utf-8")
+    (session_dir / FINDINGS_FILE).write_text(json.dumps(placeholder_finding, sort_keys=True) + "\n", encoding="utf-8")
+
+
 def init_session(
     topic: str,
     root: Path,
@@ -2121,12 +2652,32 @@ def init_session(
     confirmation: Optional[dict[str, Any]] = None,
     session_root: Optional[Path] = None,
     config_root: Optional[Path] = None,
+    panel: str = "full",
+    router: str = "off",
+    max_agents: Optional[int] = None,
+    early_exit: bool = False,
+    delta_from: Optional[Path] = None,
+    decision_runtime: str = "off",
 ) -> Path:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
     if token_budget not in TOKEN_BUDGETS:
         raise ValueError(f"token_budget must be one of: {', '.join(sorted(TOKEN_BUDGETS))}")
+    if decision_runtime not in DECISION_RUNTIME_MODES:
+        raise ValueError(f"decision_runtime must be one of: {', '.join(sorted(DECISION_RUNTIME_MODES))}")
     session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
+    route_decision = route_council_panel(
+        topic,
+        mode=mode,
+        session_type=session_type,
+        frontend_review=frontend_review,
+        skill_review=skill_review,
+        requested_panel=panel,
+        router=router,
+        max_agents=max_agents,
+        early_exit=early_exit,
+    )
+    active_panel = route_decision["selected_panel"]
     runtime_problems = validate_runtime_contract(plugin_root())
     if runtime_problems:
         raise RuntimeError("Codex Council runtime contract failed: " + "; ".join(runtime_problems))
@@ -2140,6 +2691,10 @@ def init_session(
             session_type=session_type,
             skill_review=skill_review,
             alter_config=alter_config,
+            panel=panel,
+            router=router,
+            max_agents=max_agents,
+            early_exit=early_exit,
         )
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     storage_root = session_storage_root(session_root)
@@ -2152,8 +2707,8 @@ def init_session(
     if frontend_review:
         evidence_runners_dir.mkdir(parents=True, exist_ok=False)
 
-    role_files = active_role_files(skill_review, session_type)
-    reviewers = session_reviewers(mode, frontend_review, skill_review, session_type)
+    role_files = active_role_files(skill_review, session_type, active_panel, topic)
+    reviewers = session_reviewers(mode, frontend_review, skill_review, session_type, active_panel)
     evidence_runners = session_evidence_runners(frontend_review)
     alter_metadata = active_alter_session_metadata(alter_config, list(role_files.values()), reviewers)
     activation_tags: list[str] = []
@@ -2163,7 +2718,10 @@ def init_session(
         activation_tags.append("skill-review")
     if session_type == "forge":
         activation_tags.append("forge")
-    dispatch_line = render_dispatch_announcement(mode, token_budget, frontend_review, skill_review, session_type)
+    if decision_runtime == "shadow":
+        activation_tags.append("decision-runtime-shadow")
+    dispatch_line = render_dispatch_announcement(mode, token_budget, frontend_review, skill_review, session_type, active_panel)
+    compiled_context = compile_context_capsule(topic)
 
     metadata = {
         "topic": topic,
@@ -2180,6 +2738,16 @@ def init_session(
         "evidence_runners": evidence_runners,
         "activation_tags": activation_tags,
         "token_budget": token_budget,
+        "panel": active_panel,
+        "requested_panel": panel,
+        "router": router,
+        "route_decision": route_decision,
+        "delta_from": str(delta_from) if delta_from else None,
+        "decision_runtime": {
+            "mode": decision_runtime,
+            "authoritative": False,
+            "status": "not_initialized" if decision_runtime == "shadow" else "disabled",
+        },
         "context_files": [],
         "redaction_notes": "",
         "verification_commands": [],
@@ -2190,6 +2758,14 @@ def init_session(
         "dispatch_line": dispatch_line,
         "synthesis_contract": "separate_synthesis_pass",
         "alter_overrides": alter_metadata,
+        "intelligence_layer": {
+            "schema_version": INTELLIGENCE_SCHEMA_VERSION,
+            "context_capsule": CONTEXT_CAPSULE_FILE,
+            "decision_ledger": DECISION_LEDGER_FILE,
+            "run_manifest": RUN_MANIFEST_FILE,
+            "findings": FINDINGS_FILE,
+            "telemetry": TELEMETRY_FILE,
+        },
     }
     (session_dir / "session.json").write_text(
         json.dumps(metadata, indent=2)
@@ -2205,7 +2781,8 @@ def init_session(
     )
     if pre_session_estimate:
         write_preflight_estimate(session_dir, pre_session_estimate)
-    write_prompt_scaffold(session_dir, topic, mode, token_budget, frontend_review, session_type, skill_review, alter_config)
+    write_intelligence_artifacts(session_dir, root, metadata, pre_session_estimate or {}, route_decision, compiled_context)
+    write_prompt_scaffold(session_dir, topic, mode, token_budget, frontend_review, session_type, skill_review, alter_config, active_panel)
     write_synthesis_input_manifest(session_dir, role_files, reviewers, evidence_runners, session_type)
     for filename, role in role_files.items():
         sections = REQUIRED_FORGE_MEMBER_SECTIONS.copy() if session_type == "forge" else REQUIRED_MEMBER_SECTIONS.copy()
@@ -2307,7 +2884,17 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
                 problems.append("session.json session_type is invalid")
             if metadata.get("token_budget") not in TOKEN_BUDGETS:
                 problems.append("session.json token_budget is invalid")
-            role_files = active_role_files(bool(metadata.get("skill_review")), metadata.get("session_type", "general"))
+            runtime_metadata = metadata.get("decision_runtime", {"mode": "off", "authoritative": False})
+            if not isinstance(runtime_metadata, dict) or runtime_metadata.get("mode", "off") not in DECISION_RUNTIME_MODES:
+                problems.append("session.json decision_runtime mode is invalid")
+            elif runtime_metadata.get("authoritative") is not False:
+                problems.append("session.json decision_runtime must remain non-authoritative")
+            role_files = active_role_files(
+                bool(metadata.get("skill_review")),
+                metadata.get("session_type", "general"),
+                metadata.get("panel", "full"),
+                metadata.get("topic", ""),
+            )
             if len(metadata.get("roles", [])) != len(role_files):
                 problems.append(f"session.json roles must contain the {len(role_files)} expected council members")
 
@@ -2326,7 +2913,12 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             problems.append(f"final.md missing {section}")
 
     members_dir = session_dir / "members"
-    role_files = active_role_files(bool(metadata.get("skill_review")), metadata.get("session_type", "general"))
+    role_files = active_role_files(
+        bool(metadata.get("skill_review")),
+        metadata.get("session_type", "general"),
+        metadata.get("panel", "full"),
+        metadata.get("topic", ""),
+    )
     if not members_dir.is_dir():
         problems.append("missing members directory")
     else:
@@ -2352,10 +2944,27 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             problems.append(f"invalid reviews example: {exc}")
 
     if not metadata.get("skill_review") and metadata.get("session_type") != "forge":
-        for filename in ("performance-impact-reviewer.md", "coverage-integrator.md"):
+        expected_reviewers = metadata.get("reviewers") or BASE_REVIEWERS
+        for reviewer in expected_reviewers:
+            filename = reviewer_filename(reviewer)
             path = session_dir / "reviews" / filename
             if not path.exists():
                 problems.append(f"missing reviewer file: {filename}")
+
+    intelligence_files = (CONTEXT_CAPSULE_FILE, DECISION_LEDGER_FILE, RUN_MANIFEST_FILE, FINDINGS_FILE, TELEMETRY_FILE)
+    has_intelligence_layer = isinstance(metadata.get("intelligence_layer"), dict) or any(
+        (session_dir / filename).exists() for filename in intelligence_files
+    )
+    if has_intelligence_layer:
+        for filename in intelligence_files:
+            path = session_dir / filename
+            if not path.exists():
+                problems.append(f"missing intelligence artifact: {filename}")
+            elif filename.endswith(".json"):
+                try:
+                    json.loads(path.read_text(encoding="utf-8"))
+                except json.JSONDecodeError as exc:
+                    problems.append(f"invalid intelligence artifact {filename}: {exc}")
 
     if "frontend-ui-ux" in metadata.get("activation_tags", []):
         if final_path.exists() and "## Frontend Evidence" not in final_path.read_text(encoding="utf-8"):
@@ -2392,6 +3001,7 @@ def validate_runtime_contract(root: Path) -> list[str]:
         skill_dir / "SKILL.md",
         skill_dir / "agents" / "openai.yaml",
         root / "scripts" / "codex_council.py",
+        root / "scripts" / "council_cells.py",
     ]
     required_paths.extend(references_dir / filename for filename in REQUIRED_REFERENCES)
     return [f"missing runtime file: {path.relative_to(root).as_posix()}" for path in required_paths if not path.exists()]
@@ -2435,13 +3045,18 @@ def validate_plugin(root: Path, strict: bool = False) -> dict[str, Any]:
             problems.append("package contains .DS_Store files")
         if not (root / "tests" / "test_codex_council.py").exists():
             problems.append("missing test suite")
+        if not (root / "tests" / "test_council_cells.py").exists():
+            problems.append("missing Decision Runtime test suite")
+        for docs_path in (root / "docs" / "runtime.html", root / "docs" / "it" / "runtime.html"):
+            if not docs_path.exists():
+                problems.append(f"missing Decision Runtime docs: {docs_path.relative_to(root).as_posix()}")
         skill_text = skill_path.read_text(encoding="utf-8")
         if len(skill_text.split()) > 700:
             problems.append("SKILL.md exceeds compact word budget")
         for forbidden in ("```json", "## UX Verdict\nPass, Needs Refinement, or Blocked."):
             if forbidden in skill_text:
                 problems.append("SKILL.md contains detailed schema that belongs in references")
-        for required in ("competency-packs.md", "workflow-recipes.md", "governance-preflight.md"):
+        for required in ("competency-packs.md", "decision-runtime.md", "workflow-recipes.md", "governance-preflight.md"):
             if required not in skill_text:
                 problems.append(f"SKILL.md does not reference {required}")
         token_budget_path = references_dir / "token-budget.md"
@@ -2559,6 +3174,33 @@ def render_update_status(result: dict[str, Any]) -> str:
     )
 
 
+def render_decision_runtime_result(result: dict[str, Any]) -> str:
+    """Render a compact operator summary without overstating shadow evidence."""
+
+    lines = [f"Decision Runtime: {result.get('status', 'complete')}"]
+    if result.get("generation"):
+        lines.append(f"Generation: {result['generation']}")
+    if isinstance(result.get("comparison"), dict):
+        recommendation = result["comparison"].get("recommendation")
+        if recommendation:
+            lines.append(f"Comparison: {recommendation}")
+    if isinstance(result.get("impact_plan"), dict):
+        plan = result["impact_plan"]
+        lines.append(f"Impact plan: {plan.get('coverage', 'full')} (advisory only)")
+    if result.get("fallback_reason"):
+        lines.append(f"Fallback: {result['fallback_reason']} -> legacy artifacts")
+    elif result.get("fallback"):
+        lines.append(f"Fallback: {result['fallback']}")
+    if result.get("message"):
+        lines.append(f"Reason: {result['message']}")
+    if "case_count" in result:
+        lines.append(f"Replay cases: {result['case_count']} x {result.get('repetitions', 1)}")
+    if isinstance(result.get("points"), list):
+        lines.append(f"Fault points: {len(result['points'])}")
+    lines.append("Authoritative: no")
+    return "\n".join(lines)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Codex Council session and scoring utilities")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -2570,6 +3212,17 @@ def main() -> None:
     init_parser.add_argument("--mode", choices=sorted(MODES), default="standard")
     init_parser.add_argument("--type", dest="session_type", choices=sorted(SESSION_TYPES), default="general")
     init_parser.add_argument("--skill-review", action="store_true", help="Use compact 3-lens skill/tool review panel")
+    init_parser.add_argument("--panel", choices=sorted(PANELS), default="full", help="Optional advisory panel shape")
+    init_parser.add_argument("--router", choices=("off", "auto"), default="off", help="Optional advisory budget router")
+    init_parser.add_argument("--max-agents", type=int, help="Advisory maximum agent count; never silently overrides hard gates")
+    init_parser.add_argument("--early-exit", action="store_true", help="Record that early exit is allowed when convergence is obvious")
+    init_parser.add_argument("--delta-from", help="Optional prior session path for targeted/delta review metadata")
+    init_parser.add_argument(
+        "--decision-runtime",
+        choices=sorted(DECISION_RUNTIME_MODES),
+        default="off",
+        help="Record opt-in to the post-run experimental shadow Decision Runtime",
+    )
     init_parser.add_argument("--announce", action="store_true", help="Print one-line dispatch announcement before the session path")
     init_parser.add_argument("--config-root", help="Directory for local consumer profile/history")
     init_parser.add_argument("--context-tokens", type=int, default=0, help="Optional rough context token hint")
@@ -2605,6 +3258,10 @@ def main() -> None:
     estimate_parser.add_argument("--mode", choices=sorted(MODES), default="standard")
     estimate_parser.add_argument("--type", dest="session_type", choices=sorted(SESSION_TYPES), default="general")
     estimate_parser.add_argument("--skill-review", action="store_true")
+    estimate_parser.add_argument("--panel", choices=sorted(PANELS), default="full")
+    estimate_parser.add_argument("--router", choices=("off", "auto"), default="off")
+    estimate_parser.add_argument("--max-agents", type=int)
+    estimate_parser.add_argument("--early-exit", action="store_true")
     estimate_parser.add_argument("--token-budget", choices=sorted(TOKEN_BUDGETS), default="compact")
     estimate_parser.add_argument("--frontend-review", action="store_true")
     estimate_parser.add_argument("--context-tokens", type=int, default=0)
@@ -2650,6 +3307,72 @@ def main() -> None:
     stats_parser.add_argument("--write", action="store_true", help="Write stats.json and stats.md into the session")
     stats_parser.add_argument("--raw-bundle", action="store_true", help="Write path-only raw-output bundle into the session")
     stats_parser.add_argument("--record-history", action="store_true", help="Record compact pre/post estimates locally")
+
+    doctor_parser = subparsers.add_parser("doctor", help="Run read-only health checks for a council session")
+    doctor_parser.add_argument("--session", required=True)
+    doctor_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_parser = subparsers.add_parser("cells", help="Operate the experimental shadow Decision Runtime")
+    cells_subparsers = cells_parser.add_subparsers(dest="cells_action", required=True)
+
+    cells_project = cells_subparsers.add_parser("project", help="Project legacy evidence into Cells and frontier")
+    cells_project.add_argument("--session", required=True)
+    cells_project.add_argument("--compare", choices=("frontier",), default="frontier")
+    cells_project.add_argument("--commit", action="store_true", help="Persist a transactional shadow generation")
+    cells_project.add_argument("--plan", action="store_true", help="Include the advisory impact plan in output")
+    cells_project.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_apply = cells_subparsers.add_parser("apply", help="Apply a strict standalone JSON Decision Patch")
+    cells_apply.add_argument("--session", required=True)
+    cells_apply.add_argument("--patch", required=True)
+    cells_apply.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_plan = cells_subparsers.add_parser("plan", help="Plan advisory impact from a committed generation")
+    cells_plan.add_argument("--session", required=True)
+    cells_plan.add_argument("--changed", action="append", default=[], help="Changed Cell ID; repeat as needed")
+    cells_plan.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_doctor = cells_subparsers.add_parser("doctor", help="Run a read-only sidecar integrity check")
+    cells_doctor.add_argument("--session", required=True)
+    cells_doctor.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_recover = cells_subparsers.add_parser("recover", help="Recover one unambiguous committed chain")
+    cells_recover.add_argument("--session", required=True)
+    cells_recover.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_rollback = cells_subparsers.add_parser("rollback", help="Move shadow HEAD to a verified ancestor")
+    cells_rollback.add_argument("--session", required=True)
+    cells_rollback.add_argument("--to", required=True, dest="generation")
+    cells_rollback.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_purge = cells_subparsers.add_parser("purge", help="Explicitly purge optional sidecar state")
+    cells_purge.add_argument("--session", required=True)
+    purge_scope = cells_purge.add_mutually_exclusive_group(required=True)
+    purge_scope.add_argument("--expired", action="store_true", help="Remove expired non-HEAD sidecar state")
+    purge_scope.add_argument("--all", action="store_true", dest="all_runtime", help="Remove the complete sidecar")
+    cells_purge.add_argument("--confirm", help="For --all, must equal the session directory name")
+    cells_purge.add_argument("--retention-days", type=int, default=30)
+    cells_purge.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_replay = cells_subparsers.add_parser("replay", help="Replay a sanitized local evaluation corpus")
+    cells_replay.add_argument("--corpus", required=True)
+    cells_replay.add_argument("--compare", choices=("frontier",), default="frontier")
+    cells_replay.add_argument("--repetitions", type=int, default=10)
+    cells_replay.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    cells_fault = cells_subparsers.add_parser("fault-test", help="Exercise transactional durability fault points")
+    cells_fault.add_argument("--corpus", required=True)
+    cells_fault.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    dashboard_parser = subparsers.add_parser("dashboard", help="Summarize local council session metrics")
+    dashboard_parser.add_argument("--state-root", default=str(session_storage_root().parent))
+    dashboard_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
+    compile_parser = subparsers.add_parser("compile-context", help="Compile and deduplicate a compact context capsule")
+    compile_parser.add_argument("--topic", required=True)
+    compile_parser.add_argument("--constraint", action="append", default=[])
+    compile_parser.add_argument("--context", default="")
+    compile_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
 
     classify_parser = subparsers.add_parser("classify-invocation", help="Classify council trigger text as invoke/meta/unclear")
     classify_parser.add_argument("--text", required=True)
@@ -2698,6 +3421,10 @@ def main() -> None:
             context_tokens=max(args.context_tokens, 0),
             consumer_data=consumer_data,
             alter_config=alter_config,
+            panel=args.panel,
+            router=args.router,
+            max_agents=args.max_agents,
+            early_exit=args.early_exit,
         )
         if args.token_budget == "expanded" and not args.confirm_expanded:
             print(render_pre_session_estimate(estimate))
@@ -2721,11 +3448,19 @@ def main() -> None:
             confirmation=confirmation,
             session_root=Path(args.session_root).expanduser().resolve() if args.session_root else None,
             config_root=config_root,
+            panel=args.panel,
+            router=args.router,
+            max_agents=args.max_agents,
+            early_exit=args.early_exit,
+            delta_from=Path(args.delta_from).expanduser().resolve() if args.delta_from else None,
+            decision_runtime=args.decision_runtime,
         )
         if args.banner:
-            print(render_council_banner(args.mode, args.token_budget, frontend_review, skill_review, session_type))
+            active_panel = estimate.get("panel", args.panel)
+            print(render_council_banner(args.mode, args.token_budget, frontend_review, skill_review, session_type, active_panel))
         if args.announce:
-            print(render_dispatch_announcement(args.mode, args.token_budget, frontend_review, skill_review, session_type))
+            active_panel = estimate.get("panel", args.panel)
+            print(render_dispatch_announcement(args.mode, args.token_budget, frontend_review, skill_review, session_type, active_panel))
         print(path)
         return
 
@@ -2746,6 +3481,10 @@ def main() -> None:
             context_tokens=max(args.context_tokens, 0),
             consumer_data=load_consumer_data(config_root),
             alter_config=load_alter_config(config_root),
+            panel=args.panel,
+            router=args.router,
+            max_agents=args.max_agents,
+            early_exit=args.early_exit,
         )
         print(json.dumps(result, indent=2) if args.json else render_pre_session_estimate(result))
         return
@@ -2863,6 +3602,106 @@ def main() -> None:
             result["history_recorded"] = bool(history_path)
             result["history_path"] = str(history_path) if history_path else None
         print(json.dumps(result, indent=2) if args.json else render_session_stats(result))
+        return
+
+    if args.command == "doctor":
+        result = doctor_session(Path(args.session).expanduser().resolve())
+        print(json.dumps(result, indent=2) if args.json else ("OK" if result["ok"] else json.dumps(result, indent=2)))
+        if not result["ok"]:
+            raise SystemExit(1)
+        return
+
+    if args.command == "cells":
+        try:
+            if args.cells_action == "project":
+                projected = council_cells.project_session(
+                    Path(args.session).expanduser().resolve(),
+                    compare=args.compare,
+                    commit=args.commit,
+                )
+                if args.commit:
+                    result = dict(projected)
+                    result["committed"] = True
+                else:
+                    result = {
+                        "ok": True,
+                        "status": "preview",
+                        "committed": False,
+                        "session_id": projected["session_id"],
+                        "comparison": projected["comparison"],
+                        "metrics": projected["metrics"],
+                        "cell_count": len(projected["cells"]),
+                        "edge_count": len(projected["edges"]),
+                        "frontier_event_count": len(projected["frontier"]),
+                        "authoritative": False,
+                    }
+                    if args.plan:
+                        result["impact_plan"] = projected["impact_plan"]
+                if not args.plan:
+                    result.pop("impact_plan", None)
+            elif args.cells_action == "apply":
+                result = council_cells.apply_decision_patch(
+                    Path(args.session).expanduser().resolve(),
+                    Path(args.patch).expanduser(),
+                )
+            elif args.cells_action == "plan":
+                projection = council_cells.load_head_projection(Path(args.session).expanduser().resolve())
+                result = council_cells.plan_impact(
+                    projection,
+                    changed_cells=args.changed or None,
+                    session_metadata=projection.get("session_metadata"),
+                )
+                result["ok"] = True
+                result["status"] = "advisory"
+            elif args.cells_action == "doctor":
+                result = council_cells.doctor_runtime(Path(args.session).expanduser().resolve())
+            elif args.cells_action == "recover":
+                result = council_cells.recover_runtime(Path(args.session).expanduser().resolve())
+            elif args.cells_action == "rollback":
+                result = council_cells.rollback_runtime(
+                    Path(args.session).expanduser().resolve(),
+                    args.generation,
+                )
+            elif args.cells_action == "purge":
+                result = council_cells.purge_runtime(
+                    Path(args.session).expanduser().resolve(),
+                    expired=args.expired,
+                    all_runtime=args.all_runtime,
+                    confirm=args.confirm,
+                    retention_days=args.retention_days,
+                )
+            elif args.cells_action == "replay":
+                result = council_cells.replay_corpus(
+                    Path(args.corpus).expanduser().resolve(),
+                    repetitions=args.repetitions,
+                    compare=args.compare,
+                )
+            else:
+                result = council_cells.fault_test_corpus(Path(args.corpus).expanduser().resolve())
+        except (council_cells.DecisionRuntimeError, OSError, TypeError, ValueError) as exc:
+            failure = {
+                "ok": False,
+                "status": "failed_closed",
+                "error": type(exc).__name__,
+                "message": str(exc),
+                "fallback": "legacy",
+                "authoritative": False,
+            }
+            print(json.dumps(failure, indent=2) if args.json else render_decision_runtime_result(failure))
+            raise SystemExit(1) from exc
+        print(json.dumps(result, indent=2) if args.json else render_decision_runtime_result(result))
+        if not result.get("ok", True):
+            raise SystemExit(1)
+        return
+
+    if args.command == "dashboard":
+        result = collect_state_dashboard(Path(args.state_root).expanduser().resolve())
+        print(json.dumps(result, indent=2) if args.json else render_state_dashboard(result))
+        return
+
+    if args.command == "compile-context":
+        result = compile_context_capsule(args.topic, constraints=args.constraint, context=args.context)
+        print(json.dumps(result, indent=2) if args.json else result["compiled_text"])
         return
 
     if args.command == "classify-invocation":

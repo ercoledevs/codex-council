@@ -13,7 +13,7 @@
       })();
     </script>
     <title>Limiti - Codex Council</title>
-    <meta name="description" content="Cosa Codex Council non finge: nessuna finta diversità di provider, nessuna UI verificata a vuoto, nessun dato di fatturazione reale. Più dove vive lo stato locale e da dove arriva l'idea.">
+    <meta name="description" content="Cosa Codex Council non finge: diversità di provider, UI verificata a vuoto, dati di fatturazione, risparmi runtime misurati o stato shadow autorevole.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/limits.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/limits.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/limits.html">
@@ -33,7 +33,7 @@
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="../styles.css">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
@@ -50,12 +50,9 @@
           <a href="use-cases.html">Casi d'uso</a>
           <a href="examples.html">Esempi</a>
           <a href="usage.html">Uso</a>
-          <a href="alters.html">Alters</a>
-          <a href="limits.html" aria-current="page">Limiti</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="runtime.html">Runtime</a>
           <a href="forge.html">Forge</a>
           <a href="mind.html">Mind</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../limits.html" hreflang="en" aria-label="English version">EN</a>
@@ -93,6 +90,7 @@
             <li><strong>Niente dati di fatturazione reali.</strong> I report sui token sono stime locali, non il tuo consumo Codex effettivo né la quota residua.</li>
             <li><strong>Niente run expanded silenziose.</strong> Expanded può bruciare parecchio, quindi non parte senza la tua conferma.</li>
             <li><strong>Niente sporco nel tuo repo.</strong> Sessioni, prompt, statistiche e cronologia vivono nello stato locale del plugin e restano gitignorate.</li>
+            <li><strong>Niente scorciatoie runtime.</strong> Lo shadow non cambia il verdetto legacy e i target di risparmio restano non misurati finché il replay non li prova.</li>
           </ul>
         </div>
       </section>
@@ -114,6 +112,19 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
       </section>
 
       <section class="section band">
+        <div class="section-inner">
+          <p class="eyebrow">Sicurezza del Decision Runtime</p>
+          <h2>Lo shadow può fallire. Il percorso legacy no.</h2>
+          <div class="grid">
+            <article class="card"><h3>Opt-in</h3><p>Nulla viene proiettato finché non chiedi la vista aggiuntiva. Resta locale e spenta di default.</p></article>
+            <article class="card"><h3>Legacy-safe</h3><p>Lo stato shadow ignoto o non sano viene ignorato; sessione e verdetto originali restano utilizzabili.</p></article>
+            <article class="card"><h3>Resta sensibile</h3><p>I dati shadow sono stato locale, non prova cifrata. Trattali con la stessa cura della sessione sorgente.</p></article>
+          </div>
+          <p><a class="button secondary" href="runtime.html">Guarda la panoramica del Decision Runtime</a></p>
+        </div>
+      </section>
+
+      <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Da dove arriva</p>
           <h2>Costruito sull'idea di LLM Council, adattato a Codex.</h2>
@@ -137,6 +148,7 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
         </div>
         <div class="footer-links">
           <a href="usage.html">Installa</a>
+          <a href="runtime.html">Runtime</a>
           <a href="examples.html">Esempi</a>
           <a href="https://github.com/ercoledevs/codex-council/blob/main/PROVENANCE.md">Origini</a>
         </div>

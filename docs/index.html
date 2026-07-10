@@ -20,19 +20,19 @@
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Codex Council">
-    <meta property="og:description" content="Make Codex argue with itself before you ship. Several reviewers, a scored debate, a Chairman's verdict, and the token cost up front.">
+    <meta property="og:description" content="Make Codex argue with itself before you ship. Several reviewers, a scored debate, a Chairman's verdict, and a local token estimate up front.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Council">
-    <meta name="twitter:description" content="Make Codex argue with itself before you ship. Several reviewers, a scored debate, a Chairman's verdict, and the token cost up front.">
+    <meta name="twitter:description" content="Make Codex argue with itself before you ship. Several reviewers, a scored debate, a Chairman's verdict, and a local token estimate up front.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="styles.css">
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
@@ -49,12 +49,9 @@
           <a href="use-cases.html">Use Cases</a>
           <a href="examples.html">Examples</a>
           <a href="usage.html">Usage</a>
-          <a href="alters.html">Alters</a>
-          <a href="limits.html">Limits</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="runtime.html">Runtime</a>
           <a href="forge.html">Forge</a>
           <a href="mind.html">Mind</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/index.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -73,7 +70,7 @@
       <section class="hero">
         <div class="hero-inner">
           <div class="hero-content">
-            <p class="eyebrow">Codex-only council review and proposal forging</p>
+            <p class="eyebrow">Codex Council 1.0 — review, forge, decide</p>
             <h1>Codex Council</h1>
             <p class="hero-copy">
               One Codex pass gives you one train of thought. Forge shapes a proposal from
@@ -84,11 +81,11 @@
               <a class="button secondary" href="examples.html">See a real run</a>
             </div>
             <ul class="hero-trust">
-              <li>6 reviewers</li>
+              <li>Up to 6 reviewers</li>
               <li>5 Forge creators</li>
-              <li>Cost estimate first</li>
+              <li>Local estimate first</li>
               <li>Browser evidence</li>
-              <li>No outside APIs</li>
+              <li>No outside model APIs</li>
             </ul>
           </div>
         </div>
@@ -101,23 +98,23 @@
           <p class="lead">
             Each reviewer works from a fixed brief: architecture, reliability, security, product,
             red team, performance. Their answers are anonymized and ranked, a Chairman writes the
-            verdict, and you see the token cost before anything runs. It's still one model wearing
+            verdict, and you see a local token estimate before anything runs. It's still one model wearing
             different hats, not rival labs. But the disagreement is real, and it catches what a
             single pass talks itself past.
           </p>
           <div class="callout">
-            <strong>New: Codex Forge</strong>
-            Forge is the creative sibling: five creator roles generate a bounded proposal,
-            summarize dissent, and return either a unified plan or a nonconverged result.
-            Use Forge to create, then Council to judge.
+            <strong>New in 1.0: decision intelligence</strong>
+            Sessions now keep a compact evidence trail you can inspect later. The experimental
+            <a href="runtime.html">Decision Runtime</a> adds a shadow view without changing the
+            original verdict.
           </div>
           <div class="metric-row">
             <div class="metric">
               <strong>6</strong>
-              <span>core reviewers</span>
+              <span>core review lenses</span>
             </div>
             <div class="metric">
-              <strong>3</strong>
+              <strong>2</strong>
               <span>reviewer lanes in standard mode</span>
             </div>
             <div class="metric">
@@ -135,22 +132,22 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">How a run works</p>
-          <h2>Four steps, every time.</h2>
+          <h2>Four stages in a full Council run.</h2>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>Preflight</h3>
-              <p>Before anything runs you get the mode, the agent count, and a token estimate. No surprise on the bill.</p>
+              <p>Before anything runs you get the mode, the agent count, and a local heuristic estimate — never billing telemetry.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>First opinions</h3>
-              <p>Six named reviewers take the problem on independently, each guarding a different concern.</p>
+              <p>Up to six named reviewers take the problem on independently, each guarding a different concern.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Review</h3>
-              <p>Answers lose their authorship, get scored against a rubric, and are checked for gaps. Only the weak spots get a second round.</p>
+              <p>Answers lose their authorship, get scored against a rubric, and are checked for gaps by dedicated reviewer lanes.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>
