@@ -8,8 +8,10 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
@@ -32,7 +34,7 @@
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="404.html#main">Skip to content</a>
     <header class="site-header">
       <nav class="nav" aria-label="Main navigation">
         <a class="brand" href="index.html">
@@ -40,12 +42,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/index.html" hreflang="it" aria-label="Versione italiana">IT</a>

@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Mind"
-  short_description: "Guided Forge-then-Council pipeline for Codex"
-  default_prompt: "Use Codex Mind to forge a proposal for my idea and then run it through the council."
+  short_description: "Proposal, review, and gated Hyper implementation"
+  default_prompt: "Use $codex-council:codex-mind to forge and judge my idea, then offer $codex-council:codex-hyper only after an authorized Council build."

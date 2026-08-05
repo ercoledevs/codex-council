@@ -1,0 +1,374 @@
+diff --git a/app.js b/app.js
+index 9929ed9..dfaef39 100644
+--- a/app.js
++++ b/app.js
+@@ -8,37 +8,81 @@ const incidents = [
+   { id: "INC-1035", title: "Stale billing totals", status: "monitoring", severity: 2 }
+ ];
+ 
++const codec = window.IncidentStateCodec;
+ const query = document.querySelector("#query");
+ const status = document.querySelector("#status");
+ const form = document.querySelector(".filters");
+ const summary = document.querySelector("#summary");
++const announcer = document.querySelector("#announcer");
+ const list = document.querySelector("#incidents");
+ 
+-function render() {
+-  const needle = query.value.trim().toLowerCase();
+-  const selectedStatus = status.value;
++let renderedCount = null;
++
++function element(tag, className, text) {
++  const node = document.createElement(tag);
++  if (className) node.className = className;
++  if (text !== undefined) node.textContent = text;
++  return node;
++}
++
++function incidentElement(incident) {
++  const item = element("li", "incident");
++  const details = element("div");
++  details.append(element("h2", "", incident.title), element("p", "", incident.id));
++  item.append(element("span", "severity", `S${incident.severity}`), details, element("span", "status", incident.status));
++  return item;
++}
++
++function readControls() {
++  return codec.normalize({ query: query.value, status: status.value });
++}
++
++function writeControls(state) {
++  query.value = state.query;
++  status.value = state.status;
++}
++
++function render(state, announce = false) {
++  const needle = state.query.trim().toLowerCase();
+   const visible = incidents.filter((incident) => {
+     const matchesQuery = `${incident.id} ${incident.title}`.toLowerCase().includes(needle);
+-    const matchesStatus = selectedStatus === "all" || incident.status === selectedStatus;
++    const matchesStatus = state.status === "all" || incident.status === state.status;
+     return matchesQuery && matchesStatus;
+   });
+ 
+-  summary.textContent = `${visible.length} of ${incidents.length} incidents`;
+-  list.replaceChildren(...visible.map((incident) => {
+-    const item = document.createElement("li");
+-    item.className = "incident";
+-    item.innerHTML = `
+-      <span class="severity">S${incident.severity}</span>
+-      <div>
+-        <h2>${incident.title}</h2>
+-        <p>${incident.id}</p>
+-      </div>
+-      <span class="status">${incident.status}</span>
+-    `;
+-    return item;
+-  }));
+-}
+-
+-form.addEventListener("input", render);
+-form.addEventListener("reset", () => requestAnimationFrame(render));
+-render();
++  const message = `${visible.length} of ${incidents.length} incidents`;
++  summary.textContent = message;
++  list.replaceChildren(...visible.map(incidentElement));
++  if (announce && renderedCount !== null && renderedCount !== visible.length) announcer.textContent = message;
++  renderedCount = visible.length;
++}
++
++function replaceUrl(state) {
++  const next = `${location.pathname}${codec.encode(state)}${location.hash}`;
++  const current = `${location.pathname}${location.search}${location.hash}`;
++  if (next !== current) history.replaceState(history.state, "", next);
++}
++
++function commitControls() {
++  const state = readControls();
++  render(state, true);
++  replaceUrl(state);
++}
++
++function restoreFromUrl(announce = false) {
++  const state = codec.decode(location.search);
++  writeControls(state);
++  render(state, announce);
++  replaceUrl(state);
++}
++
++query.addEventListener("input", commitControls);
++status.addEventListener("change", commitControls);
++form.addEventListener("submit", (event) => event.preventDefault());
++form.addEventListener("reset", (event) => {
++  event.preventDefault();
++  writeControls({ query: "", status: "all" });
++  commitControls();
++});
++window.addEventListener("popstate", () => restoreFromUrl(true));
++restoreFromUrl();
+diff --git a/e2e/incident-board.spec.js b/e2e/incident-board.spec.js
+new file mode 100644
+index 0000000..2e78fc0
+--- /dev/null
++++ b/e2e/incident-board.spec.js
+@@ -0,0 +1,89 @@
++"use strict";
++
++const { test, expect } = require("@playwright/test");
++const root = (process.env.BASE_URL || "http://127.0.0.1:4173").replace(/\/+$/, "");
++
++test("shares, restores, and operates the incident filters", async ({ page }) => {
++  const errors = [];
++  page.on("console", (message) => {
++    if (message.type() === "error") errors.push(message.text());
++  });
++  page.on("pageerror", (error) => errors.push(error.message));
++
++  const query = page.locator("#query");
++  const status = page.locator("#status");
++  const reset = page.locator("#reset");
++  const summary = page.locator("#summary");
++  const announcer = page.locator("#announcer");
++  const incidents = page.locator(".incident");
++
++  await page.goto(`${root}/?query=webhook&status=monitoring`);
++  await expect(query).toHaveValue("webhook");
++  await expect(status).toHaveValue("monitoring");
++  await expect(summary).toHaveText("1 of 5 incidents");
++  await expect(incidents).toHaveCount(1);
++  await expect(incidents.first()).toContainText("Delayed webhook delivery");
++  await expect(announcer).toHaveText("");
++
++  await query.fill("Checkout");
++  await status.selectOption("open");
++  await expect(summary).toHaveText("1 of 5 incidents");
++  await expect(incidents).toHaveCount(1);
++  await expect(announcer).toHaveText("1 of 5 incidents");
++  await expect.poll(() => new URL(page.url()).search).toBe("?query=Checkout&status=open");
++
++  await page.goto(`${root}/?status=not-a-status`);
++  await expect(status).toHaveValue("all");
++  await expect(summary).toHaveText("5 of 5 incidents");
++  await expect(page).toHaveURL(`${root}/`);
++
++  await page.goto(`${root}/?query=upload&status=open`);
++  await reset.click();
++  await expect(query).toHaveValue("");
++  await expect(status).toHaveValue("all");
++  await expect(summary).toHaveText("5 of 5 incidents");
++  await expect(page).toHaveURL(`${root}/`);
++
++  await page.goto(`${root}/`);
++  await page.evaluate(() => {
++    history.pushState(null, "", "?query=Search&status=resolved");
++    dispatchEvent(new PopStateEvent("popstate"));
++  });
++  await expect(query).toHaveValue("Search");
++  await expect(status).toHaveValue("resolved");
++  await query.fill("billing");
++  await expect.poll(() => new URL(page.url()).search).toBe("?query=billing&status=resolved");
++  await page.goBack();
++  await expect(query).toHaveValue("");
++  await expect(status).toHaveValue("all");
++  await expect(summary).toHaveText("5 of 5 incidents");
++  await page.goForward();
++  await expect(query).toHaveValue("billing");
++  await expect(status).toHaveValue("resolved");
++  await expect(summary).toHaveText("0 of 5 incidents");
++
++  await page.goto(`${root}/`);
++  await query.focus();
++  await page.keyboard.type("Checkout");
++  await expect(query).toBeFocused();
++  await page.keyboard.press("Tab");
++  await expect(status).toBeFocused();
++  await page.keyboard.press("ArrowDown");
++  await expect(status).toHaveValue("open");
++  await expect(summary).toHaveText("1 of 5 incidents");
++  await page.keyboard.press("Tab");
++  await expect(reset).toBeFocused();
++  await page.keyboard.press("Enter");
++  await expect(query).toHaveValue("");
++  await expect(status).toHaveValue("all");
++  await expect(page).toHaveURL(`${root}/`);
++
++  for (const viewport of [{ width: 1280, height: 800 }, { width: 320, height: 640 }]) {
++    await page.setViewportSize(viewport);
++    await page.goto(`${root}/?query=image&status=open`);
++    const noOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth);
++    expect(noOverflow).toBe(true);
++  }
++
++  expect(errors).toEqual([]);
++});
+diff --git a/index.html b/index.html
+index 36fb0bd..cb610fa 100644
+--- a/index.html
++++ b/index.html
+@@ -4,6 +4,7 @@
+     <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <title>Incident Board</title>
++    <link rel="icon" href="data:,">
+     <link rel="stylesheet" href="styles.css">
+   </head>
+   <body>
+@@ -32,8 +33,10 @@
+       </form>
+ 
+       <p id="summary" class="summary"></p>
++      <p id="announcer" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></p>
+       <ol id="incidents" class="incidents"></ol>
+     </main>
++    <script src="state-codec.js"></script>
+     <script src="app.js"></script>
+   </body>
+ </html>
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..76d78da
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,11 @@
++{
++  "name": "incident-board",
++  "private": true,
++  "scripts": {
++    "test": "node --test",
++    "test:browser": "playwright test e2e/incident-board.spec.js --reporter=line"
++  },
++  "devDependencies": {
++    "@playwright/test": "^1.54.0"
++  }
++}
+diff --git a/state-codec.js b/state-codec.js
+new file mode 100644
+index 0000000..562bb56
+--- /dev/null
++++ b/state-codec.js
+@@ -0,0 +1,42 @@
++"use strict";
++
++(function (root, factory) {
++  const codec = factory();
++  if (typeof module === "object" && module.exports) module.exports = codec;
++  else root.IncidentStateCodec = codec;
++})(typeof globalThis === "object" ? globalThis : this, function () {
++  const statuses = Object.freeze(["all", "open", "monitoring", "resolved"]);
++  const knownStatuses = new Set(statuses);
++
++  function normalize(state = {}) {
++    const value = state && typeof state === "object" ? state : {};
++    return {
++      query: typeof value.query === "string" ? value.query : "",
++      status: knownStatuses.has(value.status) ? value.status : "all"
++    };
++  }
++
++  function decode(search = "") {
++    const params = new URLSearchParams(typeof search === "string" ? search : "");
++    return normalize({
++      query: params.get("query") ?? "",
++      status: params.get("status") ?? "all"
++    });
++  }
++
++  function encode(state = {}) {
++    const value = normalize(state);
++    const params = new URLSearchParams();
++    if (value.query.trim() !== "") params.set("query", value.query);
++    if (value.status !== "all") params.set("status", value.status);
++    const search = params.toString();
++    return search ? `?${search}` : "";
++  }
++
++  return Object.freeze({
++    STATUSES: statuses,
++    normalize,
++    decode,
++    encode
++  });
++});
+diff --git a/styles.css b/styles.css
+index 51f238f..5527c3c 100644
+--- a/styles.css
++++ b/styles.css
+@@ -64,7 +64,11 @@ button {
+ }
+ 
+ input,
+-select { padding: 0 12px; }
++select {
++  width: 100%;
++  min-width: 0;
++  padding: 0 12px;
++}
+ 
+ button {
+   padding: 0 16px;
+@@ -83,6 +87,10 @@ button {
+   list-style: none;
+ }
+ 
++.incident > div { min-width: 0; }
++.incident h2,
++.incident p { overflow-wrap: anywhere; }
++
+ .incident {
+   display: grid;
+   grid-template-columns: auto 1fr auto;
+@@ -122,6 +130,15 @@ button {
+   text-transform: capitalize;
+ }
+ 
++.visually-hidden {
++  position: absolute;
++  width: 1px;
++  height: 1px;
++  overflow: hidden;
++  clip-path: inset(50%);
++  white-space: nowrap;
++}
++
+ @media (max-width: 640px) {
+   .shell { padding-top: 36px; }
+   .filters { grid-template-columns: 1fr; }
+diff --git a/test/state-codec.test.js b/test/state-codec.test.js
+new file mode 100644
+index 0000000..3b385f0
+--- /dev/null
++++ b/test/state-codec.test.js
+@@ -0,0 +1,32 @@
++"use strict";
++
++const test = require("node:test");
++const assert = require("node:assert/strict");
++const codec = require("../state-codec.js");
++
++test("normalizes missing and invalid state", () => {
++  assert.deepEqual(codec.normalize(null), { query: "", status: "all" });
++  assert.deepEqual(codec.normalize({ query: 7, status: "OPEN" }), { query: "", status: "all" });
++});
++
++test("decodes URL encoding and rejects unknown statuses", () => {
++  assert.deepEqual(
++    codec.decode("?query=Delayed+webhook&status=monitoring"),
++    { query: "Delayed webhook", status: "monitoring" }
++  );
++  assert.deepEqual(codec.decode("?status=closed"), { query: "", status: "all" });
++});
++
++test("encodes only non-default values", () => {
++  assert.equal(codec.encode({ query: "", status: "all" }), "");
++  assert.equal(codec.encode({ query: "   ", status: "all" }), "");
++  assert.equal(
++    codec.encode({ query: "billing totals", status: "resolved" }),
++    "?query=billing+totals&status=resolved"
++  );
++});
++
++test("round-trips arbitrary query text", () => {
++  const state = { query: `<img src=x onerror="boom">`, status: "open" };
++  assert.deepEqual(codec.decode(codec.encode(state)), state);
++});

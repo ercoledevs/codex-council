@@ -1,0 +1,4 @@
+interface:
+  display_name: "Codex Hyper"
+  short_description: "Solo/Relay implementation with one writer and falsification"
+  default_prompt: "Use $codex-council:codex-hyper to implement this complex change with the smallest justified agent topology and evidence-backed verification."

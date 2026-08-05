@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
-    <title>Examples - Codex Council</title>
-    <meta name="description" content="One real run, start to finish: the same proposal through a plain Codex prompt and through the council, with the preflight estimate and the blockers it surfaced.">
+    <title>Evidence Lab - Codex Council</title>
+    <meta name="description" content="A completed Codex Hyper case study with a saved task, baseline, patch, strict tests, fresh-verifier verdict, replay record, and provenance limits.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/examples.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/examples.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/examples.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/examples.html">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Codex Council Examples">
-    <meta property="og:description" content="A real run: the same proposal through a plain prompt and through the council, with the preflight estimate and the blockers it found.">
+    <meta property="og:title" content="Codex Council Evidence Lab">
+    <meta property="og:description" content="Inspect one completed Codex Hyper case study: task, patch, strict checks, fresh-verifier verdict, replay, and provenance limits.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/examples.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Codex Council Examples">
-    <meta name="twitter:description" content="A real run: the same proposal through a plain prompt and through the council, with the preflight estimate and the blockers it found.">
+    <meta name="twitter:title" content="Codex Council Evidence Lab">
+    <meta name="twitter:description" content="Inspect one completed Codex Hyper case study with replayable code evidence and clear provenance limits.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html" aria-current="page">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html" aria-current="page">Evidence</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/examples.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -67,138 +67,114 @@
     </header>
 
     <main id="main">
-      <section class="section">
+      <section class="section evidence-hero">
         <div class="section-inner">
-          <p class="eyebrow">Prompt comparison</p>
-          <h1>Same problem, more pressure.</h1>
+          <p class="eyebrow">Evidence Lab</p>
+          <h1>Completed run. Saved patch. Replayed checks.</h1>
           <p class="lead">
-            I ran this for real while building the site. The brief was deliberately messy:
-            shareable session reports with automatic redaction, HTML and JSON export, and team
-            handoff links. A plain prompt gave me a tidy outline. The council gave me a safer plan.
+            One local Codex Hyper case reached the completion bar: accepted
+            task, frozen baseline, implementation patch, strict checks, a fresh
+            verifier, and a clean replay. It is a case study, not a benchmark.
           </p>
-
-          <div class="comparison">
-            <div class="panel">
-              <div class="panel-title">Normal Codex prompt</div>
-              <div class="panel-body">
-                <pre><code>Evaluate proposal:
-Add shareable Council reports
-with automatic redaction,
-HTML/JSON export, and
-team handoff links.</code></pre>
-                <p><strong>What the single pass caught:</strong></p>
-                <ul>
-                  <li>Build a local report assembler on top of existing session artifacts.</li>
-                  <li>Run a redaction pass before HTML/JSON export.</li>
-                  <li>Keep handoff local until there's authenticated hosting.</li>
-                  <li>Add tests for secrets, paths, the report schema, and the generated HTML.</li>
-                </ul>
-                <p>All useful, all roughly right. But it still treated the whole thing as an export feature.</p>
-              </div>
-            </div>
-            <div class="panel">
-              <div class="panel-title">Codex Council prompt</div>
-              <div class="panel-body">
-                <pre><code>Standard Council:
-review the same proposal.
-Use architecture, reliability,
-privacy, product, red-team,
-and performance lenses.
-Return blockers and
-the safest v1 scope.</code></pre>
-                <p><strong>What the council added:</strong></p>
-                <ul>
-                  <li>Ship local, deterministic exports in v1 — nothing else.</li>
-                  <li>Don't sell automatic redaction as a security boundary.</li>
-                  <li>Allowlist a public schema instead of scrubbing raw logs.</li>
-                  <li>Fail closed if redaction or a sensitive-content check breaks.</li>
-                  <li>No recursive walks through session folders, no dumping huge raw output.</li>
-                  <li>Add a lifecycle: preview, dry-run, delete, re-export, retention.</li>
-                  <li>Add performance gates at 1 MB, 25 MB, and 100 MB.</li>
-                </ul>
-              </div>
-            </div>
+          <div class="evidence-snapshot" role="list" aria-label="Run snapshot">
+            <span role="listitem">Captured 23 July 2026</span>
+            <span role="listitem">Replayed 24 July 2026</span>
+            <span role="listitem">Hyper · Relay route</span>
+            <span role="listitem">1 completed case</span>
+          </div>
+          <div class="actions">
+            <a class="button primary" href="#node-scheduler">Inspect the completed run</a>
+            <a class="button secondary" href="#protocol">Read the publication bar</a>
           </div>
         </div>
       </section>
 
-      <section class="section band">
+      <section class="section" id="node-scheduler">
         <div class="section-inner">
-          <p class="eyebrow">The actual output</p>
-          <h2>Captured straight from the run.</h2>
+          <div class="evidence-kicker">
+            <p class="eyebrow">Completed case · Node.js scheduler</p>
+            <span class="status-pill status-pass">Outcome replay PASS</span>
+            <span class="status-pill status-unknown">Workflow provenance PARTIAL</span>
+            <span class="status-pill">Exact local build recorded</span>
+          </div>
+          <h2>Hyper implemented the contract and closed the gates.</h2>
           <p class="lead">
-            Condensed, but real. The token numbers are estimates, not a bill — and remember this
-            is still one model playing several parts, not a panel of rival providers.
+            The task added bounded logical concurrency, retries, per-attempt
+            timeouts, caller cancellation, ordered results, and deterministic
+            tests while preserving the legacy two-argument API.
           </p>
 
-          <div class="runs">
-            <article class="run">
-              <div class="run-head"><span class="run-num">1</span><h3>Standard Council preflight</h3></div>
-              <pre><code>$ python3 scripts/codex_council.py estimate \
-  --topic "Add shareable Codex Council session reports..." \
-  --mode standard --token-budget compact --type implementation
+          <div class="proof-strip evidence-proof" role="list">
+            <div class="proof-item" role="listitem"><strong>13/13</strong><span>Strict Node tests passed.</span></div>
+            <div class="proof-item" role="listitem"><strong>PASS</strong><span>JavaScript syntax check.</span></div>
+            <div class="proof-item" role="listitem"><strong>PASS</strong><span>Fresh verifier against the final clarified contract.</span></div>
+            <div class="proof-item" role="listitem"><strong>PASS</strong><span>Published patch replay on a fresh copy.</span></div>
+          </div>
 
-Mode: standard
-Type: implementation
-Roles/reviewers/evidence runners: 6/2/0
-Estimated total tokens: 12220 (range 9165..16497)
-Estimated input/output tokens: 10830/1390</code></pre>
+          <div class="grid two evidence-grid">
+            <article class="card">
+              <h3>What the implementation covers</h3>
+              <p>Hostile rejection values, late settlement, legacy callback behavior, dynamic job arrays, invalid <code>null</code> options, and abort/timeout ties.</p>
             </article>
-            <article class="run">
-              <div class="run-head"><span class="run-num">2</span><h3>What plain Codex returned</h3></div>
-              <pre><code>Recommendation:
-Build it, but scope v1 as local explicit export.
-
-Architecture:
-session artifacts -> ReportAssembler -> RedactionPipeline
--> HTML/JSON exporters -> optional handoff artifact
-
-Risks:
-accidental disclosure, telemetry confusion, collaboration
-hosting scope creep.</code></pre>
-            </article>
-            <article class="run">
-              <div class="run-head"><span class="run-num">3</span><h3>What the council returned</h3></div>
-              <pre><code>Final recommendation:
-Ship local deterministic session exports only.
-Use HTML and JSON generated from an allowlisted public schema.
-Run strict redaction before rendering or serialization.
-Do not ship automatic publishing, public URLs, or
-security-boundary claims yet.</code></pre>
-            </article>
-            <article class="run">
-              <div class="run-head"><span class="run-num">4</span><h3>Blockers it surfaced</h3></div>
-              <pre><code>- No raw prompts, outputs, logs, or arbitrary session fields by default.
-- Redaction must be field-level and fail closed.
-- Report schema must be allowlisted and versioned.
-- Partial/legacy sessions must degrade safely, not dump raw data.
-- Export must be manifest-driven with no recursive scans.
-- Preview, dry-run, delete, re-export, and retention rules are required.
-- Team handoff needs a threat model before hosted or public links.
-- Performance gates are required because preview/re-export can double work.</code></pre>
-            </article>
-            <article class="run">
-              <div class="run-head"><span class="run-num">5</span><h3>The honest read</h3></div>
-              <pre><code>The single pass had the right shape.
-The council made it safer: smaller v1, no premature
-sharing claims, and privacy, lifecycle, and performance
-constraints that would otherwise have shipped as
-production risks.</code></pre>
+            <article class="card">
+              <h3>What the record proves</h3>
+              <p>The saved patch applies to the frozen baseline and passes its published checks. It does not prove that Hyper is generally better than another workflow.</p>
             </article>
           </div>
+
+          <div class="callout">
+            <strong>Residual limit.</strong>
+            JavaScript cannot stop physical work that ignores
+            <code>AbortSignal</code>. The accepted contract requires cooperative
+            workers and consumes late settlement to avoid unhandled rejections.
+          </div>
+          <div class="actions evidence-links">
+            <a class="button primary" href="evidence/2026-07-23-node-scheduler/README.md">Read the run record</a>
+            <a class="button secondary" href="evidence/2026-07-23-node-scheduler/hyper.patch">Inspect the patch</a>
+            <a class="button secondary" href="evidence/2026-07-23-node-scheduler/checks.md">Review the checks</a>
+            <a class="button secondary" href="evidence/2026-07-23-node-scheduler/manifest.json">Verify the manifest</a>
+          </div>
+          <details class="evidence-files">
+            <summary>Open the published evidence bundle</summary>
+            <ul>
+              <li><a href="evidence/2026-07-23-node-scheduler/task.md">Accepted final task</a></li>
+              <li><a href="evidence/2026-07-23-node-scheduler/hyper-verifier.md">Fresh-verifier verdict</a></li>
+              <li><a href="evidence/2026-07-23-node-scheduler/provenance.md">Provenance scope</a></li>
+              <li><a href="evidence/2026-07-23-node-scheduler/baseline/README.md">Baseline README</a></li>
+              <li><a href="evidence/2026-07-23-node-scheduler/baseline/package.json">Baseline package.json</a></li>
+              <li><a href="evidence/2026-07-23-node-scheduler/baseline/src/scheduler.js">Baseline scheduler</a></li>
+              <li><a href="evidence/2026-07-23-node-scheduler/baseline/test/scheduler.test.js">Baseline tests</a></li>
+            </ul>
+          </details>
         </div>
       </section>
 
-      <section class="section">
+      <section class="section band" id="protocol">
         <div class="section-inner">
-          <p class="eyebrow">The takeaway</p>
-          <h2>It's worth it when it changes the answer.</h2>
-          <ul class="wide-list">
-            <li><strong>Plain Codex found a workable architecture.</strong> The council turned it into a safer release.</li>
-            <li><strong>Plain Codex said "local export first".</strong> The council said "local export only — until sharing has a threat model".</li>
-            <li><strong>Plain Codex added redaction tests.</strong> The council required fail-closed, field-level redaction before anything renders.</li>
-            <li><strong>Plain Codex listed risks.</strong> The council turned them into blockers, a lifecycle, and performance gates.</li>
-          </ul>
+          <p class="eyebrow">Publication bar</p>
+          <h2>I publish only completed runs, with their limits.</h2>
+          <p class="lead">
+            A featured run needs a dated task, frozen input, resulting patch,
+            commands, a verifier verdict, and a replayable outcome. This record
+            meets that bar.
+          </p>
+          <div class="grid two evidence-grid">
+            <article class="card">
+              <h3>Replayable outcome</h3>
+              <p>The baseline, task, patch, checks, hashes, and final verifier summary are public and linked above.</p>
+            </article>
+            <article class="card">
+              <h3>Partial workflow provenance</h3>
+              <p>Raw agent transcripts, runtime model ID, token usage, and end-to-end duration were not retained. The code outcome can be replayed; the complete orchestration conversation cannot.</p>
+            </article>
+          </div>
+          <div class="callout">
+            <strong>Build provenance.</strong>
+            This case was captured from historical local build identifier
+            <code>1.0.0+codex.20260716085645</code> and the frozen source commit recorded in the
+            manifest. Hyper ships with Codex Council 1.1.0; this evidence supports this case only,
+            not a general performance claim.
+          </div>
         </div>
       </section>
     </main>
@@ -207,12 +183,14 @@ production risks.</code></pre>
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
           <a href="usage.html">Install</a>
-          <a href="alters.html">Tune alters</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limits</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
       </div>
     </footer>

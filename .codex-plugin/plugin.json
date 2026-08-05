@@ -1,7 +1,7 @@
 {
   "name": "codex-council",
-  "version": "1.0.0",
-  "description": "Token-aware Codex Council, Forge and Mind workflows with a local experimental Decision Runtime for replayable decision evidence.",
+  "version": "1.1.0",
+  "description": "End-to-end Codex development workflows from proposal design and structured review to authorized implementation and evidence-backed verification.",
   "author": {
     "name": "ercoledevs",
     "url": "https://github.com/ercoledevs"
@@ -15,13 +15,14 @@
     "multi-agent",
     "review",
     "governance",
-    "decision-runtime"
+    "decision-runtime",
+    "implementation"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex Council",
-    "shortDescription": "Run token-aware multi-agent deliberation inside Codex.",
-    "longDescription": "Codex Council adapts council-style review to Codex-only workflows: six independent role lenses, anonymous rubric review, blockers and dissent, Forge proposal generation, Mind end-to-end judgment, adaptive routing, local intelligence artifacts, health and stats tooling, and an experimental shadow-only Decision Runtime with deterministic cells, frontier comparison, transactional generations, typed patches, recovery and fail-closed impact planning.",
+    "shortDescription": "From proposal to reviewed, verified code in Codex.",
+    "longDescription": "Codex Council gives Codex a controlled development pipeline: Forge turns goals and constraints into an implementation proposal, Council challenges it through isolated roles and anonymous review, Mind coordinates the gates, and Hyper applies authorized repository changes with Solo or Relay routing, one writer, executed checks, and mandatory falsification. Relay adds bounded read-only explorers and a fresh verifier. Local estimates, evidence artifacts, health and stats tooling, Alters, and the experimental non-authoritative Decision Runtime are included.",
     "developerName": "ercoledevs",
     "category": "Productivity",
     "capabilities": [
@@ -29,11 +30,12 @@
       "Code Review",
       "Decision Support",
       "Structured Review",
-      "Local Decision Intelligence"
+      "Local Evidence Inspection",
+      "Implementation Orchestration"
     ],
     "websiteURL": "https://ercoledevs.github.io/codex-council/",
     "defaultPrompt": [
-      "Use Codex Mind to forge this idea and judge it end to end.",
+      "Use Codex Mind to turn this idea into an implementation proposal, review it, and\u2014after a blocker-free build verdict and confirmation of my authorization for the unchanged scope\u2014have Hyper apply the approved scope, run the required checks, and report PASS, FAIL, or UNKNOWN.",
       "Use Codex Council to review this change for blockers and verification.",
       "Project this completed session into the experimental Decision Runtime."
     ],

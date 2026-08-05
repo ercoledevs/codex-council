@@ -7,13 +7,15 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Mind - Codex Council</title>
-    <meta name="description" content="Codex Mind è la pipeline guidata: forgia una proposta, poi la passa al council, dall'inizio alla fine — con un'unica stima combinata in anticipo e un chiaro verdetto costruisci / rivedi / ferma.">
+    <meta name="description" content="Codex Mind orchestra Forge, Council e l'handoff controllato a Hyper: proposta, review e implementazione autorizzata del repository in un solo workflow guidato.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/mind.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/mind.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/mind.html">
@@ -21,14 +23,14 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:title" content="Codex Mind">
-    <meta property="og:description" content="La pipeline guidata: forgia una proposta, poi la giudica col council — un'unica stima combinata, un unico verdetto costruisci / rivedi / ferma.">
+    <meta property="og:description" content="Crea la proposta con Forge, revisiona con Council, poi fai implementare e verificare a Hyper lo scope autorizzato senza blocker.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/mind.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Mind">
-    <meta name="twitter:description" content="La pipeline guidata: forgia una proposta, poi la giudica col council — un'unica stima combinata, un unico verdetto costruisci / rivedi / ferma.">
+    <meta name="twitter:description" content="Un percorso guidato dalla proposta all'implementazione revisionata e autorizzata, con ogni gate visibile.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,12 +49,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Casi d'uso</a>
-          <a href="examples.html">Esempi</a>
-          <a href="usage.html">Uso</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html" aria-current="page">Mind</a>
+          <a href="use-cases.html">Prodotto</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Installa</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../mind.html" hreflang="en" aria-label="English version">EN</a>
@@ -71,19 +71,21 @@
       <section class="section section-tight">
         <div class="section-inner">
           <p class="eyebrow">Codex Mind</p>
-          <h1>Un'unica run guidata, dall'idea al verdetto.</h1>
+          <h1>Dall'idea al codice validato. Ogni gate è visibile.</h1>
           <p class="lead">
-            Codex Mind concatena le due metà del plugin: forgia una proposta, poi la passa al
-            council — in un'unica run guidata. Se non hai ancora una proposta, ti chiede prima cosa
-            costruire. Ottieni un'unica stima di costo combinata in anticipo e un'unica chiamata
-            costruisci / rivedi / ferma alla fine.
+            Mind orchestra Forge, Council e il percorso opzionale e controllato verso Codex Hyper, incluso nel
+            plugin. Forge produce la proposta delimitata; Council restituisce build, revise o stop.
+            Quando l'implementazione è richiesta e il risultato è un build senza blocker, Mind
+            mostra il preflight Hyper e conferma l'autorizzazione per lo scope invariato. Hyper
+            entra quindi in Relay, applica la modifica approvata tramite un solo writer root e
+            restituisce evidenze PASS, FAIL o UNKNOWN.
           </p>
 
           <figure class="brain-frame" aria-label="Codex Mind apre ogni run con un banner ASCII di un cervello digitale.">
             <pre class="brain-art" data-brain="../assets/brain.txt" aria-hidden="true"></pre>
           </figure>
-          <p class="wiki-lead" style="margin-top:16px;">
-            Ogni run di Mind si apre con questo banner — il segnale che la pipeline guidata è partita.
+          <p class="wiki-lead brain-caption">
+            Il banner segna l'inizio del percorso guidato Forge–Council–Hyper.
           </p>
         </div>
       </section>
@@ -91,10 +93,10 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">La pipeline</p>
-          <h2>Forge inventa. Council giudica. Mind li fa girare entrambi.</h2>
+          <h2>Forge propone. Council decide. Hyper implementa e verifica.</h2>
           <figure class="forge-stage">
             <svg class="forge-anim" viewBox="0 0 1200 230" role="img"
-                 aria-label="La pipeline di Codex Mind: la tua idea va a Forge, la proposta forgiata va al Council, e il risultato è un verdetto costruisci, rivedi o ferma.">
+                 aria-label="La pipeline di Codex Mind: Forge crea la proposta, Council restituisce build, revise o stop e, dopo un build senza blocker e un'autorizzazione valida, Hyper esegue lo scope approvato in Relay e lo verifica.">
               <title>La pipeline di Codex Mind</title>
               <defs>
                 <marker id="fg-ah-brand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -124,7 +126,7 @@
               <rect class="fg-docline" x="924" y="116" width="200" height="8" rx="3"></rect>
               <rect class="fg-docline" x="924" y="134" width="160" height="8" rx="3"></rect>
               <g class="fg-checkwrap"><g class="fg-check"><circle cx="1126" cy="84" r="17"></circle><path d="M1118,84 l5,6 l11,-13"></path></g></g>
-              <text class="fg-mini" x="1025" y="196" text-anchor="middle">COSTRUISCI · RIVEDI · FERMA</text>
+              <text class="fg-mini" x="1025" y="196" text-anchor="middle">HYPER · IMPLEMENTA · VERIFICA</text>
             </svg>
           </figure>
         </div>
@@ -133,32 +135,44 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Com'è fatta la run guidata</p>
-          <h2>Quattro mosse, tutte guidate.</h2>
+          <h2>Cinque passaggi controllati.</h2>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>Avvio</h3>
-              <p>Appare il banner del cervello. Se non c'è ancora una proposta, Mind fa una domanda mirata: cosa costruire e i vincoli rigidi.</p>
+              <p>Se non esiste ancora una proposta, Mind chiede il risultato atteso e i vincoli rigidi.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>Una stima sola</h3>
-              <p>Un'unica stima di token combinata per entrambe le fasi, mostrata e accettata in anticipo — così vedi il costo totale prima che parta qualcosa.</p>
+              <p>Un'unica stima di token combinata soltanto per Forge + Council, mostrata e accettata in anticipo. L'esecuzione Hyper non è nascosta al suo interno.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Forgia</h3>
-              <p>Cinque creatori danno forma a una proposta limitata (secondo round automatico solo se molto discordi, tetto tre). La vedi prima che prosegua.</p>
+              <p>Cinque prompt di ruolo formano una proposta limitata. Forge può chiudere nonconverged e non supera tre round.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>
-              <h3>Giudica e decidi</h3>
-              <p>Il council valuta la proposta e restituisce un'unica chiamata — costruisci, rivedi o ferma — con blocker, dissenso e la verifica esatta.</p>
+              <h3>Council</h3>
+              <p>Council restituisce build, revise o stop con blocker, dissenso, confidenza e verifiche richieste.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">05</div>
+              <h3>Esecuzione Hyper</h3>
+              <p>Mind mostra il preflight e conferma l'autorizzazione esistente o la ottiene se manca. Hyper entra in Relay, applica la modifica approvata tramite un solo writer root, esegue i check richiesti e chiude solo senza FAIL o UNKNOWN critici.</p>
             </div>
           </div>
           <div class="callout">
-            <strong>Checkpoint, non sorprese</strong>
-            Se Forge non converge, Mind fa emergere il dissenso e chiede prima di pagare una review del council. Se il council trova un blocker, la run si ferma su rivedi o ferma — mai «costruisci» sopra un blocker vivo.
+            <strong>Mind orchestra; Hyper gestisce l'implementazione</strong>
+            Mind invoca <code>$codex-council:codex-hyper</code> solo con intento implementativo,
+            verdetto build, zero blocker attivi, scope invariato, handoff completo e autorizzazione
+            valida per quello scope. Il preflight conferma l'autorizzazione esistente o la ottiene
+            se manca; cambi materiali di scope o rischio e azioni sensibili richiedono una nuova
+            autorizzazione. Ogni handoff da Mind entra in Relay. Altrimenti Mind si ferma senza
+            modificare file. Se la skill inclusa non può essere caricata, Mind restituisce l'handoff
+            invece di emularla.
+            <a href="hyper.html">Scopri come implementa Hyper →</a>
           </div>
         </div>
       </section>
@@ -166,19 +180,23 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Quando usare cosa</p>
-          <h2>Tre porte sullo stesso edificio.</h2>
+          <h2>Scegli il workflow adatto all'input.</h2>
           <div class="grid">
             <article class="card">
               <h3>Solo Forge</h3>
-              <p>Ti serve solo una forma per un'idea. <a href="forge.html">Inventa una proposta →</a></p>
+              <p>Ti serve una proposta limitata, non un verdetto. <a href="forge.html">Dai forma all'idea →</a></p>
             </article>
             <article class="card">
               <h3>Solo Council</h3>
-              <p>Hai già un piano e vuoi metterlo alla prova. <a href="index.html">Giudica una proposta →</a></p>
+              <p>Hai già una proposta e serve una review strutturata. <a href="index.html">Esegui Council →</a></p>
             </article>
             <article class="card">
               <h3>Mind</h3>
-              <p>Hai un'idea e vuoi arrivare fino alla decisione in un'unica run guidata.</p>
+              <p>Ti servono Forge, Council e l'handoff controllato all'implementazione in un unico percorso guidato.</p>
+            </article>
+            <article class="card">
+              <h3>Solo Hyper</h3>
+              <p>Hai già una modifica autorizzata al repository e vuoi implementarla con check espliciti. <a href="hyper.html">Vedi il metodo →</a></p>
             </article>
           </div>
         </div>
@@ -188,21 +206,25 @@
         <div class="section-inner">
           <p class="eyebrow">Usalo</p>
           <h2>Dai a Mind un'idea.</h2>
-          <p>In chat — dagli qualcosa da costruire e fa girare l'intera pipeline:</p>
+          <p>In chat — dagli un'idea e indica esplicitamente se offrire l'implementazione approvata:</p>
           <div class="prompt">
-            <span class="prompt-tag">Prompt</span>
+            <span class="prompt-tag">Esempio di prompt</span>
             <code>Use Codex Mind to forge a proposal for &lt;la tua idea&gt; and then run it
 through the council. Mostrami prima la stima combinata, e chiudi con una
-chiara chiamata build / revise / stop.</code>
+chiara chiamata build / revise / stop. Se è build senza blocker, lo scope è
+invariato e l'implementazione è richiesta, passa lo scope approvato a
+$codex-council:codex-hyper e mostra il suo preflight di esecuzione separato.</code>
           </div>
-          <p style="margin-top:24px;">Mind non aggiunge comandi nuovi — riusa Forge e Council sotto il cofano. La stima
-            combinata è semplicemente la somma delle due fasi:</p>
+          <p style="margin-top:24px;">Mind orchestra le skill incluse. La stima CLI mostrata per la
+            deliberazione è soltanto la somma di Forge + Council:</p>
           <pre><code># Stima entrambe le fasi in anticipo (mostrate come un unico range), poi accetta una volta.
 python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --type forge --token-budget compact
 python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --token-budget compact</code></pre>
           <div class="callout">
-            <strong>Economico per scelta</strong>
-            Due fasi, una sola stima accettata, compact di default. L'handoff tra le due è solo la proposta — mai i transcript — quindi una run completa non raddoppia i token.
+            <strong>Cosa copre la stima</strong>
+            La stima deliberativa accettata copre solo Forge e Council; tra loro passa la proposta,
+            non i transcript completi. Hyper è incluso nel plugin ma mantiene preflight e
+            autorizzazione di esecuzione separati perché l'implementazione può modificare il repository.
           </div>
         </div>
       </section>
@@ -212,11 +234,12 @@ python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>Un workflow a council per Codex. Licenza MIT.</p>
+          <p>Progetto open source indipendente di @ercoledevs. Licenza MIT.</p>
         </div>
         <div class="footer-links">
-          <a href="forge.html">Forge</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="usage.html">Installa</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limiti</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>

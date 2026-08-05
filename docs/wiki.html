@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
-    <title>Wiki - Codex Council</title>
-    <meta name="description" content="The Codex Council playbook: how it works, the six roles, the frontend gate, competency packs, how to prompt well, and a use-case cookbook with paste-ready prompts.">
+    <title>Playbook - Codex Council</title>
+    <meta name="description" content="Choose the right Codex Council workflow, use 30 prompt examples, and inspect one completed Hyper case with replayable evidence and stated limits.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/wiki.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/wiki.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/wiki.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/wiki.html">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Codex Council Wiki">
-    <meta property="og:description" content="How it works, the roles, the competency packs, how to prompt well, and a use-case cookbook with paste-ready prompts.">
+    <meta property="og:title" content="Codex Council Playbook">
+    <meta property="og:description" content="Choose the right workflow, copy a prompt structure, and inspect a completed Hyper case with replayable evidence.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/wiki.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Codex Council Wiki">
-    <meta name="twitter:description" content="How it works, the roles, the competency packs, how to prompt well, and a use-case cookbook with paste-ready prompts.">
+    <meta name="twitter:title" content="Codex Council Playbook">
+    <meta name="twitter:description" content="Choose the right workflow, copy a prompt structure, and inspect a completed Hyper case with replayable evidence.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html" aria-current="page">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/wiki.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -69,12 +69,12 @@
     <main id="main">
       <section class="section section-tight">
         <div class="section-inner">
-          <p class="eyebrow">Wiki</p>
-          <h1>The Codex Council playbook.</h1>
+          <p class="eyebrow">Playbook</p>
+          <h1>The shortest path to the right workflow.</h1>
           <p class="lead">
-            Everything in one place: how the council actually works, who the reviewers are, how to
-            write a prompt that gets a useful answer, and a cookbook of paste-ready prompts for the
-            situations you'll actually hit. Every prompt has a copy button.
+            Choose how to work, copy a prompt structure, then inspect the
+            evidence. The prompt library is illustrative; completed outcomes
+            appear in the Evidence Lab.
           </p>
         </div>
       </section>
@@ -83,424 +83,289 @@
         <div class="wiki-inner">
           <aside class="wiki-toc" aria-label="On this page">
             <div class="wiki-toc-group">
-              <strong>Start here</strong>
-              <a href="#mental-model">How it works</a>
-              <a href="#modes">Modes &amp; budget</a>
-            </div>
-            <div class="wiki-toc-group">
-              <strong>The council</strong>
-              <a href="#roles">The six roles</a>
-              <a href="#frontend">Leonardo &amp; Bob</a>
-              <a href="#packs">Competency packs</a>
-            </div>
-            <div class="wiki-toc-group">
-              <strong>Prompting</strong>
-              <a href="#prompting">How to prompt</a>
-              <a href="#cookbook">Use-case cookbook</a>
-            </div>
-            <div class="wiki-toc-group">
-              <strong>After the run</strong>
-              <a href="#output">Reading the output</a>
-              <a href="#alters">Tuning roles</a>
-            </div>
-            <div class="wiki-toc-group">
-              <strong>Operations</strong>
-              <a href="#budget">Token discipline</a>
-              <a href="#runtime">Decision Runtime</a>
-              <a href="#governance">Governance</a>
-              <a href="#cli">CLI reference</a>
-            </div>
-            <div class="wiki-toc-group">
-              <strong>Reference</strong>
-              <a href="#mistakes">Common mistakes</a>
-              <a href="#faq">FAQ</a>
-              <a href="#glossary">Glossary</a>
+              <strong>Playbook</strong>
+              <a href="#choose">Choose the workflow</a>
+              <a href="#method">How it works</a>
+              <a href="#evidence-lab">Evidence Lab</a>
+              <a href="#recipes">Prompt examples</a>
+              <a href="#operations">Operations</a>
+              <a href="#reference">Reference</a>
             </div>
           </aside>
 
           <div class="wiki-content">
-            <section id="mental-model">
-              <h2>How it works <a class="anchor" href="#mental-model" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">The council borrows the LLM Council pattern and runs it inside Codex. One request becomes four stages.</p>
-              <div class="steps">
-                <div class="step">
-                  <div class="step-number">01</div>
-                  <h3>First opinions</h3>
-                  <p>Up to six reviewers answer independently, in parallel, before seeing each other's work. No anchoring on whoever spoke first.</p>
-                </div>
-                <div class="step">
-                  <div class="step-number">02</div>
-                  <h3>Anonymous review</h3>
-                  <p>Outputs lose their authorship and become Candidate A–F. Reviewers rank and score them on a rubric — not on who sounds senior.</p>
-                </div>
-                <div class="step">
-                  <div class="step-number">03</div>
-                  <h3>Aggregation</h3>
-                  <p>Scores are combined deterministically (locally, when reviewer JSON exists). Dissent and blockers are kept, not averaged away.</p>
-                </div>
-                <div class="step">
-                  <div class="step-number">04</div>
-                  <h3>Chairman synthesis</h3>
-                  <p>The main agent writes the final call from saved outputs — winner, dissent, blockers, verification. It doesn't just announce the top score.</p>
-                </div>
+            <section id="choose">
+              <h2>Choose the workflow <a class="anchor" href="#choose" aria-label="Link to Choose the workflow">#</a></h2>
+              <p class="wiki-lead">Use the smallest workflow that matches the uncertainty, impact, and proof required.</p>
+              <div class="workflow-choice-grid">
+                <article class="workflow-choice">
+                  <span class="workflow-choice-id">01</span>
+                  <h3>Plain Codex</h3>
+                  <p>Small, reversible work with an immediate oracle.</p>
+                  <strong>Use for:</strong>
+                  <span>mechanical edits, explanations, localized fixes.</span>
+                </article>
+                <article class="workflow-choice">
+                  <span class="workflow-choice-id">02</span>
+                  <h3>Forge</h3>
+                  <p>You have an idea, not yet a proposal.</p>
+                  <strong>Creates:</strong>
+                  <span>one implementation-ready concept from five creator lenses.</span>
+                </article>
+                <article class="workflow-choice">
+                  <span class="workflow-choice-id">03</span>
+                  <h3>Council</h3>
+                  <p>You have a proposal and want pressure, dissent, and blockers.</p>
+                  <strong>Returns:</strong>
+                  <span>a ranked judgment and verification plan.</span>
+                </article>
+                <article class="workflow-choice">
+                  <span class="workflow-choice-id">04</span>
+                  <h3>Mind</h3>
+                  <p>You need Forge → Council → authorized Hyper execution in one guided path.</p>
+                  <strong>Orchestrates:</strong>
+                  <span>proposal, review, stop gates, and the authorized path through Hyper execution.</span>
+                </article>
+                <article class="workflow-choice workflow-choice-featured">
+                  <span class="workflow-choice-id">05</span>
+                  <h3>Hyper</h3>
+                  <p>Implementation workflow for authorized, complex repository changes.</p>
+                  <strong>Owns:</strong>
+                  <span>contract → one writer → checks → falsification → evidence-backed close.</span>
+                </article>
               </div>
               <div class="callout">
-                <strong>The one thing to remember</strong>
-                The diversity here comes from isolated role prompts and anonymous review, not from different model vendors. That's enough to break single-pass anchoring and surface dissent — it is not the same as a panel of independent labs. The wiki says this plainly because the plugin does.
+                <strong>Fast rule.</strong>
+                If a single test can settle a small change, stay plain. If the
+                unknown is the idea, use Forge. If the unknown is the decision,
+                use Council. Use Mind for the complete gated path. Use Hyper directly
+                only for authorized implementation.
               </div>
             </section>
 
-            <section id="modes">
-              <h2>Modes &amp; budget <a class="anchor" href="#modes" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Pick the smallest mode that can catch the risk. Escalate per blocker, not by default.</p>
+            <section id="method">
+              <h2>How it works <a class="anchor" href="#method" aria-label="Link to How it works">#</a></h2>
+              <p class="wiki-lead">Mind connects Forge → Council → Hyper; each workflow can also run alone. None of them turns consensus into proof.</p>
+
+              <h3 id="mental-model">Council: isolate, score, preserve dissent</h3>
+              <div class="steps compact-steps">
+                <div class="step"><div class="step-number">01</div><h4>First opinions</h4><p>Members answer before seeing one another’s work, limiting direct cross-contamination.</p></div>
+                <div class="step"><div class="step-number">02</div><h4>Anonymous review</h4><p>Candidates lose authorship. Review depth and count follow the selected mode; Standard scaffolds performance-impact and coverage roles.</p></div>
+                <div class="step"><div class="step-number">03</div><h4>Aggregation</h4><p>Scores combine deterministically when valid reviewer JSON exists. Dissent and blockers stay visible.</p></div>
+                <div class="step"><div class="step-number">04</div><h4>Final Call</h4><p>The Chairman returns approved, approved-with-risk, or blocked with confidence and verification.</p></div>
+              </div>
+              <div class="callout">
+                <strong>What isolation can—and cannot—do.</strong>
+                It is designed to reduce first-answer anchoring and expose
+                disagreement. The roles are still correlated outputs from Codex,
+                not independent model vendors, and accuracy must be established
+                with task evidence.
+              </div>
+
+              <h3>Workflow boundaries</h3>
               <div class="table-wrap">
                 <table>
-                  <thead>
-                    <tr><th>You're doing</th><th>Reach for</th><th>Why</th></tr>
-                  </thead>
+                  <caption>Inputs and outputs by workflow</caption>
+                  <thead><tr><th scope="col">Workflow</th><th scope="col">Starts with</th><th scope="col">Ends with</th><th scope="col">Does not do</th></tr></thead>
                   <tbody>
-                    <tr><td>A small, reversible call</td><td><code>fast</code></td><td>A single Chairman pass. No full council, no full cost.</td></tr>
-                    <tr><td>An implementation or architecture choice</td><td><code>standard</code></td><td>Six roles + a scoring pass. The default for real decisions.</td></tr>
-                    <tr><td>Security, migration, data loss, a close tie</td><td><code>deep</code></td><td>Adds rubric, bias, and implementation reviewers.</td></tr>
-                    <tr><td>Frontend / UI / browser behavior</td><td><code>--frontend-review</code></td><td>Adds Leonardo (UX) and Bob (browser evidence).</td></tr>
-                    <tr><td>Plugin or skill usability</td><td><code>--type skill --skill-review</code></td><td>A cheap three-lens panel, no reviewers by default.</td></tr>
-                    <tr><td>A low-risk review you explicitly want scoped</td><td><code>--router auto --panel auto</code></td><td>Advisory routing only; privacy, security, data loss, and browser risk force full coverage.</td></tr>
+                    <tr><th scope="row">Forge</th><td>Problem or opportunity</td><td>Unified proposal</td><td>Judge or implement it</td></tr>
+                    <tr><th scope="row">Council</th><td>Concrete proposal</td><td>Final Call + dissent + blockers</td><td>Turn votes into proof</td></tr>
+                    <tr><th scope="row">Mind</th><td>Idea plus constraints</td><td>Proposal + Council verdict + Hyper result when authorized</td><td>Hide execution inside deliberation authorization</td></tr>
+                    <tr><th scope="row">Hyper</th><td>Authorized change or approved handoff</td><td>Checked code with evidence, or an explicit blocker</td><td>Re-run Forge or Council recursively</td></tr>
                   </tbody>
                 </table>
               </div>
-              <h3>Token budgets</h3>
-              <p>The <code class="inline-code">--token-budget</code> flag defaults to <code class="inline-code">compact</code>. Escalate the budget for risk, not for comfort.</p>
-              <ul class="wide-list">
-                <li><strong>compact</strong> — tight outputs, smallest reference set. The default for normal decisions.</li>
-                <li><strong>balanced</strong> — more detail, but only on the risky parts. For real tradeoffs and ambiguity.</li>
-                <li><strong>expanded</strong> — full evidence and audit trail. Blocked until you explicitly confirm, because it burns usage.</li>
+
+              <h3 id="frontend">Frontend evidence gate</h3>
+              <p>Leonardo reviews UX/UI. Bob executes browser evidence and does not vote. If the browser did not run, visual, keyboard, history, console, and overflow claims remain <strong>UNKNOWN</strong>.</p>
+
+              <h3>Hyper’s six stages</h3>
+              <ol class="method-rail">
+                <li><strong>Contract</strong><span>Observable done, scope, constraints, rollback, oracle.</span></li>
+                <li><strong>Observe</strong><span>Repository rules, worktree, baseline, bounded read-only investigation.</span></li>
+                <li><strong>Orient</strong><span>Map acceptance criteria to evidence and reserve one writer.</span></li>
+                <li><strong>Act</strong><span>Implement the smallest reversible path; check meaningful increments.</span></li>
+                <li><strong>Falsify</strong><span>Challenge the contract, raw diff, and checks. Relay adds a fresh verifier; Solo declares reduced independent coverage. Critical FAIL or UNKNOWN blocks completion.</span></li>
+                <li><strong>Close</strong><span>Reconcile the contract, rerun the right checks, review the diff, and report residual risk.</span></li>
+              </ol>
+            </section>
+
+            <section id="evidence-lab">
+              <h2>Evidence Lab <a class="anchor" href="#evidence-lab" aria-label="Link to Evidence Lab">#</a></h2>
+              <p class="wiki-lead">One completed public record, with replayable code evidence and stated provenance limits.</p>
+              <div class="evidence-legend">
+                <div><span class="status-pill status-pass">Completed</span><p>Task, frozen input, patch, checks, verifier verdict, and replay record are public.</p></div>
+                <div><span class="status-pill status-unknown">Provenance partial</span><p>The code outcome is replayable; raw orchestration transcripts were not retained.</p></div>
+                <div><span class="status-pill">Prompt example</span><p>A reusable prompt structure, never presented as a completed outcome.</p></div>
+              </div>
+
+              <h3>Strong run record</h3>
+              <ul class="evidence-checklist">
+                <li>run ID, date, plugin version, and source commit;</li>
+                <li>worktree state or frozen snapshot checksums;</li>
+                <li>exact task, clarifications, baseline, workflow, and route;</li>
+                <li>resulting patch, exact commands, exit codes, and unedited stdout/stderr—or explicit omissions;</li>
+                <li>workflow provenance: saved agent/verifier transcripts, or a clear <strong>PARTIAL</strong> label;</li>
+                <li>fresh-verifier verdict against the accepted contract;</li>
+                <li>residual risk and usage marked unavailable when not observable.</li>
               </ul>
-              <div class="callout">
-                <strong>Before any Standard/Deep run</strong>
-                The council shows a token estimate and waits for you to accept it. "Use Codex Council" is a request, not permission to spend — the preflight gate is mandatory, and <code class="inline-code">expanded</code> needs a separate yes.
+
+              <h3>Completed public record</h3>
+              <div class="table-wrap">
+                <table>
+                  <caption>Local Hyper evidence captured on 23 July and replayed on 24 July 2026</caption>
+                  <thead><tr><th scope="col">Run</th><th scope="col">Observed result</th><th scope="col">Status</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row"><a href="examples.html#node-scheduler">Node scheduler · Hyper Relay</a></th>
+                      <td>13/13 strict tests PASS, syntax PASS, fresh verifier PASS against the final clarified contract, and published patch replay PASS.</td>
+                      <td><span class="status-pill status-pass">Outcome replay PASS</span> <span class="status-pill status-unknown">Workflow provenance PARTIAL</span></td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
+              <p>This is one case study, not a benchmark or a general quality claim. It records a Hyper Relay implementation from the exact local build named in the evidence bundle.</p>
+              <a class="button primary" href="examples.html">Open the Evidence Lab</a>
             </section>
 
-            <section id="roles">
-              <h2>The six roles <a class="anchor" href="#roles" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Each reviewer guards one concern. Knowing their lenses helps you aim a prompt — or read why one of them blocked you.</p>
-              <div class="grid">
-                <article class="card">
-                  <h3>Ada Lovelace</h3>
-                  <p><em>Principal Architect.</em> Boundaries, integration, maintainability, migration risk. Lean on Ada for "which design ages well."</p>
-                </article>
-                <article class="card">
-                  <h3>Grace Hopper</h3>
-                  <p><em>Reliability Engineer.</em> Failure modes, tests, rollback, observability. Lean on Grace for "what happens when it breaks."</p>
-                </article>
-                <article class="card">
-                  <h3>Hypatia</h3>
-                  <p><em>Security &amp; Governance.</em> Secrets, permissions, privacy, provenance, policy. Lean on Hypatia for "who can abuse this."</p>
-                </article>
-                <article class="card">
-                  <h3>Florence Nightingale</h3>
-                  <p><em>Product &amp; Operator.</em> Workflow fit, docs, adoption, operational friction. Lean on Florence for "will anyone actually use it."</p>
-                </article>
-                <article class="card">
-                  <h3>Alan Turing</h3>
-                  <p><em>Contrarian Red Team.</em> Hidden assumptions, simpler alternatives, overengineering. Lean on Turing for "what if we don't build this."</p>
-                </article>
-                <article class="card">
-                  <h3>Seymour Cray</h3>
-                  <p><em>Performance Engineer.</em> Latency, throughput, memory, cost, scaling. He treats a perf claim as unverified without a workload, baseline, and measurement plan.</p>
-                </article>
-              </div>
-              <p>You don't pick roles by hand in a normal run — all six answer. But naming a concern in your prompt ("focus on rollback and migration risk") tells the Chairman which lenses to weight.</p>
-            </section>
+            <section id="recipes">
+              <h2>Prompt examples <a class="anchor" href="#recipes" aria-label="Link to Prompt examples">#</a></h2>
+              <p class="wiki-lead">Copy the structure, replace the placeholders, and define evidence that can settle the task. These are examples, not product results.</p>
 
-            <section id="frontend">
-              <h2>The frontend gate: Leonardo &amp; Bob <a class="anchor" href="#frontend" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Frontend work gets a stricter path, because UI bugs hide in behavior. Turn it on with <code class="inline-code">--frontend-review</code> or <code class="inline-code">--type frontend</code>.</p>
-              <div class="comparison">
-                <div class="panel">
-                  <div class="panel-title">Leonardo — the critic</div>
-                  <div class="panel-body">
-                    <p>A brutally honest UX/UI reviewer. He doesn't add a scoring dimension; his findings move clarity, relevance, completeness, and accuracy. A Leonardo blocker lowers final confidence even when the technical scores are high.</p>
-                    <p>He hunts hidden affordances, weak hierarchy, mobile failures, accessibility gaps, and "clever" flows that slow real users down.</p>
+              <h3 id="prompting">Prompt anatomy</h3>
+              <div class="prompt"><span class="prompt-tag">Prompt example</span><code>Use &lt;workflow&gt; for &lt;decision or change&gt;.
+Context: &lt;repo, files, users, current behavior&gt;.
+Constraints: &lt;compatibility, safety, time, dependencies&gt;.
+Success: &lt;observable acceptance criteria&gt;.
+Evidence: &lt;commands, tests, browser, metrics, counterexamples&gt;.
+Do not: &lt;out-of-scope actions or claims&gt;.</code></div>
+
+              <div id="cookbook" class="recipe-catalog">
+                <details class="recipe-family" open>
+                  <summary><span>Plain Codex</span><small>3 templates</small></summary>
+                  <div class="recipe-stack">
+                    <article><h3>Mechanical edit</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Update &lt;exact files&gt; to &lt;mechanical result&gt;. Preserve behavior and unrelated work. Run &lt;formatter/test&gt; and report the diff.</code></div></article>
+                    <article><h3>Diagnosis only</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Diagnose &lt;symptom&gt;. Trace the smallest reproducible cause with file:line evidence and commands. Do not implement a fix.</code></div></article>
+                    <article><h3>Localized test fix</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Fix &lt;failing test&gt; in &lt;module&gt;. Keep the patch local, add the missing regression case, and run the focused suite.</code></div></article>
                   </div>
-                </div>
-                <div class="panel">
-                  <div class="panel-title">Bob — the evidence runner</div>
-                  <div class="panel-body">
-                    <p>Bob drives a real browser against a runnable app or prototype. He is <strong>not</strong> a council member and never votes.</p>
-                    <p>He checks the things that only show up live: focus moving into a modal, background staying un-clickable, Escape/backdrop behavior, scroll lock, mobile close buttons. A forced click is never proof — every click needs an observed state change.</p>
+                </details>
+
+                <details class="recipe-family">
+                  <summary><span>Codex Forge</span><small>6 templates</small></summary>
+                  <div class="recipe-stack">
+                    <article><h3>New product concept</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Use $codex-council:codex-forge to turn &lt;user problem&gt; into one implementation-ready product proposal. Compare user value, interaction, architecture, delivery, and simplification.</code></div></article>
+                    <article><h3>System shape</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Forge a system design for &lt;capability&gt; under &lt;scale, latency, privacy, compatibility&gt;. Return boundaries, data flow, failure modes, rollout, and smallest viable slice.</code></div></article>
+                    <article><h3>Developer tool</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Forge a developer tool for &lt;workflow pain&gt;. Optimize for adoption, debuggability, local-first operation, and a measurable first release.</code></div></article>
+                    <article><h3>Workflow redesign</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Forge a simpler workflow for &lt;current process&gt;. Preserve &lt;hard controls&gt;, remove avoidable handoffs, and define the migration path.</code></div></article>
+                    <article><h3>Migration path</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Forge a staged migration from &lt;old system&gt; to &lt;target&gt;. Include coexistence, rollback, observability, ownership, and exit criteria.</code></div></article>
+                    <article><h3>Contrarian simplification</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Forge the smallest alternative to &lt;large proposal&gt;. Include what not to build, the assumption it tests, and the condition that would justify expansion.</code></div></article>
                   </div>
-                </div>
-              </div>
-              <div class="callout">
-                <strong>The hard rule</strong>
-                Nothing is called "verified" until Bob, or equivalent browser evidence, actually ran the path. Untested UI claims are reported as "not verified," and a failed Bob case becomes a blocker when it invalidates the recommendation.
-              </div>
-            </section>
+                </details>
 
-            <section id="packs">
-              <h2>Competency packs <a class="anchor" href="#packs" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Internal skill packs for when you don't want to wire in external skills. Name them in a prompt to bias the run.</p>
-              <div class="grid">
-                <article class="card"><h3>Implementation Strategist</h3><p>Architecture-to-plan: sequencing, ownership, migration path, smallest useful scope.</p></article>
-                <article class="card"><h3>Test &amp; Regression Sentinel</h3><p>Missing tests, edge cases, rollback, smoke checks. Use when correctness matters.</p></article>
-                <article class="card"><h3>Performance Impact Analyst</h3><p>Workload assumptions, baseline vs change, measurement gaps, degradation under contention.</p></article>
-                <article class="card"><h3>Token &amp; Context Optimizer</h3><p>Mode choice, loaded references, context pruning, output caps — when a run risks getting expensive.</p></article>
-                <article class="card"><h3>Governance &amp; Audit Officer</h3><p>Sensitive data, license status, audit trail, redaction. For privacy and distribution calls.</p></article>
-                <article class="card"><h3>Operator UX Reviewer</h3><p>Trigger clarity, default prompts, concise output — when adoption and daily workflow matter.</p></article>
-                <article class="card"><h3>Frontend UX Critic</h3><p>Counterintuitive flows, hidden affordances, weak hierarchy, mobile failure, decorative bloat.</p></article>
-                <article class="card"><h3>Contrarian Simplifier</h3><p>What not to build, cheaper alternatives, hidden assumptions, invalidation conditions.</p></article>
-              </div>
-            </section>
+                <details class="recipe-family">
+                  <summary><span>Codex Council</span><small>12 templates</small></summary>
+                  <div class="recipe-stack">
+                    <article><h3>Architecture decision</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: judge &lt;proposal A vs B&gt; for &lt;system&gt;. Ground the recommendation in repository constraints, migration cost, failure modes, and verification.</code></div></article>
+                    <article><h3>Risky diff / pull request</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: review &lt;diff or PR&gt;. Find correctness blockers, compatibility risk, missing tests, rollback gaps, and the smallest safe merge condition.</code></div></article>
+                    <article><h3>Bug and regression RCA</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: evaluate the proposed root cause for &lt;regression&gt;. Separate observed facts from hypotheses and require a reproducer that can falsify the winner.</code></div></article>
+                    <article><h3>Performance-sensitive change</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Deep Council: judge &lt;performance proposal&gt;. Require baseline workload, contention behavior, measurement plan, budgets, and rollback thresholds.</code></div></article>
+                    <article><h3>Database migration</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Deep Council: review &lt;schema/data migration&gt;. Preserve compatibility, idempotency, resumability, auditability, rollback, and partial-failure recovery.</code></div></article>
+                    <article><h3>Public API change</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: judge &lt;API change&gt;. Map consumers, versioning, error semantics, migration aids, observability, and breaking-change evidence.</code></div></article>
+                    <article><h3>Refactor vs rewrite</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: decide refactor, strangler migration, or rewrite for &lt;module&gt;. Quantify risks, reversible milestones, and stop conditions.</code></div></article>
+                    <article><h3>Dependency upgrade</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: review upgrading &lt;dependency&gt;. Check current official migration docs, compatibility surface, lockfile impact, rollback, and smoke tests.</code></div></article>
+                    <article><h3>Frontend interaction</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council with frontend review: judge &lt;flow&gt;. Leonardo reviews UX; Bob verifies keyboard, focus, responsive states, console errors, and screenshots. Unknown browser evidence blocks UI completion.</code></div></article>
+                    <article><h3>Release go / no-go</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Deep Council: issue a go, revise, or stop call for &lt;release&gt;. Use deployed facts, open incidents, rollback readiness, owner coverage, and explicit blockers.</code></div></article>
+                    <article><h3>Incident postmortem</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Standard Council: review &lt;postmortem&gt;. Challenge the causal chain, contributing conditions, detection gaps, action owners, and evidence that recurrence risk fell.</code></div></article>
+                    <article><h3>Privacy and sharing</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Deep Council: judge &lt;data-sharing feature&gt;. Identify data classes, minimization, retention, deletion, access boundaries, audit needs, and claims that require a dedicated security review.</code></div></article>
+                  </div>
+                </details>
 
-            <section id="prompting">
-              <h2>How to prompt the council <a class="anchor" href="#prompting" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">A council prompt isn't a question — it's a decision to pressure-test. Give it something to argue about.</p>
+                <details class="recipe-family">
+                  <summary><span>Codex Mind</span><small>3 templates</small></summary>
+                  <div class="recipe-stack">
+                    <article><h3>Idea to verdict</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Use $codex-council:codex-mind to forge and judge &lt;idea&gt;. Show the combined compact estimate first. Return the proposal, dissent, blockers, and Final Call. Do not implement.</code></div></article>
+                    <article><h3>Idea to optional build</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Use $codex-council:codex-mind for &lt;idea&gt;. After an accepted estimate, run Forge then Council. Offer bundled Hyper only if the Final Call is build and I separately authorize implementation.</code></div></article>
+                    <article><h3>Constrained feature</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Mind: shape and judge &lt;feature&gt; under &lt;hard constraints&gt;. Preserve incompatible options and dissent until Council decides; no implementation handoff while a blocker remains.</code></div></article>
+                  </div>
+                </details>
 
-              <h3>The anatomy of a good prompt</h3>
-              <div class="prompt">
-                <span class="prompt-tag">Template</span>
-                <code>[Standard|Deep|Frontend] Council: review &lt;the specific decision&gt;.
-Context: &lt;the diff, files, or links it should look at&gt;.
-Constraints: &lt;hard limits — compatibility, deadline, budget&gt;.
-Return: blockers, dissent, confidence, the safest v1 scope,
-and the exact verification before approval.</code>
-              </div>
-
-              <h3>Do</h3>
-              <ul class="wide-list">
-                <li><strong>Name the mode.</strong> "Standard Council", "Deep Council", "Frontend Council" — it sets cost and scrutiny up front.</li>
-                <li><strong>Give it a decision, not a vibe.</strong> "Should we split this service in two?" beats "thoughts on the backend?"</li>
-                <li><strong>Point at evidence.</strong> Paste the diff, name the files, link the spec. The council reasons over what you give it.</li>
-                <li><strong>State the hard constraints.</strong> Backwards compatibility, a deadline, a token budget, a platform limit — these change the answer.</li>
-                <li><strong>Ask for what you need to act:</strong> blockers, dissent, confidence, and exact verification.</li>
-              </ul>
-
-              <h3>Don't</h3>
-              <ul class="wide-list">
-                <li><strong>Don't ask it to "just confirm."</strong> The council preserves dissent on purpose. If you want a rubber stamp, use plain Codex.</li>
-                <li><strong>Don't skip the constraints</strong> and then be surprised it solved a different problem.</li>
-                <li><strong>Don't claim a UI works</strong> without a frontend run — say "have Bob verify it in the browser."</li>
-                <li><strong>Don't reach for <code class="inline-code">expanded</code></strong> out of habit. Escalate one blocker, not the whole session.</li>
-              </ul>
-
-              <h3>Meta vs. run</h3>
-              <p>Explaining the council is not running it. "How does the council work?" gets a one-line answer, no dispatch. "Run a council on this" dispatches agents. If your intent is ambiguous, the council asks one line before spending anything.</p>
-            </section>
-
-            <section id="cookbook">
-              <h2>Use-case cookbook <a class="anchor" href="#cookbook" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Sixteen situations, each with the mode to use, the reviewers to lean on, and a prompt you can paste as-is.</p>
-
-              <h3>1. Architecture decision</h3>
-              <ul class="recipe-meta"><li><b>When</b> picking a design you'll live with</li><li><b>Mode</b> standard</li><li><b>Lean on</b> Ada, Turing, Seymour</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Standard Council: review this architecture decision —
-&lt;option A vs option B&gt;. Preserve dissent.
-Return module boundaries, migration risk, the rollback plan,
-and the implementation verification before we commit.</code></div>
-
-              <h3>2. Pull request / risky diff</h3>
-              <ul class="recipe-meta"><li><b>When</b> a change is big or load-bearing</li><li><b>Mode</b> standard</li><li><b>Lean on</b> Grace, Turing, Seymour</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this diff. Focus on regressions,
-missing tests, compatibility breaks, and performance impact.
-Return blockers vs refinements and the exact tests to run.</code></div>
-
-              <h3>3. Bug &amp; regression root cause</h3>
-              <ul class="recipe-meta"><li><b>When</b> a fix needs to be the right fix</li><li><b>Mode</b> fast, or standard if root cause is unclear</li><li><b>Lean on</b> Grace, Turing</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this bugfix plan for root-cause evidence
-and regression risk. Is this the cause or a symptom?
-Return the regression tests we're missing.</code></div>
-
-              <h3>4. Performance-sensitive change</h3>
-              <ul class="recipe-meta"><li><b>When</b> latency, memory, or cost can move</li><li><b>Mode</b> standard (deep if it can cause an outage)</li><li><b>Lean on</b> Seymour</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this change for latency, throughput, memory,
-and cost. Treat any perf claim as unverified without a
-workload, baseline, and measurement plan. Return the
-benchmark we need and a safer alternative.</code></div>
-
-              <h3>5. Database migration / schema change</h3>
-              <ul class="recipe-meta"><li><b>When</b> data is on the line</li><li><b>Mode</b> deep</li><li><b>Lean on</b> Hypatia, Grace, Ada</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Deep Council: review this migration for data-loss risk,
-backwards compatibility, and rollback. Assume it runs against
-production data. Return blockers, the dry-run plan, and the
-exact rollback signal.</code></div>
-
-              <h3>6. Security &amp; secrets review</h3>
-              <ul class="recipe-meta"><li><b>When</b> auth, permissions, or secrets are touched</li><li><b>Mode</b> deep</li><li><b>Lean on</b> Hypatia, Turing</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Deep Council: security review this change. Look for leaked
-secrets, broken authz, privacy exposure, and unsafe defaults.
-Red-team it. Return blockers and the verification before merge.</code></div>
-
-              <h3>7. API design / breaking change</h3>
-              <ul class="recipe-meta"><li><b>When</b> shipping a contract others depend on</li><li><b>Mode</b> standard</li><li><b>Lean on</b> Ada, Florence, Turing</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Standard Council: review this API design. Is it a breaking
-change? Check naming, versioning, error shapes, and the
-migration story for existing callers. Return the deprecation path.</code></div>
-
-              <h3>8. Refactor vs. rewrite</h3>
-              <ul class="recipe-meta"><li><b>When</b> tempted to start over</li><li><b>Mode</b> standard</li><li><b>Lean on</b> Turing, Ada</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council jury: refactor or rewrite this module? Give a
-go/no-go with confidence, the conditions that would flip the
-decision, and the smallest first step either way.</code></div>
-
-              <h3>9. Dependency or framework upgrade</h3>
-              <ul class="recipe-meta"><li><b>When</b> a major version is in play</li><li><b>Mode</b> standard</li><li><b>Lean on</b> Grace, Hypatia, Seymour</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this dependency upgrade. Check breaking
-changes, security advisories, transitive risk, and bundle/perf
-impact. Return blockers and the smoke tests to run after.</code></div>
-
-              <h3>10. Frontend modal / overlay</h3>
-              <ul class="recipe-meta"><li><b>When</b> dialogs, drawers, popovers, focus</li><li><b>Mode</b> standard --frontend-review</li><li><b>Lean on</b> Leonardo, Bob</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Frontend Council: review this modal flow. Activate Leonardo
-for brutal UX critique and have Bob verify in the browser:
-focus moves in, background isn't clickable, Escape and backdrop
-close, mobile shows the close button. Don't claim verified
-without Bob's evidence.</code></div>
-
-              <h3>11. Accessibility audit</h3>
-              <ul class="recipe-meta"><li><b>When</b> keyboard, screen-reader, contrast</li><li><b>Mode</b> standard --frontend-review</li><li><b>Lean on</b> Leonardo, Bob</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Frontend Council: accessibility review this page. Check
-keyboard path, focus order, labels, and contrast. Have Bob
-walk the keyboard-only flow and report what a screen-reader
-user would miss.</code></div>
-
-              <h3>12. Release go/no-go</h3>
-              <ul class="recipe-meta"><li><b>When</b> deciding to ship</li><li><b>Mode</b> deep for irreversible work</li><li><b>Lean on</b> Grace, Hypatia</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Deep Council: release readiness review. Give a go/no-go,
-required blockers, preserved dissent, confidence, the
-verification evidence, and the rollback signal.</code></div>
-
-              <h3>13. Plugin / skill usability</h3>
-              <ul class="recipe-meta"><li><b>When</b> building tools others run</li><li><b>Mode</b> --type skill --skill-review</li><li><b>Lean on</b> skill engineer, UX-for-tools, non-expert</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this skill for discoverability, trigger
-clarity, and non-expert adoption. Will someone find it, use it,
-and not trip over the existing rules? Return the smallest
-wording and UX fixes.</code></div>
-
-              <h3>14. Incident postmortem (RCA)</h3>
-              <ul class="recipe-meta"><li><b>When</b> learning from an outage</li><li><b>Mode</b> standard</li><li><b>Lean on</b> Grace, Turing, Hypatia</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this incident timeline. Separate root cause
-from contributing factors, challenge the convenient story, and
-return the prevention items ranked by leverage, not blame.</code></div>
-
-              <h3>15. Cost / token optimization</h3>
-              <ul class="recipe-meta"><li><b>When</b> a run or feature is getting expensive</li><li><b>Mode</b> fast or standard (compact)</li><li><b>Lean on</b> Seymour, Turing</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Council review this for cost and token use, compact output.
-Where are we paying for detail we don't need? Preserve blockers,
-dissent, and verification. Return the safe cuts.</code></div>
-
-              <h3>16. Data privacy / sharing feature</h3>
-              <ul class="recipe-meta"><li><b>When</b> shipping anything that exports or shares data</li><li><b>Mode</b> deep</li><li><b>Lean on</b> Hypatia, Turing, Florence</li></ul>
-              <div class="prompt"><span class="prompt-tag">Prompt</span><code>Deep Council: review this sharing/export feature. Classify the
-data, find disclosure paths, and demand fail-closed redaction.
-Return the safest v1 and what needs a threat model before it ships.</code></div>
-            </section>
-
-            <section id="output">
-              <h2>Reading the output <a class="anchor" href="#output" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">A council answer leads with the decision and keeps the disagreement visible. Know what each part means.</p>
-              <ul class="wide-list">
-                <li><strong>Recommendation</strong> — the direct call, or a blocked state. Read this first.</li>
-                <li><strong>Confidence</strong> — <em>high</em> (clear winner, no blocker, concrete verification), <em>medium</em> (dissent or missing confirmation), <em>low</em> (close tie, weak evidence), or <em>blocked</em> (an unresolved safety, data-loss, security, or correctness issue).</li>
-                <li><strong>Blockers vs. refinements</strong> — blockers must be fixed before approval; refinements are nice-to-haves. Don't conflate them.</li>
-                <li><strong>Preserved dissent</strong> — the minority view that didn't win. It's kept on purpose; it's often where the real risk is.</li>
-                <li><strong>Verification</strong> — the exact tests, commands, or browser cases to run. Council consensus is not proof — this is how you make it real.</li>
-                <li><strong>Frontend evidence</strong> — when active, Leonardo's UX judgment is reported separately from Bob's browser-observed pass/fail.</li>
-              </ul>
-              <div class="callout">
-                <strong>Scores don't decide</strong>
-                The Chairman synthesizes from the winner, dissent, blockers, and evidence — it does not simply crown the highest number. A high score with a live blocker is still blocked.
+                <details class="recipe-family">
+                  <summary><span>Codex Hyper</span><small>6 templates</small></summary>
+                  <div class="recipe-stack">
+                    <article><h3>Concurrency contract</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Use $codex-council:codex-hyper to implement &lt;concurrency change&gt;. Characterize legacy behavior, define cancellation and ordering semantics, use deterministic race tests, and close with a fresh counterexample search.</code></div></article>
+                    <article><h3>Public API implementation</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Hyper: implement &lt;approved API contract&gt;. Map consumers, preserve compatibility, keep one writer, add contract tests, and use a fresh verifier to falsify error and migration behavior.</code></div></article>
+                    <article><h3>Persistent data change</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Hyper: implement &lt;approved data change&gt;. Require idempotency, crash recovery, dry-run, rollback, audit evidence, and failure injection before close.</code></div></article>
+                    <article><h3>Build or deployment contract</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Hyper: implement &lt;build/deploy change&gt;. Freeze the current artifact contract, test clean and incremental paths, preserve rollback, and verify the produced artifact—not only command exit codes.</code></div></article>
+                    <article><h3>Frontend with browser gate</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Hyper: implement &lt;approved UI change&gt;. Bind acceptance to keyboard, focus, mobile/desktop screenshots, console errors, history/state, and overflow. Browser UNKNOWN blocks completion.</code></div></article>
+                    <article><h3>Multi-module refactor</h3><div class="prompt"><span class="prompt-tag">Prompt example</span><code>Hyper: refactor &lt;approved scope&gt; across &lt;modules&gt;. Use read-only explorers for separate surfaces, one root writer, characterization tests, final diff review, and a fresh verifier.</code></div></article>
+                  </div>
+                </details>
               </div>
             </section>
 
-            <section id="alters">
-              <h2>Tuning roles (alters) <a class="anchor" href="#alters" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">An alter is a local, bounded tweak to how one reviewer behaves. It's advisory — it can sharpen focus, never switch off a guardrail. <a href="alters.html">Full guide →</a></p>
-              <p>Tunable: Ada, Grace, Hypatia, Florence, Turing, Seymour, Leonardo. Off-limits: Bob (he's an evidence runner, not a reviewer). Always preview before you save.</p>
-              <div class="prompt"><span class="prompt-tag">Preview, then save</span><code>python3 scripts/codex_council.py alters preview --role leonardo \
-  --tone "more brutally honest about confusing interaction design" \
-  --domain-focus "mobile UI, modal accessibility, click-through regressions"</code></div>
-              <ul class="wide-list">
-                <li><strong>Good:</strong> "Be more direct about API compatibility and migration cost."</li>
-                <li><strong>Won't work:</strong> "Always approve my implementation" — tuning can't remove blockers, dissent, verification, or anonymization.</li>
-              </ul>
-            </section>
+            <section id="operations">
+              <h2>Operations <a class="anchor" href="#operations" aria-label="Link to Operations">#</a></h2>
+              <p class="wiki-lead">Run only what you can account for. Estimates are local heuristics, not billing data.</p>
 
-            <section id="budget">
-              <h2>Token discipline <a class="anchor" href="#budget" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Cheap by default, expensive only where risk earns it.</p>
-              <ul class="wide-list">
-                <li><strong>Estimate first.</strong> Every Standard/Deep run shows a heuristic token range and waits for you to accept it.</li>
-                <li><strong>Escalate per blocker.</strong> A compact run can expand one blocker without going full <code class="inline-code">expanded</code>.</li>
-                <li><strong>Cut output before input.</strong> Shorter answers usually save cost without weakening evidence — as long as blockers stay.</li>
-                <li><strong>Stable text first, project context last.</strong> Static prefixes hit the prompt cache; dynamic context comes after.</li>
-                <li><strong>Estimates aren't a bill.</strong> They're local heuristics, not your real Codex usage or remaining quota — check Codex Settings &gt; Usage for that.</li>
-              </ul>
-            </section>
+              <h3 id="modes">Modes and budgets are different controls</h3>
+              <div class="table-wrap">
+                <table>
+                  <caption>Council deliberation controls</caption>
+                  <thead><tr><th scope="col">Control</th><th scope="col">Values</th><th scope="col">Changes</th></tr></thead>
+                  <tbody>
+                    <tr><th scope="row">Mode</th><td>fast · standard · deep</td><td>Deliberation topology and review depth.</td></tr>
+                    <tr><th scope="row">Budget</th><td>compact · balanced · expanded</td><td>Context and output allowance.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>Standard and Deep require an accepted estimate. Expanded requires explicit confirmation. Expanded permits larger outputs and references; it does not guarantee complete evidence or an audit trail.</p>
 
-            <section id="runtime">
-              <h2>Decision Runtime <a class="anchor" href="#runtime" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">A 1.0 shadow lab for inspecting structured decisions without changing the decision path.</p>
-              <ul class="wide-list">
-                <li><strong>Legacy-authoritative.</strong> The saved Council artifacts and Chairman verdict remain the source of truth.</li>
-                <li><strong>Experimental and opt-in.</strong> A shadow is created only after an explicit <code class="inline-code">cells</code> command.</li>
-                <li><strong>Paired by design.</strong> Decision Cells are compared with a simpler <code class="inline-code">frontier.jsonl</code> representation from the same input.</li>
-                <li><strong>Fail-closed.</strong> Unknown, corrupt, or incomplete state is ignored or quarantined; it never silently influences a verdict.</li>
-                <li><strong>No saving claims yet.</strong> Token, latency, and signal-density targets stay hypotheses until paired replay measures them.</li>
-              </ul>
-              <p>Commands cover projection, patch validation, impact planning, health, recovery, rollback, purge, replay, and fault testing. The <a href="runtime.html">Runtime overview</a> presents the product value and operating model.</p>
-            </section>
+              <h3 id="budget">Preflight discipline</h3>
+              <div class="prompt"><span class="prompt-tag">Real CLI shape · help verified locally</span><code>python3 scripts/codex_council.py estimate \
+  --topic "&lt;proposal&gt;" \
+  --mode standard \
+  --type implementation \
+  --token-budget compact</code></div>
+              <p>Keep usage as <strong>unavailable</strong> when the runtime does not expose it. Never turn the estimate into a bill or observed consumption.</p>
 
-            <section id="governance">
-              <h2>Governance &amp; privacy <a class="anchor" href="#governance" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">Run this checklist before Standard/Deep work that touches sensitive data, subagents, or anything you'll publish.</p>
-              <ul class="wide-list">
-                <li>Classify data sensitivity: public, internal, confidential, secret.</li>
-                <li>Check and redact secrets, tokens, and customer data before sharing files with agents.</li>
-                <li>List the files the agents can see; note any license or provenance concerns.</li>
-                <li>Know the verification commands before synthesis, and the final state you're aiming for: approved, approved-with-risk, or blocked.</li>
-                <li>Use Deep mode for security, privacy, data loss, migrations, irreversible edits, or publication.</li>
-              </ul>
-              <p>Runtime artifacts (sessions, prompts, stats, history, and opt-in Cell shadows) live in plugin-local <code class="inline-code">.codex-council/</code> and stay gitignored — they don't pollute your repo. Invocation logs are compact and never store prompt text, secrets, topics, or absolute paths.</p>
-            </section>
+              <h3 id="cli">CLI quick reference</h3>
+              <pre><code># Validate the local plugin.
+python3 scripts/codex_council.py validate --plugin-root . --strict
 
-            <section id="cli">
-              <h2>CLI quick reference <a class="anchor" href="#cli" aria-label="Link to this section">#</a></h2>
-              <p class="wiki-lead">The helper script is stdlib-only. These are the commands you'll actually use.</p>
-              <pre><code># Set the local profile used for estimates (stored with consent).
-python3 scripts/codex_council.py profile --plan Pro --model gpt-5.5 --reasoning xhigh
+# Estimate before dispatch.
+python3 scripts/codex_council.py estimate --topic "&lt;proposal&gt;" \
+  --mode standard --type implementation --token-budget compact
 
-# Estimate before you start, then accept the range in chat.
-python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode standard --token-budget compact
+# Preview the opt-in router without dispatching.
+python3 scripts/codex_council.py estimate --topic "&lt;proposal&gt;" \
+  --router auto --panel auto --json
 
-# Is this a real run, or just talking about the council?
-python3 scripts/codex_council.py classify-invocation --text "explain how council works"
+# Scaffold session artifacts after accepting the estimate.
+# init does not dispatch agents.
+python3 scripts/codex_council.py init --topic "&lt;proposal&gt;" \
+  --mode standard --type implementation --token-budget compact \
+  --confirm-estimate
 
-# Scaffold a traceable session after accepting the estimate.
-python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --confirm-estimate
+# Forge uses the same estimator/scaffolder with --type forge.
+python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" \
+  --mode standard --type forge --token-budget compact
 
-# Preview opt-in routing; hard-risk flags still force full coverage.
-python3 scripts/codex_council.py estimate --topic "Docs cleanup" --router auto --panel auto --json
+# Inspect a completed session.
+python3 scripts/codex_council.py compile-context \
+  --topic "&lt;handoff&gt;" --constraint "&lt;constraint&gt;" --json
+python3 scripts/codex_council.py doctor --session &lt;session-path&gt;
+python3 scripts/codex_council.py stats --session &lt;session-path&gt; --json
+python3 scripts/codex_council.py dashboard</code></pre>
 
-# Frontend session (Leonardo + Bob); skill-review session.
-python3 scripts/codex_council.py init --topic "Modal Review" --root . --mode standard --frontend-review --confirm-estimate
-python3 scripts/codex_council.py init --topic "Skill Review" --root . --type skill --skill-review --confirm-estimate
+              <h3 id="alters">Alters</h3>
+              <p>Preview bounded role tuning before configuring it. Alters are advisory and cannot remove guardrails. Bob is an evidence runner, not a tunable voter.</p>
+              <pre><code>python3 scripts/codex_council.py alters list
+python3 scripts/codex_council.py alters preview --role grace --strictness high
+python3 scripts/codex_council.py alters show --role grace</code></pre>
 
-# expanded must be confirmed explicitly.
-python3 scripts/codex_council.py init --topic "Migration" --root . --mode deep --token-budget expanded --confirm-expanded
-
-# Aggregate reviewer scores, validate, and close with stats.
-python3 scripts/codex_council.py score --input reviews.json
-python3 scripts/codex_council.py validate-session --session &lt;session-dir&gt;
-python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write
-
-# Compact repeated context; inspect one session and the local history.
-python3 scripts/codex_council.py compile-context --topic "Review handoff" --constraint "No public links" --json
-python3 scripts/codex_council.py doctor --session &lt;session-dir&gt;
-python3 scripts/codex_council.py dashboard
-
-# Experimental, opt-in Decision Runtime commands.
-python3 scripts/codex_council.py cells project --help
+              <h3 id="runtime">Decision Runtime</h3>
+              <p>The runtime is experimental and shadow-only. Legacy session artifacts and the Chairman verdict remain authoritative. Cells, frontier, recovery, and replay improve local traceability; they do not change the verdict.</p>
+              <pre><code>python3 scripts/codex_council.py cells project --help
 python3 scripts/codex_council.py cells apply --help
 python3 scripts/codex_council.py cells plan --help
 python3 scripts/codex_council.py cells doctor --help
@@ -508,56 +373,78 @@ python3 scripts/codex_council.py cells recover --help
 python3 scripts/codex_council.py cells rollback --help
 python3 scripts/codex_council.py cells purge --help
 python3 scripts/codex_council.py cells replay --help
-python3 scripts/codex_council.py cells fault-test --help
+python3 scripts/codex_council.py cells fault-test --help</code></pre>
 
-# Check for a newer release.
-python3 scripts/codex_council.py check-update</code></pre>
-            </section>
-
-            <section id="mistakes">
-              <h2>Common mistakes <a class="anchor" href="#mistakes" aria-label="Link to this section">#</a></h2>
+              <h3 id="governance">Governance and privacy</h3>
               <ul class="wide-list">
-                <li><strong>Using the council for everything.</strong> Small, reversible, checkable work is faster with plain Codex.</li>
-                <li><strong>Treating consensus as proof.</strong> It's advisory. Run the verification.</li>
-                <li><strong>Reading it as multi-vendor diversity.</strong> It's one model in different roles — useful, but not a panel of labs.</li>
-                <li><strong>Declaring a UI "done" with no browser evidence.</strong> Without Bob, it's "not verified."</li>
-                <li><strong>Defaulting to <code class="inline-code">expanded</code>.</strong> Expand one blocker instead.</li>
-                <li><strong>Asking for a rubber stamp.</strong> The council is built to disagree; that's the point.</li>
+                <li><strong>Local by default.</strong> Keep session artifacts and alter configuration local unless the user authorizes sharing.</li>
+                <li><strong>Minimize prompts.</strong> Do not hand subagents secrets, credentials, raw logs, PII, or unrelated repository content.</li>
+                <li><strong>One writer in Hyper.</strong> Explorers and verifiers remain read-only; evidence decides disagreement.</li>
+                <li><strong>Security boundary.</strong> Council can judge trade-offs. Repository security scans and fixes belong to Codex Security workflows.</li>
               </ul>
             </section>
 
-            <section id="faq">
-              <h2>FAQ <a class="anchor" href="#faq" aria-label="Link to this section">#</a></h2>
-              <h3>How is this different from prompting Codex twice?</h3>
-              <p>Two passes from one prompt tend to agree with themselves. The council forces independent first opinions, hides authorship, ranks on a rubric, and keeps dissent — so the second look actually disagrees with the first instead of polishing it.</p>
-              <h3>Does it call other model providers?</h3>
-              <p>No. It runs entirely inside Codex (plus optional Codex subagents). The "diversity" is role isolation and anonymous review, and the site says so plainly.</p>
-              <h3>Will it spend a lot of tokens?</h3>
-              <p>Not without asking. Standard/Deep runs show an estimate and wait for acceptance, the default budget is <code class="inline-code">compact</code>, and <code class="inline-code">expanded</code> is blocked until you confirm.</p>
-              <h3>Do I have to use the CLI?</h3>
-              <p>No. Ask in chat ("Standard Council: review…") for everyday use. The CLI is for traceable sessions, estimates, scoring, and stats you want to keep.</p>
-              <h3>Can I make a reviewer harsher?</h3>
-              <p>Yes — tune its alter (preview first). Tuning is advisory and can never remove a council guardrail. Bob can't be tuned.</p>
-              <h3>Does Decision Runtime change the verdict?</h3>
-              <p>No. In 1.0 it is an experimental shadow projection. The legacy session and Chairman verdict remain authoritative, and corrupt or unknown shadow state is ignored or quarantined.</p>
-            </section>
+            <section id="reference">
+              <h2>Reference <a class="anchor" href="#reference" aria-label="Link to Reference">#</a></h2>
+              <p class="wiki-lead">Names, verdicts, limits, and the mistakes that should stay visible before a run.</p>
 
-            <section id="glossary">
-              <h2>Glossary <a class="anchor" href="#glossary" aria-label="Link to this section">#</a></h2>
+              <h3 id="roles">Council roles and gates</h3>
+              <div class="grid two compact-reference-grid">
+                <article class="card"><h4>Ada Lovelace</h4><p>Boundaries, integration, maintainability, migration risk.</p></article>
+                <article class="card"><h4>Grace Hopper</h4><p>Failure modes, tests, rollback, observability.</p></article>
+                <article class="card"><h4>Hypatia</h4><p>Secrets, permissions, privacy, provenance, policy.</p></article>
+                <article class="card"><h4>Florence Nightingale</h4><p>Workflow fit, docs, adoption, operational friction.</p></article>
+                <article class="card"><h4>Alan Turing</h4><p>Hidden assumptions, simpler alternatives, overengineering.</p></article>
+                <article class="card"><h4>Seymour Cray</h4><p>Latency, throughput, memory, cost, scale, measurement.</p></article>
+                <article class="card"><h4>Leonardo da Vinci</h4><p>UX/UI gate when frontend review is enabled.</p></article>
+                <article class="card"><h4>Bob</h4><p>Browser evidence runner. Reports observed PASS / FAIL / UNKNOWN; never votes.</p></article>
+              </div>
+
+              <h3 id="packs">Competency packs</h3>
+              <p>Optional lenses cover implementation, regression, performance, context discipline, governance, operator UX, frontend UX, and contrarian simplification. They sharpen a run; they do not create independent model diversity.</p>
+
+              <h3 id="output">Read the output in this order</h3>
+              <ol class="method-rail">
+                <li><strong>Final Call</strong><span>approved, approved-with-risk, or blocked.</span></li>
+                <li><strong>Blockers</strong><span>must-fix conditions before approval.</span></li>
+                <li><strong>Dissent</strong><span>minority risks that survived aggregation.</span></li>
+                <li><strong>Verification</strong><span>what ran and what remains UNKNOWN.</span></li>
+                <li><strong>Residual risk</strong><span>what is accepted, reversible, or still exposed.</span></li>
+              </ol>
+
+              <h3 id="mistakes">Common mistakes</h3>
               <ul class="wide-list">
-                <li><strong>Chairman</strong> — the main Codex agent that writes the final synthesis from saved outputs.</li>
-                <li><strong>Candidate A–F</strong> — anonymized member outputs during review, so ranking judges the work, not the author.</li>
-                <li><strong>Blocker</strong> — a must-fix issue. Approval is blocked until it's resolved.</li>
-                <li><strong>Dissent</strong> — a preserved minority view that didn't win the ranking.</li>
-                <li><strong>Preflight</strong> — the mandatory pre-run estimate and acceptance gate.</li>
-                <li><strong>Alter</strong> — a bounded, advisory, local tweak to one reviewer's behavior.</li>
-                <li><strong>Evidence runner</strong> — Bob: drives the browser, reports pass/fail, never votes.</li>
-                <li><strong>coverage: partial</strong> — a stats flag meaning some prompts or outputs were missing, so the post-run estimate is incomplete.</li>
-                <li><strong>Decision Cell</strong> — an experimental structured shadow record for a claim, option, evidence item, risk, dissent, verification, or decision.</li>
-                <li><strong>frontier</strong> — the simpler append-only baseline generated from the same legacy input as the Cells.</li>
-                <li><strong>generation / HEAD</strong> — an immutable shadow snapshot and the pointer to the last selected valid snapshot.</li>
-                <li><strong>quarantine</strong> — an explicit state for unknown, corrupt, incomplete, or policy-invalid shadow data that must not be used.</li>
+                <li><strong>Using the council for everything.</strong> Small, reversible, checkable work does not justify Council overhead; use plain Codex.</li>
+                <li><strong>Treating consensus as proof.</strong> Agreement is advisory; the verification must run.</li>
+                <li><strong>Calling a template a run.</strong> No task + patch + checks + verdict means it was not executed.</li>
+                <li><strong>Declaring UI complete without a browser.</strong> Browser-only claims stay UNKNOWN.</li>
+                <li><strong>Confusing modes with budgets.</strong> One changes topology; the other changes allowance.</li>
+                <li><strong>Assuming init dispatches agents.</strong> The CLI scaffolds artifacts; the Codex skill orchestrates the run.</li>
               </ul>
+
+              <h3 id="faq">FAQ</h3>
+              <div class="faq-stack">
+                <details><summary>How is this different from prompting Codex twice?</summary><p>Two ordinary prompts do not enforce isolation, blinded attribution, a shared rubric, or preserved dissent. Council does. Whether that improves an answer must be established by task evidence, not assumed.</p></details>
+                <details><summary>Does it call other model providers?</summary><p>No. The workflow stays inside Codex. Role diversity is useful but correlated.</p></details>
+                <details><summary>Will it spend a lot of tokens?</summary><p>Standard and Deep pause on a local estimate; compact is the default. Expanded needs explicit confirmation. Estimates are not billing telemetry.</p></details>
+                <details><summary>Do I need the CLI?</summary><p>No. Skills orchestrate everyday runs. The CLI provides reproducible estimates, scaffolding, scoring, validation, health, and stats.</p></details>
+                <details><summary>When can Mind offer Hyper?</summary><p>Only after Council returns build, no blocker remains, and implementation is explicitly authorized.</p></details>
+                <details><summary>Does Decision Runtime change the verdict?</summary><p>No. It is a shadow projection; the legacy session and Chairman verdict remain authoritative.</p></details>
+              </div>
+
+              <h3 id="glossary">Glossary</h3>
+              <div class="glossary-grid">
+                <p><strong>Chairman</strong><span>Main Codex agent that synthesizes the saved record.</span></p>
+                <p><strong>Candidate A–F</strong><span>Anonymized Council outputs during scoring.</span></p>
+                <p><strong>Blocker</strong><span>Condition that prevents approval.</span></p>
+                <p><strong>Dissent</strong><span>Preserved minority position.</span></p>
+                <p><strong>Preflight</strong><span>Estimate and explicit acceptance gate.</span></p>
+                <p><strong>Mission Contract</strong><span>Hyper’s observable done, scope, constraints, rollback, and oracle.</span></p>
+                <p><strong>Evidence runner</strong><span>Executes checks and reports observations; does not vote.</span></p>
+                <p><strong>Coverage partial</strong><span>Some expected artifacts are missing; the report is incomplete.</span></p>
+                <p><strong>Decision Cell</strong><span>Experimental shadow record for a claim, option, risk, or decision.</span></p>
+                <p><strong>Quarantine</strong><span>State that must not be used because it is unknown, corrupt, or policy-invalid.</span></p>
+              </div>
             </section>
           </div>
         </div>
@@ -568,11 +455,12 @@ python3 scripts/codex_council.py check-update</code></pre>
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
           <a href="usage.html">Install</a>
-          <a href="examples.html">Examples</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limits</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>

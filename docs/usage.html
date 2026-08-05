@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Usage - Codex Council</title>
-    <meta name="description" content="Install Codex Council, write a prompt the council can act on, and run traceable sessions from the CLI with a token estimate before anything starts.">
+    <meta name="description" content="Install Forge, Council, Mind, and Hyper as one Codex plugin for proposal creation, review, gated orchestration, and evidence-backed implementation.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/usage.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/usage.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/usage.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/usage.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Codex Council Usage">
-    <meta property="og:description" content="Install, write a prompt the council can act on, and run traceable sessions with a token estimate up front.">
+    <meta property="og:description" content="Install the complete proposal → review → implementation workflow for Codex.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/usage.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Council Usage">
-    <meta name="twitter:description" content="Install, write a prompt the council can act on, and run traceable sessions with a token estimate up front.">
+    <meta name="twitter:description" content="One plugin for Forge, Council, Mind, Hyper, and local evidence tooling.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html" aria-current="page">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html" aria-current="page">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/usage.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -70,39 +70,63 @@
       <section class="section" id="install">
         <div class="section-inner">
           <p class="eyebrow">Install</p>
-          <h1>Add it from the Codex Marketplace CLI.</h1>
-          <p class="lead">Install globally to use the council in any project:</p>
+          <h1>Install the complete Codex Council workflow.</h1>
+          <p class="lead">Install globally to use Forge, Council, Mind, Hyper, Alters, and Decision Runtime in any project:</p>
           <pre><code>npx codex-marketplace add ercoledevs/codex-council --plugin --global -y</code></pre>
           <p>Or scope it to a single project:</p>
           <pre><code>npx codex-marketplace add ercoledevs/codex-council --plugin --project -y</code></pre>
           <p>Reload Codex after installing or updating.</p>
+          <div class="callout">
+            <strong>Included workflows</strong>
+            Forge creates proposals, Council reviews them, Mind controls the gates, and Hyper
+            implements authorized changes under its own preflight. Alters and the opt-in Decision
+            Runtime are included; Decision Runtime remains experimental and non-authoritative.
+          </div>
         </div>
       </section>
 
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Ask well</p>
-          <h2>Give the council a decision, not a vibe.</h2>
+          <h2>Give the workflow a clear decision or change.</h2>
+          <p class="lead">Copy the structure and replace the placeholders. These are prompt examples, not recorded outcomes.</p>
           <div class="prompt-stack">
             <article class="card">
               <h3>Forge</h3>
-              <pre><code>Use Codex Forge to design a bounded implementation proposal.
+              <span class="status-pill">Prompt example</span>
+              <pre><code>Use $codex-council:codex-forge to design a bounded implementation proposal.
 Return convergence, dissent, safety notes, and next Council prompt.</code></pre>
             </article>
             <article class="card">
               <h3>Architecture</h3>
-              <pre><code>Use Codex Council to review this architecture decision.
+              <span class="status-pill">Prompt example</span>
+              <pre><code>Use $codex-council:codex-council to review this architecture decision.
 Focus on blockers, rollback, and verification.</code></pre>
             </article>
             <article class="card">
-              <h3>Implementation</h3>
-              <pre><code>Council review this diff.
+              <h3>Implementation review</h3>
+              <span class="status-pill">Prompt example</span>
+              <pre><code>Use $codex-council:codex-council to review this diff.
 Focus on regressions, missing tests, and performance impact.</code></pre>
             </article>
             <article class="card">
               <h3>Frontend</h3>
-              <pre><code>Frontend Council: review this modal flow with Leonardo and Bob.
+              <span class="status-pill">Prompt example</span>
+              <pre><code>Use $codex-council:codex-council with frontend review.
+Review this modal with Leonardo and Bob.
 Don't claim verified without browser evidence.</code></pre>
+            </article>
+            <article class="card">
+              <h3>Mind</h3>
+              <span class="status-pill">Prompt example</span>
+              <pre><code>Use $codex-council:codex-mind to turn this idea into a proposal and review it.
+If the verdict is build with no blockers, offer Hyper and ask before editing.</code></pre>
+            </article>
+            <article class="card">
+              <h3>Hyper</h3>
+              <span class="status-pill">Prompt example</span>
+              <pre><code>Use $codex-council:codex-hyper to implement this authorized change.
+Define the contract and close only on evidence.</code></pre>
             </article>
           </div>
         </div>
@@ -111,20 +135,22 @@ Don't claim verified without browser evidence.</code></pre>
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">CLI workflow</p>
-          <h2>When you want artifacts to keep.</h2>
+          <h2>Scaffold artifacts before dispatch.</h2>
           <pre><code># Set the local profile used for estimates.
-python3 scripts/codex_council.py profile --plan Pro --model gpt-5.5 --reasoning xhigh
+python3 scripts/codex_council.py profile --plan Pro --model "&lt;model-id&gt;" --reasoning high
 
 # Estimate first.
 python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode standard --token-budget compact
 
-# Start a session once you've accepted the estimate.
+# Scaffold session artifacts once you've accepted the estimate.
+# init only writes artifacts; it does not dispatch agents or run a review.
 python3 scripts/codex_council.py init --topic "Architecture Review" --root . --mode standard --token-budget compact --confirm-estimate
 
 # Preview the opt-in router. Hard-risk flags still force full coverage.
 python3 scripts/codex_council.py estimate --topic "Docs cleanup" --router auto --panel auto --json
 
-# Forge a creative proposal first, then send it to Council for judgment.
+# Scaffold a Forge session. The CLI only prepares artifacts;
+# invoking the Codex skill separately dispatches creators.
 python3 scripts/codex_council.py estimate --topic "Forge a Release Workflow" --mode standard --type forge --token-budget compact
 python3 scripts/codex_council.py init --topic "Forge a Release Workflow" --root . --mode standard --type forge --confirm-estimate
 
@@ -137,8 +163,12 @@ python3 scripts/codex_council.py dashboard
 python3 scripts/codex_council.py validate-session --session &lt;session-dir&gt;
 python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write</code></pre>
           <div class="callout">
-            <strong>On spending</strong>
-            Saying "use Codex Council" asks for a review. It isn't a blank cheque. Standard, deep, and expanded all show you the estimate first, and expanded won't run until you confirm.
+            <strong>Local planning only</strong>
+            Modes (<code>fast</code>, <code>standard</code>, <code>deep</code>) choose the
+            deliberation topology. Budgets (<code>compact</code>, <code>balanced</code>,
+            <code>expanded</code>) choose the context and output allowance. Estimates are local
+            heuristics, not billing telemetry. Standard and Deep require an accepted estimate;
+            expanded also requires explicit confirmation.
           </div>
         </div>
       </section>
@@ -146,10 +176,10 @@ python3 scripts/codex_council.py stats --session &lt;session-dir&gt; --write</co
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Experimental Decision Runtime</p>
-          <h2>Project a shadow. Keep the verdict untouched.</h2>
+          <h2>Inspect saved artifacts without changing the verdict.</h2>
           <p class="lead">
-            The 1.0 Decision Runtime is opt-in and legacy-authoritative. Start a shadow only when
-            you want the extra view; it never changes the Council verdict.
+            Decision Runtime is experimental, opt-in, and non-authoritative. It projects a local
+            view from saved artifacts; the original session and Council verdict remain the source of truth.
           </p>
           <pre><code>python3 scripts/codex_council.py cells project --help
 python3 scripts/codex_council.py cells doctor --help</code></pre>
@@ -159,9 +189,9 @@ python3 scripts/codex_council.py cells doctor --help</code></pre>
 
       <section class="section" id="upgrade-1-0">
         <div class="section-inner">
-          <p class="eyebrow">Upgrade to 1.0</p>
-          <h2>Stay current without force-migrating a session.</h2>
-          <pre><code># Pull 1.0 and reload Codex.
+          <p class="eyebrow">Stay current</p>
+          <h2>Update without force-migrating a session.</h2>
+          <pre><code># Install the current public release and reload Codex.
 npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
 
 # Validate the installed plugin and check release status.
@@ -179,13 +209,14 @@ python3 scripts/codex_council.py check-update</code></pre>
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
-          <a href="examples.html">Examples</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="alters.html">Alters</a>
-          <a href="https://github.com/ercoledevs/codex-council/releases">Releases</a>
+          <a href="usage.html">Install</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
+          <a href="limits.html">Limits</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
       </div>
     </footer>

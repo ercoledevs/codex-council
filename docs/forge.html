@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Forge - Codex Council</title>
-    <meta name="description" content="Codex Forge is the creative sibling of the council: five creator roles shape a bounded implementation proposal in a capped loop, then hand it to the council to judge.">
+    <meta name="description" content="Codex Forge turns an idea into a bounded, review-ready proposal using five defined role prompts and a separate synthesis pass.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/forge.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/forge.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/forge.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/forge.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Codex Forge">
-    <meta property="og:description" content="Forge creates a bounded implementation proposal from five creator lenses; the council judges it. A capped, convergent creation loop inside Codex.">
+    <meta property="og:description" content="Five defined role prompts shape a bounded proposal. Forge can stop nonconverged and does not verify correctness.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/forge.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Forge">
-    <meta name="twitter:description" content="Forge creates a bounded implementation proposal from five creator lenses; the council judges it.">
+    <meta name="twitter:description" content="Five role prompts, one bounded proposal, and visible dissent when the result does not converge.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html" aria-current="page">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/forge.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -70,17 +70,17 @@
       <section class="section section-tight">
         <div class="section-inner">
           <p class="eyebrow">Codex Forge</p>
-          <h1>Forge the proposal. Let the council judge it.</h1>
+          <h1>Turn an idea into a review-ready proposal.</h1>
           <p class="lead">
-            Forge is the creative sibling of Codex Council. The council reviews what already
-            exists; Forge invents what could. Five creator roles shape one bounded implementation
-            proposal — then hand it to the council for judgment. Forge creates; it does not
-            validate truth, safety, UI behavior, or correctness.
+            Five defined role prompts explore the system, product, feasibility, reliability, and
+            performance angles. A separate synthesis pass produces one bounded proposal and keeps
+            material dissent visible. Forge proposes; it does not verify correctness, safety, or
+            runtime behavior.
           </p>
 
           <figure class="forge-stage">
             <svg class="forge-anim" viewBox="0 0 1200 510" role="img"
-                 aria-label="The forging process: five creator roles — Fuller, Lamarr, Johnson, Hamilton, von Neumann — feed a central Forge, which produces a unified proposal that is handed to the Council. A capped loop allows up to three rounds.">
+                 aria-label="The Forge process: five defined creator roles — Fuller, Lamarr, Johnson, Hamilton, and von Neumann — feed a separate synthesis pass. The result goes to Council, and the loop stops after at most three rounds.">
               <title>How Codex Forge shapes a proposal</title>
               <defs>
                 <marker id="fg-ah-brand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -175,9 +175,9 @@
             </svg>
           </figure>
           <p class="wiki-lead" style="margin-top:16px;">
-            Your idea enters on the left. Five creators shape it in parallel, the Forge converges
-            their work into one proposal (re-briefing up to three rounds if needed), and the result
-            is handed to the council to judge.
+            Five role prompts produce distinct proposals. Forge synthesizes them, may re-brief the
+            unresolved differences, and stops after at most three rounds. The result can be
+            converged, partial, or nonconverged before it is handed to Council.
           </p>
         </div>
       </section>
@@ -185,24 +185,23 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Forge vs. Council</p>
-          <h2>One invents. The other interrogates.</h2>
+          <h2>Forge proposes. Council reviews.</h2>
           <div class="comparison">
             <div class="panel">
-              <div class="panel-title">Forge creates</div>
+              <h3 class="panel-title">Forge creates</h3>
               <div class="panel-body">
-                <p>Use it when you have an idea and want a concrete, buildable shape for it — a
-                  proposal that balances boldness, feasibility, safety, and cost.</p>
-                <p>Output is one bounded proposal, not a verdict. It does not check whether the
-                  idea is correct or safe to ship.</p>
+                <p>Use it when an idea still needs scope, interfaces, constraints, risks, and a
+                  practical implementation shape.</p>
+                <p>The output is a bounded proposal, not a verdict or release decision.</p>
               </div>
             </div>
             <div class="panel">
-              <div class="panel-title">Council judges</div>
+              <h3 class="panel-title">Council judges</h3>
               <div class="panel-body">
-                <p>Use it when you have a proposal and want to know if it survives architecture,
-                  reliability, security, product, red‑team, and performance pressure.</p>
-                <p>The natural flow is Forge → Council: invent the shape, then pressure‑test it
-                  before you build. Forge even writes the next prompt for you.</p>
+                <p>Use it when a proposal needs structured review across architecture, reliability,
+                  security, product, red-team, and performance concerns.</p>
+                <p>Council reports a decision and open risks. Required implementation checks still
+                  determine whether the work is correct.</p>
               </div>
             </div>
           </div>
@@ -211,15 +210,15 @@
 
       <section class="section">
         <div class="section-inner">
-          <p class="eyebrow">The five creators</p>
-          <h2>Different imaginations, one proposal.</h2>
+          <p class="eyebrow">The five role prompts</p>
+          <h2>Defined perspectives, followed by separate synthesis.</h2>
           <div class="grid">
-            <article class="card"><h3>Buckminster Fuller</h3><p><em>Systems Imagination Architect.</em> The bold system shape — primitives, boundaries, the creative architecture.</p></article>
-            <article class="card"><h3>Hedy Lamarr</h3><p><em>Product Invention Strategist.</em> Turns the idea into user value, workflow fit, interaction shape, and adoption hooks.</p></article>
+            <article class="card"><h3>Buckminster Fuller</h3><p><em>Systems Imagination Architect.</em> Defines primitives, boundaries, and the overall system shape.</p></article>
+            <article class="card"><h3>Hedy Lamarr</h3><p><em>Product Invention Strategist.</em> Connects the idea to user value, workflow fit, and interaction design.</p></article>
             <article class="card"><h3>Katherine Johnson</h3><p><em>Feasibility &amp; Integration Engineer.</em> Grounds it in implementable steps, dependencies, interfaces, and constraints.</p></article>
             <article class="card"><h3>Margaret Hamilton</h3><p><em>Safety &amp; Reliability Builder.</em> Surfaces failure modes, privacy, rollback, and reliability constraints.</p></article>
-            <article class="card"><h3>John von Neumann</h3><p><em>Performance &amp; Complexity Optimizer.</em> Pushes for performance, low cost, low latency, and ruthless simplification.</p></article>
-            <article class="card"><h3>The synthesizer</h3><p>A separate creative pass merges the five into one unified proposal — keeping disagreement visible instead of averaging it away.</p></article>
+            <article class="card"><h3>John von Neumann</h3><p><em>Performance &amp; Complexity Optimizer.</em> Examines latency, cost, complexity, and opportunities to simplify.</p></article>
+            <article class="card"><h3>The synthesizer</h3><p>A separate pass merges the five outputs into one proposal while preserving material disagreement.</p></article>
           </div>
         </div>
       </section>
@@ -227,36 +226,36 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">A bounded loop</p>
-          <h2>It converges, or it tells you it didn't.</h2>
+          <h2>The loop stops with a proposal or a nonconverged result.</h2>
           <p class="lead">
-            Creation can spin forever, so Forge is deliberately capped. It won't manufacture fake
-            agreement to look finished.
+            Forge runs one round by default and never exceeds three. It can finish without
+            convergence; unresolved dissent remains part of the output.
           </p>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>One round, by default</h3>
-              <p>The five creators each produce a proposal, and the synthesizer merges them. Most ideas need only this.</p>
+              <p>Each role prompt produces a proposal, then the separate synthesizer creates the first bounded result.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>Convergence check</h3>
-              <p>Proposals are scored. Converged means every creator's alignment is high, scores agree, and there are no blockers or open dissent.</p>
+              <p>Structured scores, blockers, and persistent dissent determine whether the proposals align or need another pass.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Re-brief</h3>
-              <p>If it hasn't converged, Forge runs another round — automatically when round 1 is strongly discordant, or after your OK on a near-miss. It re-briefs only the divergence. Hard cap: three rounds.</p>
+              <p>Strong discord can trigger a second round; a near-miss waits for approval. Re-briefing targets the unresolved differences. Hard cap: three rounds.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>
               <h3>Converged or not</h3>
-              <p>You get a unified proposal, or an honest <code class="inline-code">nonconverged</code> result with the dissent that stopped it.</p>
+              <p>The result is converged, partial, or <code class="inline-code">nonconverged</code>, with remaining dissent preserved.</p>
             </div>
           </div>
           <div class="callout">
             <strong>How convergence is decided</strong>
-            Proposals are scored on novelty, feasibility, user fit, risk control, and implementation clarity. It converges only when the lowest alignment is at least 7/10, the scores don't scatter, and nothing is blocked — otherwise you get <code class="inline-code">nonconverged</code> with the dissent preserved. When round 1 is strongly discordant (low alignment or a wide spread), the next round starts automatically; a near-miss waits for your go-ahead.
+            Proposals are scored on novelty, feasibility, user fit, risk control, and implementation clarity. It converges only when the lowest alignment is at least 7/10, the score spread stays within the limit, nothing is blocked, and no persistent dissent remains — otherwise you get <code class="inline-code">nonconverged</code> with the dissent preserved. When round 1 is strongly discordant (low alignment or a wide spread), the next round starts automatically; a near-miss waits for your go-ahead.
           </div>
         </div>
       </section>
@@ -264,15 +263,15 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">What it returns</p>
-          <h2>A proposal you can hand straight to the council.</h2>
+          <h2>A bounded proposal, not a green light.</h2>
           <ul class="wide-list">
-            <li><strong>Unified proposal</strong> — the merged design, leading with what to build.</li>
+            <li><strong>Unified proposal</strong> — the synthesized design and its intended scope.</li>
             <li><strong>Convergence result</strong> — converged, partial, or nonconverged.</li>
             <li><strong>Persistent dissent</strong> — the creative disagreement that survived, kept visible.</li>
-            <li><strong>Implementation shape</strong> — the buildable path: steps, interfaces, dependencies.</li>
+            <li><strong>Implementation shape</strong> — proposed steps, interfaces, and dependencies.</li>
             <li><strong>Safety &amp; performance notes</strong> — failure modes, rollback, cost and latency flags.</li>
-            <li><strong>Verification</strong> — what still needs to be proven before you trust it.</li>
-            <li><strong>Next prompt</strong> — a ready‑to‑send Council prompt to judge what you just forged.</li>
+            <li><strong>Verification needs</strong> — what still requires evidence before implementation or release.</li>
+            <li><strong>Next prompt</strong> — a Council prompt for structured review of the proposal.</li>
           </ul>
         </div>
       </section>
@@ -283,7 +282,7 @@
           <h2>Ask Forge to shape the idea.</h2>
           <p>In chat — give it an idea to design, not a decision to judge:</p>
           <div class="prompt">
-            <span class="prompt-tag">Prompt</span>
+            <span class="prompt-tag">Prompt example</span>
             <code>Use Codex Forge to design a bounded implementation proposal for &lt;your idea&gt;.
 Balance bold shape, feasibility, safety, and cost — and tell me where the
 creators disagree. Then give me the prompt to send Council for judgment.</code>
@@ -297,8 +296,9 @@ python3 scripts/codex_council.py init --topic "Forge a release workflow" --root 
 # When creator scores exist, assess convergence.
 python3 scripts/codex_council.py forge-convergence --input forge-scores.json</code></pre>
           <div class="callout">
-            <strong>Forge, then verify</strong>
-            A forged proposal is a starting point, not a green light. If the risk is non‑trivial, run <a href="index.html">Codex Council</a> (or normal implementation verification) on it before you build.
+            <strong>Proposal first, evidence later</strong>
+            Forge does not test the proposal. Use <a href="index.html">Codex Council</a> for review,
+            then run the checks required by the implementation before calling it complete.
           </div>
         </div>
       </section>
@@ -308,11 +308,12 @@ python3 scripts/codex_council.py forge-convergence --input forge-scores.json</co
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
-          <a href="wiki.html">Wiki</a>
-          <a href="examples.html">Examples</a>
+          <a href="usage.html">Install</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limits</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>

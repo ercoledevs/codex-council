@@ -82,7 +82,7 @@
 
         <!-- Titles -->
         <text x="80" y="400" class="text-title">Codex Council</text>
-        <text x="80" y="450" class="text-subtitle">Structured review for Codex</text>
+        <text x="80" y="450" class="text-subtitle">From proposal to verified code in Codex</text>
     </g>
 
     <!-- CENTER: Scoring Matrix -->

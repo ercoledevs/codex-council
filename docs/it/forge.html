@@ -7,13 +7,15 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Forge - Codex Council</title>
-    <meta name="description" content="Codex Forge è il fratello creativo del council: cinque ruoli creatori danno forma a una proposta di implementazione in un loop limitato, poi la passano al council perché la giudichi.">
+    <meta name="description" content="Codex Forge trasforma un'idea in una proposta limitata e pronta per la review usando cinque prompt di ruolo e una sintesi separata.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/forge.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/forge.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/forge.html">
@@ -21,14 +23,14 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:title" content="Codex Forge">
-    <meta property="og:description" content="Forge crea una proposta di implementazione da cinque lenti creative; il council la giudica. Un loop di creazione convergente e limitato, dentro Codex.">
+    <meta property="og:description" content="Cinque prompt di ruolo formano una proposta limitata. Forge può chiudere nonconverged e non verifica la correttezza.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/forge.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Forge">
-    <meta name="twitter:description" content="Forge crea una proposta di implementazione da cinque lenti creative; il council la giudica.">
+    <meta name="twitter:description" content="Cinque prompt di ruolo, una proposta limitata e dissenso visibile quando il risultato non converge.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,12 +49,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Casi d'uso</a>
-          <a href="examples.html">Esempi</a>
-          <a href="usage.html">Uso</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html" aria-current="page">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Prodotto</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Installa</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../forge.html" hreflang="en" aria-label="English version">EN</a>
@@ -71,17 +71,16 @@
       <section class="section section-tight">
         <div class="section-inner">
           <p class="eyebrow">Codex Forge</p>
-          <h1>Forgia la proposta. Poi lascia che il council la giudichi.</h1>
+          <h1>Trasforma un'idea in una proposta pronta per la review.</h1>
           <p class="lead">
-            Forge è il fratello creativo di Codex Council. Il council valuta ciò che già esiste;
-            Forge inventa ciò che potrebbe esistere. Cinque ruoli creatori danno forma a un'unica
-            proposta di implementazione — poi la passano al council perché la giudichi. Forge crea;
-            non verifica verità, sicurezza, comportamento della UI o correttezza.
+            Cinque prompt di ruolo esplorano sistema, prodotto, fattibilità, affidabilità e
+            performance. Una sintesi separata produce una proposta limitata e mantiene visibile il
+            dissenso rilevante. Forge propone; non verifica correttezza, sicurezza o comportamento runtime.
           </p>
 
           <figure class="forge-stage">
             <svg class="forge-anim" viewBox="0 0 1200 510" role="img"
-                 aria-label="Il processo di forgiatura: cinque ruoli creatori — Fuller, Lamarr, Johnson, Hamilton, von Neumann — alimentano una Forge centrale, che produce una proposta unificata passata poi al Council. Un loop limitato consente fino a tre round.">
+                 aria-label="Il processo Forge: cinque ruoli definiti — Fuller, Lamarr, Johnson, Hamilton e von Neumann — alimentano una sintesi separata. Il risultato passa al Council e il loop si ferma dopo al massimo tre round.">
               <title>Come Codex Forge dà forma a una proposta</title>
               <defs>
                 <marker id="fg-ah-brand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -169,9 +168,9 @@
             </svg>
           </figure>
           <p class="wiki-lead" style="margin-top:16px;">
-            La tua idea entra da sinistra. Cinque creatori la modellano in parallelo, la Forge fa
-            convergere il loro lavoro in un'unica proposta (con un re-brief fino a tre round se
-            serve) e il risultato viene passato al council perché lo giudichi.
+            Cinque prompt di ruolo producono proposte distinte. Forge le sintetizza, può riprendere
+            le differenze irrisolte e si ferma dopo al massimo tre round. Il risultato può essere
+            converged, partial o nonconverged prima di passare al Council.
           </p>
         </div>
       </section>
@@ -179,24 +178,23 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Forge vs. Council</p>
-          <h2>Uno inventa. L'altro interroga.</h2>
+          <h2>Forge propone. Council rivede.</h2>
           <div class="comparison">
             <div class="panel">
-              <div class="panel-title">Forge crea</div>
+              <h3 class="panel-title">Forge crea</h3>
               <div class="panel-body">
-                <p>Usalo quando hai un'idea e vuoi una forma concreta e costruibile — una proposta
-                  che bilancia audacia, fattibilità, sicurezza e costo.</p>
-                <p>L'output è una proposta limitata, non un verdetto. Non controlla se l'idea è
-                  corretta o sicura da spedire.</p>
+                <p>Usalo quando un'idea ha ancora bisogno di scope, interfacce, vincoli, rischi e
+                  una forma implementativa concreta.</p>
+                <p>L'output è una proposta limitata, non un verdetto o una decisione di rilascio.</p>
               </div>
             </div>
             <div class="panel">
-              <div class="panel-title">Council giudica</div>
+              <h3 class="panel-title">Council giudica</h3>
               <div class="panel-body">
-                <p>Usalo quando hai una proposta e vuoi sapere se regge sotto pressione di
-                  architettura, affidabilità, sicurezza, prodotto, red team e performance.</p>
-                <p>Il flusso naturale è Forge → Council: inventa la forma, poi mettila alla prova
-                  prima di costruire. Forge ti scrive perfino il prompt successivo.</p>
+                <p>Usalo quando una proposta richiede review strutturata su architettura,
+                  affidabilità, sicurezza, prodotto, red-team e performance.</p>
+                <p>Council restituisce una decisione e i rischi aperti. I check di implementazione
+                  restano necessari per stabilire la correttezza.</p>
               </div>
             </div>
           </div>
@@ -205,15 +203,15 @@
 
       <section class="section">
         <div class="section-inner">
-          <p class="eyebrow">I cinque creatori</p>
-          <h2>Immaginazioni diverse, una proposta.</h2>
+          <p class="eyebrow">I cinque prompt di ruolo</p>
+          <h2>Prospettive definite, poi una sintesi separata.</h2>
           <div class="grid">
-            <article class="card"><h3>Buckminster Fuller</h3><p><em>Systems Imagination Architect.</em> La forma di sistema audace — primitive, confini, l'architettura creativa.</p></article>
-            <article class="card"><h3>Hedy Lamarr</h3><p><em>Product Invention Strategist.</em> Trasforma l'idea in valore per l'utente, aderenza al workflow, forma dell'interazione e ganci di adozione.</p></article>
+            <article class="card"><h3>Buckminster Fuller</h3><p><em>Systems Imagination Architect.</em> Definisce primitive, confini e forma complessiva del sistema.</p></article>
+            <article class="card"><h3>Hedy Lamarr</h3><p><em>Product Invention Strategist.</em> Collega l'idea a valore utente, workflow e design dell'interazione.</p></article>
             <article class="card"><h3>Katherine Johnson</h3><p><em>Feasibility &amp; Integration Engineer.</em> La radica in passi implementabili, dipendenze, interfacce e vincoli.</p></article>
             <article class="card"><h3>Margaret Hamilton</h3><p><em>Safety &amp; Reliability Builder.</em> Fa emergere modi di fallire, privacy, rollback e vincoli di affidabilità.</p></article>
-            <article class="card"><h3>John von Neumann</h3><p><em>Performance &amp; Complexity Optimizer.</em> Spinge su performance, costo basso, bassa latenza e semplificazione spietata.</p></article>
-            <article class="card"><h3>Il sintetizzatore</h3><p>Un passaggio creativo separato fonde i cinque in un'unica proposta — tenendo visibile il disaccordo invece di mediarlo via.</p></article>
+            <article class="card"><h3>John von Neumann</h3><p><em>Performance &amp; Complexity Optimizer.</em> Esamina latenza, costo, complessità e possibilità di semplificare.</p></article>
+            <article class="card"><h3>Il sintetizzatore</h3><p>Un passaggio separato fonde i cinque output in una proposta mantenendo il dissenso rilevante.</p></article>
           </div>
         </div>
       </section>
@@ -221,36 +219,36 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Un loop limitato</p>
-          <h2>Converge, oppure ti dice che non l'ha fatto.</h2>
+          <h2>Il loop termina con una proposta o un risultato nonconverged.</h2>
           <p class="lead">
-            La creazione può girare all'infinito, perciò Forge è volutamente limitato. E non
-            fabbrica un finto accordo per sembrare finito.
+            Forge esegue un round di default e non supera mai tre round. Può chiudere senza
+            convergenza; il dissenso irrisolto resta nell'output.
           </p>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>Un round, di default</h3>
-              <p>I cinque creatori producono ciascuno una proposta e il sintetizzatore le fonde. Alla maggior parte delle idee basta questo.</p>
+              <p>Ogni prompt di ruolo produce una proposta, poi il sintetizzatore separato crea il primo risultato limitato.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>Controllo di convergenza</h3>
-              <p>Le proposte vengono valutate. «Converged» significa allineamento alto per tutti, punteggi concordi, nessun blocker e nessun dissenso aperto.</p>
+              <p>Punteggi strutturati, blocker e dissenso persistente determinano se le proposte sono allineate o richiedono un altro passaggio.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Re-brief</h3>
-              <p>Se non ha converso, Forge fa un altro round — automaticamente quando il round 1 è molto discorde, oppure dopo il tuo OK in caso di near-miss. Ri-briefa solo la divergenza. Tetto massimo: tre round.</p>
+              <p>Un forte disaccordo può attivare il secondo round; un near-miss attende approvazione. Il re-brief riguarda solo le differenze irrisolte. Limite: tre round.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>
               <h3>Converged o no</h3>
-              <p>Ottieni una proposta unificata, oppure un onesto <code class="inline-code">nonconverged</code> con il dissenso che l'ha fermata.</p>
+              <p>Il risultato è converged, partial o <code class="inline-code">nonconverged</code>, con il dissenso residuo preservato.</p>
             </div>
           </div>
           <div class="callout">
             <strong>Come si decide la convergenza</strong>
-            Le proposte sono valutate su novità, fattibilità, aderenza all'utente, controllo del rischio e chiarezza implementativa. Converge solo quando l'allineamento più basso è almeno 7/10, i punteggi non si disperdono e niente è bloccato — altrimenti ottieni <code class="inline-code">nonconverged</code> con il dissenso preservato. Quando il round 1 è molto discorde (allineamento basso o dispersione ampia), il round successivo parte da solo; un near-miss aspetta il tuo via libera.
+            Le proposte sono valutate su novità, fattibilità, aderenza all'utente, controllo del rischio e chiarezza implementativa. Converge solo quando l'allineamento più basso è almeno 7/10, la dispersione resta entro il limite, niente è bloccato e non resta dissenso persistente — altrimenti ottieni <code class="inline-code">nonconverged</code> con il dissenso preservato. Quando il round 1 è molto discorde (allineamento basso o dispersione ampia), il round successivo parte da solo; un near-miss aspetta il tuo via libera.
           </div>
         </div>
       </section>
@@ -258,15 +256,15 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Cosa restituisce</p>
-          <h2>Una proposta che puoi passare dritta al council.</h2>
+          <h2>Una proposta limitata, non un via libera.</h2>
           <ul class="wide-list">
-            <li><strong>Proposta unificata</strong> — il design fuso, che parte da cosa costruire.</li>
+            <li><strong>Proposta unificata</strong> — il design sintetizzato e lo scope previsto.</li>
             <li><strong>Risultato di convergenza</strong> — converged, partial o nonconverged.</li>
             <li><strong>Dissenso persistente</strong> — il disaccordo creativo sopravvissuto, tenuto visibile.</li>
-            <li><strong>Forma implementativa</strong> — il percorso costruibile: passi, interfacce, dipendenze.</li>
+            <li><strong>Forma implementativa</strong> — passi, interfacce e dipendenze proposti.</li>
             <li><strong>Note di sicurezza e performance</strong> — modi di fallire, rollback, segnali di costo e latenza.</li>
-            <li><strong>Verifica</strong> — cosa resta da dimostrare prima di fidartene.</li>
-            <li><strong>Prompt successivo</strong> — un prompt per il Council, pronto da inviare, per giudicare ciò che hai appena forgiato.</li>
+            <li><strong>Verifiche necessarie</strong> — cosa richiede ancora evidenze prima di implementazione o rilascio.</li>
+            <li><strong>Prompt successivo</strong> — un prompt Council per la review strutturata della proposta.</li>
           </ul>
         </div>
       </section>
@@ -277,7 +275,7 @@
           <h2>Chiedi a Forge di dare forma all'idea.</h2>
           <p>In chat — dagli un'idea da progettare, non una decisione da giudicare:</p>
           <div class="prompt">
-            <span class="prompt-tag">Prompt</span>
+            <span class="prompt-tag">Esempio di prompt</span>
             <code>Use Codex Forge to design a bounded implementation proposal for &lt;la tua idea&gt;.
 Bilancia forma audace, fattibilità, sicurezza e costo — e dimmi dove i
 creatori sono in disaccordo. Poi dammi il prompt da inviare a Council per il giudizio.</code>
@@ -291,8 +289,9 @@ python3 scripts/codex_council.py init --topic "Forge a release workflow" --root 
 # Quando esistono i punteggi dei creatori, valuta la convergenza.
 python3 scripts/codex_council.py forge-convergence --input forge-scores.json</code></pre>
           <div class="callout">
-            <strong>Prima forgi, poi verifichi</strong>
-            Una proposta forgiata è un punto di partenza, non un via libera. Se il rischio non è banale, passala a <a href="index.html">Codex Council</a> (o alla normale verifica implementativa) prima di costruire.
+            <strong>Prima la proposta, poi le evidenze</strong>
+            Forge non testa la proposta. Usa <a href="index.html">Codex Council</a> per la review,
+            poi esegui i check richiesti dall'implementazione prima di dichiararla completa.
           </div>
         </div>
       </section>
@@ -302,11 +301,12 @@ python3 scripts/codex_council.py forge-convergence --input forge-scores.json</co
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>Un workflow a council per Codex. Licenza MIT.</p>
+          <p>Progetto open source indipendente di @ercoledevs. Licenza MIT.</p>
         </div>
         <div class="footer-links">
-          <a href="wiki.html">Wiki</a>
-          <a href="examples.html">Esempi</a>
+          <a href="usage.html">Installa</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limiti</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>

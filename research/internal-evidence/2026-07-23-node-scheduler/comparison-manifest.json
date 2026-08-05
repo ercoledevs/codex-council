@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-07-23-node-scheduler",
+  "captured_on": "2026-07-23",
+  "status": "CODE_OUTCOME_REPLAYABLE_WORKFLOW_PARTIAL",
+  "plugin": {
+    "name": "codex-council",
+    "version": "1.0.0+codex.20260716085645",
+    "source_commit": "95732dd3bbd5e440dbaa448aae94e59ce9c21473",
+    "source_worktree": "dirty",
+    "hyper_skill_sha256": "2f766a1417db401887ff4f9aeb3eb0565d4ad847ff45470cca626446d6087f2e"
+  },
+  "runtime": {
+    "model_id": null,
+    "token_usage": null,
+    "wall_clock_duration": null,
+    "reason_unavailable": "These values were not exposed as stable run telemetry."
+  },
+  "provenance": {
+    "outcome_replay": "PASS",
+    "workflow_provenance": "PARTIAL",
+    "captured": [
+      "frozen baseline and checksums",
+      "initial and revised task text",
+      "final patch for each arm",
+      "normalized final-check excerpts",
+      "plain-arm verifier summary",
+      "final Hyper verifier summary"
+    ],
+    "unavailable": [
+      "raw implementation-agent transcripts",
+      "raw explorer transcripts",
+      "three intermediate failed-falsifier transcripts",
+      "exact failed-verifier command logs",
+      "complete dirty-worktree archive"
+    ]
+  },
+  "workflow_inputs_sha256": {
+    "skills/codex-hyper/SKILL.md": "2f766a1417db401887ff4f9aeb3eb0565d4ad847ff45470cca626446d6087f2e",
+    "skills/codex-hyper/references/evaluation-protocol.md": "a8e900e51ad86673e46d896a9ead76dd4896047431629d9b5f6cae1d5b316309",
+    "skills/codex-hyper/references/execution-contracts.md": "f176728c6a01b8ddadf59bb6a6861d0ceb468203e3a8464e3497642423bab59f",
+    "skills/codex-hyper/references/routing-policy.md": "20233dfecfe5b4da136a30795f470f77842041c17df7aaf875df0dba81a87660"
+  },
+  "published_evidence_verification": {
+    "verified_on": "2026-07-24",
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_docs.DocsTests.test_evidence_lab_records_are_replayable_and_honest",
+    "result": "PASS",
+    "scope": "baseline hashes, task hashes, git apply --check, patch application, candidate tests, and JavaScript syntax"
+  },
+  "baseline": {
+    "tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "sha256": {
+      "README.md": "9603c0b744bd228037b99a47644b5ea7f6e7f2f58ca1a434004048360f61fd53",
+      "package.json": "a9972167cc689053c7d6b5602f207a0ad873c800264d9ea8274701f735c13ae1",
+      "src/scheduler.js": "4fcd7750ad4595de0f845df7fb3689281d3b7f7731bb52d98dc3b1dc723f06f5",
+      "test/scheduler.test.js": "cfeeb77c1a624b140b45a2363a923b477c462b31d85acc6c71a03e77f13b2dfe"
+    }
+  },
+  "task": {
+    "initial_sha256": "f20ad623b86717b16bf03205a8f72a5c12cc0393fa535ebd0836205d9de440ad",
+    "revised_sha256": "76070e60c5b45342da78134039ff9f92a1a80eb85a32eb0767da5115985bea1f",
+    "revision_reason": "Cold verification exposed an impossible strict physical-concurrency interpretation for workers that ignore AbortSignal."
+  },
+  "arms": {
+    "plain": {
+      "workflow": "single implementation pass plus independent read-only verification",
+      "repair_after_verdict": false,
+      "files_changed": 2,
+      "insertions": 305,
+      "deletions": 11,
+      "candidate_tests": {
+        "passed": 7,
+        "failed": 0
+      },
+      "syntax": "PASS",
+      "published_patch_replay": "PASS",
+      "unverified": [
+        "timer_cleanup",
+        "unhandled_rejection_safety"
+      ],
+      "verdict": "FAIL"
+    },
+    "hyper": {
+      "workflow": "Recorded Relay route: root writer, bounded read-only investigation, repeated cold falsification",
+      "falsification_passes": 4,
+      "falsification_passes_provenance": "orchestration record; raw intermediate transcripts unavailable",
+      "files_changed": 3,
+      "insertions": 482,
+      "deletions": 11,
+      "candidate_tests": {
+        "passed": 13,
+        "failed": 0,
+        "node_options": "--unhandled-rejections=strict"
+      },
+      "syntax": "PASS",
+      "published_patch_replay": "PASS",
+      "verdict": "PASS_AGAINST_REVISED_CONTRACT"
+    }
+  },
+  "comparison_limits": [
+    "This is one case study, not a statistical benchmark.",
+    "The plain arm was frozen after one implementation pass.",
+    "Hyper used a recorded falsification and repair workflow; raw intermediate transcripts were not retained.",
+    "No speed, token-efficiency, or general quality claim is supported."
+  ]
+}

@@ -1,0 +1,442 @@
+diff --git a/app.js b/app.js
+index 9929ed9..7ade0a7 100644
+--- a/app.js
++++ b/app.js
+@@ -8,37 +8,102 @@ const incidents = [
+   { id: "INC-1035", title: "Stale billing totals", status: "monitoring", severity: 2 }
+ ];
+ 
++const codec = globalThis.IncidentStateCodec;
+ const query = document.querySelector("#query");
+ const status = document.querySelector("#status");
+ const form = document.querySelector(".filters");
+ const summary = document.querySelector("#summary");
++const liveSummary = document.querySelector("#live-summary");
+ const list = document.querySelector("#incidents");
++let previousCount = null;
+ 
+-function render() {
+-  const needle = query.value.trim().toLowerCase();
+-  const selectedStatus = status.value;
++function readControls() {
++  return codec.normalizeState({
++    query: query.value,
++    status: status.value,
++  });
++}
++
++function writeControls(state) {
++  query.value = state.query;
++  status.value = state.status;
++}
++
++function incidentElement(incident) {
++  const item = document.createElement("li");
++  item.className = "incident";
++
++  const severity = document.createElement("span");
++  severity.className = "severity";
++  severity.textContent = `S${incident.severity}`;
++
++  const details = document.createElement("div");
++  const title = document.createElement("h2");
++  title.textContent = incident.title;
++  const id = document.createElement("p");
++  id.textContent = incident.id;
++  details.append(title, id);
++
++  const state = document.createElement("span");
++  state.className = "status";
++  state.textContent = incident.status;
++
++  item.append(severity, details, state);
++  return item;
++}
++
++function render(state, { announce = false } = {}) {
++  const needle = state.query.trim().toLowerCase();
+   const visible = incidents.filter((incident) => {
+-    const matchesQuery = `${incident.id} ${incident.title}`.toLowerCase().includes(needle);
+-    const matchesStatus = selectedStatus === "all" || incident.status === selectedStatus;
++    const haystack = `${incident.id} ${incident.title}`.toLowerCase();
++    const matchesQuery = haystack.includes(needle);
++    const matchesStatus =
++      state.status === "all" || incident.status === state.status;
+     return matchesQuery && matchesStatus;
+   });
+ 
+-  summary.textContent = `${visible.length} of ${incidents.length} incidents`;
+-  list.replaceChildren(...visible.map((incident) => {
+-    const item = document.createElement("li");
+-    item.className = "incident";
+-    item.innerHTML = `
+-      <span class="severity">S${incident.severity}</span>
+-      <div>
+-        <h2>${incident.title}</h2>
+-        <p>${incident.id}</p>
+-      </div>
+-      <span class="status">${incident.status}</span>
+-    `;
+-    return item;
+-  }));
++  const message = `${visible.length} of ${incidents.length} incidents`;
++  summary.textContent = message;
++  list.replaceChildren(...visible.map(incidentElement));
++  if (
++    announce &&
++    previousCount !== null &&
++    previousCount !== visible.length
++  ) {
++    liveSummary.textContent = message;
++  }
++  previousCount = visible.length;
+ }
+ 
+-form.addEventListener("input", render);
+-form.addEventListener("reset", () => requestAnimationFrame(render));
+-render();
++function replaceUrl(state) {
++  const url = new URL(location.href);
++  url.search = codec.encodeState(state);
++  history.replaceState(history.state, "", url);
++}
++
++function commitControls() {
++  const state = readControls();
++  render(state, { announce: true });
++  replaceUrl(state);
++}
++
++function restoreLocation({ announce = false, canonicalize = false } = {}) {
++  const state = codec.decodeState(location.search);
++  writeControls(state);
++  render(state, { announce });
++  if (canonicalize) replaceUrl(state);
++}
++
++query.addEventListener("input", commitControls);
++status.addEventListener("change", commitControls);
++form.addEventListener("submit", (event) => event.preventDefault());
++form.addEventListener("reset", (event) => {
++  event.preventDefault();
++  writeControls({ query: "", status: "all" });
++  commitControls();
++});
++window.addEventListener("popstate", () => {
++  restoreLocation({ announce: true, canonicalize: true });
++});
++
++restoreLocation({ canonicalize: true });
+diff --git a/e2e/browser.cjs b/e2e/browser.cjs
+new file mode 100644
+index 0000000..09cdf49
+--- /dev/null
++++ b/e2e/browser.cjs
+@@ -0,0 +1,88 @@
++"use strict";
++
++const assert = require("node:assert/strict");
++const { chromium } = require("playwright");
++
++const baseUrl = (process.env.BASE_URL || "http://127.0.0.1:4173").replace(
++  /\/+$/,
++  "",
++);
++
++async function runViewport(browser, viewport) {
++  const page = await browser.newPage({ viewport });
++  const errors = [];
++  page.on("console", (message) => {
++    if (message.type() === "error") errors.push(message.text());
++  });
++  page.on("pageerror", (error) => errors.push(error.message));
++  page.on("requestfailed", (request) => {
++    errors.push(`${request.method()} ${request.url()} failed`);
++  });
++
++  await page.goto(`${baseUrl}/?query=webhook&status=monitoring`);
++  assert.equal(await page.locator("#query").inputValue(), "webhook");
++  assert.equal(await page.locator("#status").inputValue(), "monitoring");
++  assert.equal(await page.locator("#summary").textContent(), "1 of 5 incidents");
++  assert.equal(await page.locator(".incident").count(), 1);
++  assert.equal(await page.locator("#live-summary").textContent(), "");
++
++  await page.locator("#query").fill("Checkout");
++  await page.locator("#status").selectOption("open");
++  assert.equal(new URL(page.url()).search, "?query=Checkout&status=open");
++  assert.equal(await page.locator("#query").evaluate((node) => node === document.activeElement), false);
++
++  await page.locator("#query").focus();
++  await page.locator("#query").fill("   ");
++  assert.equal(new URL(page.url()).search, "?status=open");
++  assert.equal(
++    await page.locator("#query").evaluate((node) => node === document.activeElement),
++    true,
++  );
++
++  await page.goto(`${baseUrl}/?status=bogus`);
++  assert.equal(await page.locator("#status").inputValue(), "all");
++  assert.equal(new URL(page.url()).search, "");
++
++  await page.evaluate(() => {
++    history.pushState({ checkpoint: 1 }, "", "?query=checkout&status=open");
++    history.pushState({ checkpoint: 2 }, "", "?status=monitoring");
++    dispatchEvent(new PopStateEvent("popstate"));
++  });
++  await page.goBack();
++  assert.equal(await page.locator("#query").inputValue(), "checkout");
++  assert.equal(await page.locator("#status").inputValue(), "open");
++  await page.goForward();
++  assert.equal(await page.locator("#query").inputValue(), "");
++  assert.equal(await page.locator("#status").inputValue(), "monitoring");
++
++  await page.locator("#reset").focus();
++  await page.keyboard.press("Enter");
++  assert.equal(await page.locator("#query").inputValue(), "");
++  assert.equal(await page.locator("#status").inputValue(), "all");
++  assert.equal(new URL(page.url()).search, "");
++  assert.equal(
++    await page.locator("#reset").evaluate((node) => node === document.activeElement),
++    true,
++  );
++
++  const noOverflow = await page.evaluate(
++    () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
++  );
++  assert.equal(noOverflow, true);
++  assert.deepEqual(errors, []);
++  await page.close();
++}
++
++(async () => {
++  const browser = await chromium.launch({ headless: true });
++  try {
++    await runViewport(browser, { width: 1280, height: 800 });
++    await runViewport(browser, { width: 320, height: 640 });
++    process.stdout.write("browser checks: PASS\n");
++  } finally {
++    await browser.close();
++  }
++})().catch((error) => {
++  console.error(error);
++  process.exitCode = 1;
++});
+diff --git a/index.html b/index.html
+index 36fb0bd..6569517 100644
+--- a/index.html
++++ b/index.html
+@@ -4,6 +4,7 @@
+     <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <title>Incident Board</title>
++    <link rel="icon" href="data:,">
+     <link rel="stylesheet" href="styles.css">
+   </head>
+   <body>
+@@ -32,8 +33,10 @@
+       </form>
+ 
+       <p id="summary" class="summary"></p>
++      <p id="live-summary" class="visually-hidden" role="status" aria-atomic="true"></p>
+       <ol id="incidents" class="incidents"></ol>
+     </main>
++    <script src="state-codec.js"></script>
+     <script src="app.js"></script>
+   </body>
+ </html>
+diff --git a/package.json b/package.json
+new file mode 100644
+index 0000000..45ee4a3
+--- /dev/null
++++ b/package.json
+@@ -0,0 +1,11 @@
++{
++  "name": "incident-board",
++  "private": true,
++  "scripts": {
++    "test": "node --test",
++    "test:browser": "node e2e/browser.cjs"
++  },
++  "devDependencies": {
++    "playwright": "^1.61.1"
++  }
++}
+diff --git a/state-codec.js b/state-codec.js
+new file mode 100644
+index 0000000..4825df8
+--- /dev/null
++++ b/state-codec.js
+@@ -0,0 +1,55 @@
++"use strict";
++
++(function exposeStateCodec(root, factory) {
++  const codec = factory();
++  if (typeof module === "object" && module.exports) {
++    module.exports = codec;
++  } else {
++    root.IncidentStateCodec = codec;
++  }
++})(typeof globalThis === "object" ? globalThis : this, function createCodec() {
++  const VALID_STATUSES = Object.freeze([
++    "all",
++    "open",
++    "monitoring",
++    "resolved",
++  ]);
++  const statusSet = new Set(VALID_STATUSES);
++
++  function normalizeState(state) {
++    const input = state && typeof state === "object" ? state : {};
++    return {
++      query: typeof input.query === "string" ? input.query : "",
++      status: statusSet.has(input.status) ? input.status : "all",
++    };
++  }
++
++  function decodeState(search) {
++    const params = new URLSearchParams(
++      typeof search === "string" ? search : "",
++    );
++    return normalizeState({
++      query: params.get("query") ?? "",
++      status: params.get("status") ?? "all",
++    });
++  }
++
++  function encodeState(state) {
++    const normalized = normalizeState(state);
++    const params = new URLSearchParams();
++    if (normalized.query.trim() !== "") {
++      params.set("query", normalized.query);
++    }
++    if (normalized.status !== "all") {
++      params.set("status", normalized.status);
++    }
++    return params.toString();
++  }
++
++  return Object.freeze({
++    VALID_STATUSES,
++    normalizeState,
++    decodeState,
++    encodeState,
++  });
++});
+diff --git a/styles.css b/styles.css
+index 51f238f..3511767 100644
+--- a/styles.css
++++ b/styles.css
+@@ -64,7 +64,11 @@ button {
+ }
+ 
+ input,
+-select { padding: 0 12px; }
++select {
++  width: 100%;
++  min-width: 0;
++  padding: 0 12px;
++}
+ 
+ button {
+   padding: 0 16px;
+@@ -83,6 +87,11 @@ button {
+   list-style: none;
+ }
+ 
++.incident > div { min-width: 0; }
++
++.incident h2,
++.incident p { overflow-wrap: anywhere; }
++
+ .incident {
+   display: grid;
+   grid-template-columns: auto 1fr auto;
+@@ -122,6 +131,19 @@ button {
+   text-transform: capitalize;
+ }
+ 
++.visually-hidden {
++  position: absolute;
++  width: 1px;
++  height: 1px;
++  padding: 0;
++  margin: -1px;
++  overflow: hidden;
++  clip: rect(0 0 0 0);
++  clip-path: inset(50%);
++  white-space: nowrap;
++  border: 0;
++}
++
+ @media (max-width: 640px) {
+   .shell { padding-top: 36px; }
+   .filters { grid-template-columns: 1fr; }
+diff --git a/test/state-codec.test.js b/test/state-codec.test.js
+new file mode 100644
+index 0000000..703891d
+--- /dev/null
++++ b/test/state-codec.test.js
+@@ -0,0 +1,63 @@
++"use strict";
++
++const assert = require("node:assert/strict");
++const test = require("node:test");
++
++const {
++  VALID_STATUSES,
++  normalizeState,
++  decodeState,
++  encodeState,
++} = require("../state-codec");
++
++test("normalizes defaults and accepts only known statuses", () => {
++  assert.deepEqual(normalizeState(), { query: "", status: "all" });
++  for (const status of VALID_STATUSES) {
++    assert.deepEqual(normalizeState({ query: "q", status }), {
++      query: "q",
++      status,
++    });
++  }
++  assert.deepEqual(normalizeState({ query: 42, status: "OPEN" }), {
++    query: "",
++    status: "all",
++  });
++});
++
++test("decodes URL state and uses the first duplicate value", () => {
++  assert.deepEqual(
++    decodeState("?query=webhook+delivery&status=monitoring"),
++    { query: "webhook delivery", status: "monitoring" },
++  );
++  assert.deepEqual(
++    decodeState("?query=first&query=second&status=open&status=resolved"),
++    { query: "first", status: "open" },
++  );
++  assert.deepEqual(decodeState("?status=bogus"), {
++    query: "",
++    status: "all",
++  });
++});
++
++test("encodes only non-default values in canonical order", () => {
++  assert.equal(encodeState({ query: "", status: "all" }), "");
++  assert.equal(encodeState({ query: "   ", status: "all" }), "");
++  assert.equal(encodeState({ query: "checkout", status: "all" }), "query=checkout");
++  assert.equal(encodeState({ query: "", status: "open" }), "status=open");
++  assert.equal(
++    encodeState({ query: "billing totals", status: "resolved" }),
++    "query=billing+totals&status=resolved",
++  );
++  assert.equal(encodeState({ query: "", status: "unknown" }), "");
++});
++
++test("round-trips unicode and reserved query characters", () => {
++  for (const query of [
++    "caffè + tè",
++    "a&b/c?d=e",
++    "<img src=x onerror=alert(1)>",
++  ]) {
++    const state = { query, status: "monitoring" };
++    assert.deepEqual(decodeState(`?${encodeState(state)}`), state);
++  }
++});

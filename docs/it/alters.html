@@ -7,13 +7,15 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Alters - Codex Council</title>
-    <meta name="description" content="Un alter è una modifica locale al comportamento di un singolo revisore. Vedi l'anteprima, salvala, resettala — senza spegnere nessuna garanzia del council.">
+    <meta name="description" content="Regola focus, tono e verifiche di un revisore Codex Council mantenendo attivi blocker, dissenso, verifica e regole di sicurezza richiesti.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/alters.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/alters.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/alters.html">
@@ -21,14 +23,14 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:title" content="Alters di Codex Council">
-    <meta property="og:description" content="Regola il focus di un revisore in locale, vedi l'anteprima prima di salvare e resetta quando vuoi. Le garanzie restano attive.">
+    <meta property="og:description" content="Regola focus, tono e verifiche di un revisore. Vedi l'anteprima in locale; gli invarianti richiesti restano attivi.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/alters.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Alters di Codex Council">
-    <meta name="twitter:description" content="Regola il focus di un revisore in locale, vedi l'anteprima prima di salvare e resetta quando vuoi. Le garanzie restano attive.">
+    <meta name="twitter:description" content="Regola focus, tono e verifiche di un revisore senza rimuovere gli invarianti richiesti dal Council.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,12 +49,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Casi d'uso</a>
-          <a href="examples.html">Esempi</a>
-          <a href="usage.html">Uso</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Prodotto</a>
+          <a href="examples.html">Evidenze</a>
+          <a class="is-active" href="wiki.html" aria-current="location">Docs</a>
+          <a class="nav-install" href="usage.html">Installa</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../alters.html" hreflang="en" aria-label="English version">EN</a>
@@ -71,15 +71,15 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Tuning degli alter</p>
-          <h1>Affila un revisore senza lasciarlo senza guinzaglio.</h1>
+          <h1>Regola un revisore senza cambiare le regole.</h1>
           <p class="lead">
-            Un alter è una modifica locale al comportamento di un singolo revisore. Rendi Ada più
-            diretta, punta Seymour sul costo del database o di' a Leonardo di smettere di essere
-            educato con la UI fatta male.
+            Un alter modifica focus, tono o verifiche richieste a un singolo revisore. Usalo per
+            dare priorità a migrazioni API, costo del database, accessibilità o un altro dominio
+            rilevante per il tuo lavoro.
           </p>
           <div class="callout">
-            <strong>Il tuning è un consiglio</strong>
-            Può cambiare il focus e il tono di un revisore. Non può spegnere blocker, dissenso, verifica, anonimizzazione o la regola del non-voto di Bob.
+            <strong>Gli invarianti richiesti restano attivi</strong>
+            Gli alter non possono rimuovere blocker, dissenso, verifica, anonimizzazione, regole di sicurezza o il non-voto di Bob.
           </div>
         </div>
       </section>
@@ -87,16 +87,16 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Chi puoi regolare</p>
-          <h2>Sette revisori. Bob ne resta fuori.</h2>
+          <h2>Sette ruoli sono configurabili. Bob no.</h2>
           <div class="grid">
             <article class="card"><h3>Ada Lovelace</h3><p>Architettura, confini, manutenibilità nel lungo periodo.</p></article>
             <article class="card"><h3>Grace Hopper</h3><p>Affidabilità, testabilità, recupero operativo.</p></article>
             <article class="card"><h3>Hypatia</h3><p>Sicurezza, privacy, governance, assunzioni rischiose.</p></article>
             <article class="card"><h3>Florence Nightingale</h3><p>Aderenza al prodotto, fatica per chi opera, attriti all'adozione.</p></article>
-            <article class="card"><h3>Alan Turing</h3><p>Il red team. Modi di fallire nascosti e assunzioni sbagliate.</p></article>
+            <article class="card"><h3>Alan Turing</h3><p>Review avversariale, modi di fallire nascosti e assunzioni non supportate.</p></article>
             <article class="card"><h3>Seymour Cray</h3><p>Performance, scala, costo, misurazione.</p></article>
-            <article class="card"><h3>Leonardo da Vinci</h3><p>Critica di UI e UX onesta e senza sconti.</p></article>
-            <article class="card"><h3>Bob</h3><p>Fuori discussione. Bob guida il browser per le prove; non vota.</p></article>
+            <article class="card"><h3>Leonardo da Vinci</h3><p>UI, UX, accessibilità e regressioni delle interazioni.</p></article>
+            <article class="card"><h3>Bob</h3><p>Non configurabile. Bob esegue verifiche browser per le evidenze e non vota.</p></article>
           </div>
           <figure class="visual-frame illustration" data-illustration="alters" role="img" aria-label="Tuning degli alter con limiti: sette card di ruolo configurabili, garanzie, un'anteprima e un runner di prove separato."></figure>
         </div>
@@ -114,12 +114,12 @@ python3 scripts/codex_council.py alters show --role ada
 
 # Vedi l'anteprima della modifica al prompt prima di impegnarti.
 python3 scripts/codex_council.py alters preview --role leonardo \
-  --tone "more brutally honest about confusing interaction design" \
+  --tone "direct and specific about confusing interaction design" \
   --domain-focus "mobile UI, modal accessibility, and click-through regressions"
 
 # Salvala.
 python3 scripts/codex_council.py alters configure --role leonardo \
-  --tone "more brutally honest about confusing interaction design" \
+  --tone "direct and specific about confusing interaction design" \
   --domain-focus "mobile UI, modal accessibility, and click-through regressions"
 
 # Resetta un ruolo, o tutti quanti.
@@ -131,7 +131,7 @@ python3 scripts/codex_council.py alters reset --all</code></pre>
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Scriverne uno buono</p>
-          <h2>Specifico, corto e verificabile.</h2>
+          <h2>Mantienilo specifico e verificabile.</h2>
           <ul class="wide-list">
             <li><strong>Buono:</strong> «Sii più diretta su compatibilità delle API e costo di migrazione.»</li>
             <li><strong>Buono:</strong> «Concentrati su accessibilità mobile, focus trap e regressioni nei click-through.»</li>
@@ -146,12 +146,14 @@ python3 scripts/codex_council.py alters reset --all</code></pre>
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>Un workflow a council per Codex. Licenza MIT.</p>
+          <p>Progetto open source indipendente di @ercoledevs. Licenza MIT.</p>
         </div>
         <div class="footer-links">
-          <a href="usage.html">Uso</a>
-          <a href="examples.html">Esempi</a>
+          <a href="usage.html">Installa</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limiti</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
       </div>
     </footer>

@@ -7,13 +7,15 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Casi d'uso - Codex Council</title>
-    <meta name="description" content="Quando il council vale il costo: architettura, diff rischiose, frontend e UX, performance, design di plugin e decisioni di rilascio — e quando invece Codex normale è lo strumento giusto.">
+    <meta name="description" content="Scegli il workflow Codex Council per la fase disponibile: Forge crea la proposta, Council la revisiona, Mind orchestra la pipeline e Hyper implementa la modifica autorizzata.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/use-cases.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/use-cases.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/use-cases.html">
@@ -21,14 +23,14 @@
     <meta property="og:type" content="website">
     <meta property="og:locale" content="it_IT">
     <meta property="og:title" content="Casi d'uso di Codex Council">
-    <meta property="og:description" content="Dove il council aiuta e dove no: architettura, diff rischiose, frontend, performance, design di plugin, pronti al rilascio.">
+    <meta property="og:description" content="Parti da un'idea, una proposta o una modifica autorizzata al repository e usa il workflow che gestisce il passaggio successivo.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/use-cases.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Casi d'uso di Codex Council">
-    <meta name="twitter:description" content="Dove il council aiuta e dove no: architettura, diff rischiose, frontend, performance, design di plugin, pronti al rilascio.">
+    <meta name="twitter:description" content="Forge → Council → Hyper, con Mind che controlla i gate.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="../assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,12 +49,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html" aria-current="page">Casi d'uso</a>
-          <a href="examples.html">Esempi</a>
-          <a href="usage.html">Uso</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html" aria-current="page">Prodotto</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Installa</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="../use-cases.html" hreflang="en" aria-label="English version">EN</a>
@@ -70,38 +70,39 @@
     <main id="main">
       <section class="section">
         <div class="section-inner">
-          <p class="eyebrow">Casi d'uso</p>
-          <h1>Tiralo fuori quando sbagliare costa caro.</h1>
+          <p class="eyebrow">Workflow del prodotto</p>
+          <h1>Scegli il workflow adatto alla fase di sviluppo.</h1>
           <p class="lead">
-            La maggior parte dei prompt non ha bisogno di un council. Questo è per quelli dove una
-            risposta sicura e sbagliata ti costa un rollback, una migrazione o un bug che vedono
-            prima i tuoi utenti.
+            Usa Forge per creare la proposta, Council per revisionarla, Mind per eseguire il percorso
+            controllato dalla proposta all'implementazione e Hyper per applicare una modifica
+            autorizzata al repository. Parti dalla fase che hai già. Codex diretto resta sufficiente
+            per lavoro piccolo, reversibile e con un solo check evidente.
           </p>
 
           <div class="grid">
             <article class="card">
-              <h3>Decisioni di architettura</h3>
-              <p>Soppesa due design, traccia i confini dei moduli e definisci il rollback prima di sceglierne uno.</p>
+              <h2>Feature request senza proposta</h2>
+              <p><strong>Usa Mind.</strong> Forge definisce la forma implementativa, Council restituisce build, revise o stop e un build autorizzato può passare a Hyper.</p>
             </article>
             <article class="card">
-              <h3>Diff rischiose</h3>
-              <p>Passagli una patch e chiedi cosa si rompe: regressioni, test mancanti, il caso limite che ti sveglia alle 3 di notte.</p>
+              <h2>Idea che richiede ancora design</h2>
+              <p><strong>Usa Forge.</strong> Cinque lenti creative trasformano obiettivi, utenti, vincoli, rollback e dipendenze in una proposta delimitata.</p>
             </article>
             <article class="card">
-              <h3>Frontend e UX</h3>
-              <p>Lascia che Leonardo faccia a pezzi la UX, poi fai guidare il browser a Bob prima che qualcuno dica «funziona».</p>
+              <h2>Proposta esistente o diff rischiosa</h2>
+              <p><strong>Usa Council.</strong> Ruoli isolati e review anonima fanno emergere blocker, dissenso, ipotesi non sicure e i check ancora necessari.</p>
             </article>
             <article class="card">
-              <h3>Proposte di performance</h3>
-              <p>Seymour va a caccia di latenza, memoria e carico sul database — e della domanda che tutti saltano: come la misuri?</p>
+              <h2>Modifica complessa già autorizzata</h2>
+              <p><strong>Usa Hyper.</strong> Solo gestisce lavoro circoscritto e a basso rischio; Relay aggiunge analisi read-only delimitata e verifica nuova attorno a un solo writer root.</p>
             </article>
             <article class="card">
-              <h3>Plugin e skill</h3>
-              <p>La modalità skill-review verifica se la gente troverà il tuo strumento, lo userà e non inciamperà nelle regole che hai già scritto.</p>
+              <h2>Comportamento frontend</h2>
+              <p><strong>Usa Council + review frontend, poi Hyper.</strong> Leonardo esamina la UX, Bob registra evidenze browser e Hyper applica il fix autorizzato con check eseguiti.</p>
             </article>
             <article class="card">
-              <h3>Pronti al rilascio</h3>
-              <p>Scambia «secondo me va bene» con una lista: blocker, disaccordi aperti, cosa è testato, cosa resta ignoto.</p>
+              <h2>Migrazione, API, dati o concorrenza</h2>
+              <p><strong>Usa Mind con Council Deep, poi Hyper Relay.</strong> Mantieni espliciti rischio di migrazione, rollback, compatibilità e falsificazione indipendente.</p>
             </article>
           </div>
         </div>
@@ -110,18 +111,17 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">Review del frontend</p>
-          <h2>Leonardo critica. Bob verifica.</h2>
+          <h2>Rivedi l'esperienza, poi verifica il comportamento.</h2>
           <div class="feature-row">
             <div class="feature-copy">
               <p>
-                I bug di UI si nascondono nel comportamento, non negli screenshot — il focus trap
-                che non si libera, lo sfondo che resta cliccabile, la modale che si sfascia sul
-                telefono. Per questo le run sul frontend seguono un percorso più severo.
+                Gli screenshot non coprono focus, tastiera, interazione con lo sfondo o comportamento
+                responsive. La review frontend separa la critica dalle evidenze del browser.
               </p>
               <ul>
-                <li><strong>Leonardo</strong> è il critico, e non è gentile col design confuso.</li>
-                <li><strong>Bob</strong> guida il browser. Raccoglie prove; non ha diritto di voto.</li>
-                <li>Niente viene dato per «verificato» finché Bob, o un browser vero, non l'ha riprodotto.</li>
+                <li><strong>Leonardo</strong> rivede usabilità, chiarezza, accessibilità e gerarchia visiva.</li>
+                <li><strong>Bob</strong> usa il browser e registra ciò che osserva; non assegna punteggi alla proposta.</li>
+                <li>Un risultato del browser supporta gli stati esercitati, non ogni stato possibile.</li>
               </ul>
             </div>
             <figure class="visual-frame illustration" data-illustration="frontend" role="img" aria-label="Flusso di review del frontend: critica UX, test della modale nel browser, controlli sul focus, sfondo non cliccabile e raccolta delle prove."></figure>
@@ -135,38 +135,39 @@
           <h2>Scegli la modalità più piccola che intercetta il rischio.</h2>
           <div class="table-wrap">
             <table>
+              <caption>Quando usare ogni modalità Council</caption>
               <thead>
                 <tr>
-                  <th>Situazione</th>
-                  <th>Modalità</th>
-                  <th>Perché</th>
+                  <th scope="col">Situazione</th>
+                  <th scope="col">Modalità</th>
+                  <th scope="col">Perché</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>Decisione piccola e reversibile</td>
+                  <th scope="row">Decisione piccola e reversibile</th>
                   <td><code>fast</code></td>
-                  <td>Un passaggio rapido del Presidente, senza il costo del council intero.</td>
+                  <td>Un passaggio mirato del Presidente senza la review completa dei ruoli.</td>
                 </tr>
                 <tr>
-                  <td>Scelta implementativa o di architettura</td>
+                  <th scope="row">Scelta implementativa o di architettura</th>
                   <td><code>standard</code></td>
-                  <td>Sei revisori e una fase di punteggio. Basta per la maggior parte dei casi.</td>
+                  <td>Sei prompt di ruolo isolati, seguiti da review anonima. Il JSON completo abilita lo scoring deterministico.</td>
                 </tr>
                 <tr>
-                  <td>Sicurezza, migrazione, perdita dati, parità di voti</td>
+                  <th scope="row">Migrazione irreversibile, perdita dati, parità di voti</th>
                   <td><code>deep</code></td>
-                  <td>Quando il rischio è concreto, lo scrutinio in più si ripaga.</td>
+                  <td>Scrutinio aggiuntivo per decisioni ad alto impatto; consuma più utilizzo Codex.</td>
                 </tr>
                 <tr>
-                  <td>Frontend, UX, modali, form, navigazione</td>
+                  <th scope="row">Frontend, UX, modali, form, navigazione</th>
                   <td><code>standard --frontend-review</code></td>
-                  <td>Leonardo sull'esperienza, Bob sul browser quando c'è qualcosa da cliccare.</td>
+                  <td>Leonardo rivede l'esperienza; Bob raccoglie evidenze se è disponibile un target interattivo.</td>
                 </tr>
                 <tr>
-                  <td>Usabilità di skill o plugin</td>
+                  <th scope="row">Usabilità di skill o plugin</th>
                   <td><code>--type skill --skill-review</code></td>
-                  <td>Lenti compatte su com'è costruito lo strumento e se qualcuno riesce a usarlo.</td>
+                  <td>Review mirata di struttura, discoverability, istruzioni ed esperienza operativa.</td>
                 </tr>
               </tbody>
             </table>
@@ -176,12 +177,12 @@
 
       <section class="section band">
         <div class="section-inner">
-          <p class="eyebrow">Non abusarne</p>
-          <h2>Spesso vince Codex normale.</h2>
+          <p class="eyebrow">Quando evitare Council</p>
+          <h2>Usa il workflow più piccolo che copre il rischio.</h2>
           <ul class="wide-list">
-            <li><strong>Usa Codex normale</strong> per modifiche piccole, domande veloci e tutto ciò che puoi verificare da solo in un minuto.</li>
-            <li><strong>Usa il council</strong> quando l'errore costa caro: una migrazione che non puoi annullare, una regressione che gli utenti vedranno, un compromesso che non puoi decidere da solo.</li>
-            <li><strong>Usa expanded solo quando fai sul serio.</strong> Brucia parecchio, quindi il plugin non lo avvia senza conferma.</li>
+            <li><strong>Usa Codex diretto</strong> per piccole modifiche, domande rapide e lavori con un check locale chiaro.</li>
+            <li><strong>Usa Council</strong> quando la decisione tocca contratti pubblici, dati persistenti, operazioni, sicurezza o comportamento visibile.</li>
+            <li><strong>Usa expanded con intenzione.</strong> Consuma molto più utilizzo Codex e richiede conferma esplicita.</li>
           </ul>
         </div>
       </section>
@@ -191,12 +192,14 @@
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>Un workflow a council per Codex. Licenza MIT.</p>
+          <p>Progetto open source indipendente di @ercoledevs. Licenza MIT.</p>
         </div>
         <div class="footer-links">
           <a href="usage.html">Installa</a>
-          <a href="examples.html">Esempi</a>
+          <a href="examples.html">Evidenze</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limiti</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
       </div>
     </footer>

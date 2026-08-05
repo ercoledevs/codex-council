@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Limits - Codex Council</title>
-    <meta name="description" content="What Codex Council won't claim: fake provider diversity, unverified UI, billing telemetry, measured runtime savings, or authoritative shadow state.">
+    <meta name="description" content="The practical limits of Codex Council: advisory output, one Codex model, browser checks for UI claims, heuristic estimates, and an experimental runtime.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/limits.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/limits.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/limits.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/limits.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Codex Council Limits">
-    <meta property="og:description" content="The honest constraints: no fake provider diversity, no unverified UI, no real billing data. Where state lives, and what it's based on.">
+    <meta property="og:description" content="Advisory output, isolated role prompts, executed browser checks for UI claims, heuristic estimates, and an experimental runtime.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/limits.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Council Limits">
-    <meta name="twitter:description" content="The honest constraints: no fake provider diversity, no unverified UI, no real billing data. Where state lives, and what it's based on.">
+    <meta name="twitter:description" content="Advisory output, isolated role prompts, executed browser checks for UI claims, heuristic estimates, and an experimental runtime.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a class="is-active" href="wiki.html" aria-current="location">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/limits.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -70,25 +70,25 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Limits</p>
-          <h1>It sharpens judgment. It doesn't replace verification.</h1>
+          <h1>What Codex Council does not provide.</h1>
           <p class="lead">
-            I built it to make risk visible, not to manufacture confidence. The final answer still
-            needs tests, a real browser, and your own read of the situation.
+            Council is an advisory workflow. Its verdict helps structure a decision; it does not
+            replace tests, browser checks, security review, or your responsibility for the result.
           </p>
         </div>
       </section>
 
       <section class="section band">
         <div class="section-inner">
-          <p class="eyebrow">What it won't fake</p>
-          <h2>The honesty is part of the design.</h2>
+          <p class="eyebrow">Known constraints</p>
+          <h2>Read the evidence, not just the verdict.</h2>
           <ul class="wide-list">
-            <li><strong>No fake provider diversity.</strong> This is Codex playing several roles, not several independent models.</li>
-            <li><strong>No unverified UI claims.</strong> A UI isn't "verified" unless Bob, or a real browser, actually ran the path.</li>
-            <li><strong>No real billing data.</strong> Token reports are local estimates, not your actual Codex usage or remaining quota.</li>
-            <li><strong>No silent expanded runs.</strong> Expanded can burn a lot of usage, so it won't start without your confirmation.</li>
-            <li><strong>No mess in your repo.</strong> Sessions, prompts, stats, and history live in plugin-local state and stay gitignored.</li>
-            <li><strong>No runtime shortcuts.</strong> The shadow cannot change the legacy verdict, and saving targets remain unmeasured until replay proves them.</li>
+            <li><strong>One Codex model.</strong> The council uses isolated role prompts, not independent providers or model families.</li>
+            <li><strong>Advisory output.</strong> A <code class="inline-code">build</code> verdict is not a production approval or proof of correctness.</li>
+            <li><strong>Browser evidence is required.</strong> UI behavior is verified only when the relevant path is executed in a real browser.</li>
+            <li><strong>Estimates are heuristic.</strong> Local token reports are planning aids, not billing telemetry, quota data, or measured savings.</li>
+            <li><strong>Expanded is explicit.</strong> The larger allowance does not start without your confirmation.</li>
+            <li><strong>Decision Runtime is experimental.</strong> Its shadow view is non-authoritative; original session artifacts and verdicts remain the source of truth.</li>
           </ul>
         </div>
       </section>
@@ -96,11 +96,11 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Privacy and state</p>
-          <h2>Local artifacts are still artifacts.</h2>
+          <h2>Local state still needs care.</h2>
           <p class="lead">
-            The helper script keeps session scaffolds, estimates, prompts, outputs, stats, history,
-            and alter overrides in plugin-local state. Before you publish a repo, make sure
-            <code class="inline-code">.codex-council/</code> is gitignored and uncommitted.
+            Session scaffolds, estimates, prompts, outputs, stats, history, and alter overrides may
+            contain project context. Before publishing a repository, confirm that
+            <code class="inline-code">.codex-council/</code> is ignored and uncommitted.
           </p>
           <pre><code># Check for local runtime artifacts before publishing.
 git status --short
@@ -110,12 +110,12 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
 
       <section class="section band">
         <div class="section-inner">
-          <p class="eyebrow">Decision Runtime safety</p>
-          <h2>The shadow may fail. The legacy path must not.</h2>
+          <p class="eyebrow">Decision Runtime</p>
+          <h2>An optional view, never the authority.</h2>
           <div class="grid">
-            <article class="card"><h3>Opt-in</h3><p>Nothing is projected until you ask for the extra view. It stays local and off by default.</p></article>
-            <article class="card"><h3>Legacy-safe</h3><p>Unknown or unhealthy shadow state is ignored; the original session and verdict remain usable.</p></article>
-            <article class="card"><h3>Still sensitive</h3><p>Shadow data is local state, not encrypted proof. Treat it with the same care as the source session.</p></article>
+            <article class="card"><h3>Opt-in</h3><p>No shadow is projected until you request it. The feature is local and off by default.</p></article>
+            <article class="card"><h3>Non-authoritative</h3><p>Missing or unhealthy shadow state is ignored. The saved session and verdict remain authoritative.</p></article>
+            <article class="card"><h3>Still sensitive</h3><p>Shadow data is local state, not encrypted evidence. Protect it like the source session.</p></article>
           </div>
           <p><a class="button secondary" href="runtime.html">See the Decision Runtime overview</a></p>
         </div>
@@ -124,14 +124,13 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">Where it comes from</p>
-          <h2>Built on the LLM Council idea, adapted for Codex.</h2>
+          <h2>Inspired by LLM Council, adapted for one Codex environment.</h2>
           <p class="lead">
             The pattern comes from
             <a href="https://github.com/karpathy/llm-council">karpathy/llm-council</a> and
-            <a href="https://llm-council.dev/">llm-council.dev</a>: ask several independent models,
-            anonymize the answers, rank them, then synthesize a final one. Codex Council keeps that
-            shape but runs it through Codex roles, local scoring, token estimates, and optional
-            browser evidence.
+            <a href="https://llm-council.dev/">llm-council.dev</a>. Codex Council keeps the
+            multi-perspective review shape, but uses isolated prompts inside Codex rather than
+            claiming independent-model diversity.
           </p>
         </div>
       </section>
@@ -141,13 +140,14 @@ find . -name '.codex-council' -o -name '.DS_Store' -o -name '__pycache__'</code>
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
           <a href="usage.html">Install</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="examples.html">Examples</a>
-          <a href="https://github.com/ercoledevs/codex-council/blob/main/PROVENANCE.md">Provenance</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
+          <a href="limits.html">Limits</a>
+          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
       </div>
     </footer>

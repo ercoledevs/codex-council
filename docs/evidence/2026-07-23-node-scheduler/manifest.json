@@ -1,0 +1,94 @@
+{
+  "schema_version": 2,
+  "run_id": "2026-07-23-hyper-scheduler",
+  "captured_on": "2026-07-23",
+  "replayed_on": "2026-07-24",
+  "status": "PASS_WITH_PARTIAL_WORKFLOW_PROVENANCE",
+  "product": {
+    "name": "codex-council",
+    "local_version": "1.0.0+codex.20260716085645",
+    "source_commit": "95732dd3bbd5e440dbaa448aae94e59ce9c21473",
+    "source_worktree": "dirty",
+    "hyper_release_status": "BUNDLED_PLUGIN_SKILL"
+  },
+  "workflow": {
+    "name": "codex-hyper",
+    "route": "Relay",
+    "stages": [
+      "contract",
+      "observe",
+      "orient",
+      "act",
+      "falsify",
+      "close"
+    ],
+    "instruction_sha256": {
+      "skills/codex-hyper/SKILL.md": "2f766a1417db401887ff4f9aeb3eb0565d4ad847ff45470cca626446d6087f2e",
+      "skills/codex-hyper/references/evaluation-protocol.md": "a8e900e51ad86673e46d896a9ead76dd4896047431629d9b5f6cae1d5b316309",
+      "skills/codex-hyper/references/execution-contracts.md": "f176728c6a01b8ddadf59bb6a6861d0ceb468203e3a8464e3497642423bab59f",
+      "skills/codex-hyper/references/routing-policy.md": "20233dfecfe5b4da136a30795f470f77842041c17df7aaf875df0dba81a87660"
+    }
+  },
+  "runtime": {
+    "model_id": null,
+    "token_usage": null,
+    "wall_clock_duration": null,
+    "reason_unavailable": "Stable runtime telemetry was not exposed."
+  },
+  "task": {
+    "contract": "final",
+    "clarified_during_execution": true,
+    "sha256": "d6c4efe501f599c367b1922a01cd87d35f7246c0c8586f0df507a488c51a0b1f"
+  },
+  "baseline": {
+    "tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "sha256": {
+      "README.md": "77fa4c686c1945ec090113e1b5ef0bbe1641c011c952541f0b83c64ecc667d33",
+      "package.json": "a9972167cc689053c7d6b5602f207a0ad873c800264d9ea8274701f735c13ae1",
+      "src/scheduler.js": "4fcd7750ad4595de0f845df7fb3689281d3b7f7731bb52d98dc3b1dc723f06f5",
+      "test/scheduler.test.js": "cfeeb77c1a624b140b45a2363a923b477c462b31d85acc6c71a03e77f13b2dfe"
+    }
+  },
+  "evidence_sha256": {
+    "README.md": "bc92445fcbf9caa3fd5a3b96f9e82498e183d9a032b01b01ed11c7d8db6dac02",
+    "task.md": "d6c4efe501f599c367b1922a01cd87d35f7246c0c8586f0df507a488c51a0b1f",
+    "hyper.patch": "1116d213ec3d1517cb4b0d4e28176eaeab3cc2604b48c84b333506c0d091153c",
+    "hyper-verifier.md": "ee5f0ef453dcc01a082b2dab91670c3e8a560a05023aff00138b8eba288702a6",
+    "checks.md": "89da3bdd635820d031fb1fc03ed7ee643d7c1c5178648970eaf1e25f8c2cccfb",
+    "provenance.md": "c0b491e71cf35e5377b8dc5def33a0fc659bca02a229bca2ac17c0e956fcdc38"
+  },
+  "outcome": {
+    "verdict": "PASS_AGAINST_FINAL_CONTRACT",
+    "files_changed": 3,
+    "insertions": 482,
+    "deletions": 11,
+    "tests": {
+      "passed": 13,
+      "failed": 0,
+      "node_options": "--unhandled-rejections=strict"
+    },
+    "syntax": "PASS",
+    "fresh_verifier": "PASS",
+    "published_patch_replay": "PASS"
+  },
+  "provenance": {
+    "outcome_replay": "PASS",
+    "workflow_provenance": "PARTIAL",
+    "unavailable": [
+      "raw agent transcripts",
+      "raw intermediate verifier transcripts",
+      "runtime model identifier",
+      "token usage",
+      "end-to-end duration",
+      "raw command stdout/stderr",
+      "complete dirty-worktree archive"
+    ]
+  },
+  "limits": {
+    "known_behavior": "Workers must cooperate with AbortSignal for physical cancellation.",
+    "general_benchmark_claim": false
+  }
+}

@@ -1,0 +1,343 @@
+diff --git a/src/scheduler.js b/src/scheduler.js
+index a75a081..19efd14 100644
+--- a/src/scheduler.js
++++ b/src/scheduler.js
+@@ -1,6 +1,149 @@
+ "use strict";
+ 
+-async function runJobs(jobs, worker) {
++const ABORT_MESSAGE = "Job aborted";
++const MAX_TIMEOUT_MS = 2_147_483_647;
++
++function errorMessage(error) {
++  return error instanceof Error ? error.message : String(error);
++}
++
++function rejected(reason) {
++  return { status: "rejected", reason };
++}
++
++function validateOptions(options = {}) {
++  if (options === null || typeof options !== "object" || Array.isArray(options)) {
++    throw new TypeError("options must be an object");
++  }
++
++  const concurrency = options.concurrency === undefined ? 1 : options.concurrency;
++  const maxRetries = options.maxRetries === undefined ? 0 : options.maxRetries;
++  const { timeoutMs, signal } = options;
++
++  if (!Number.isSafeInteger(concurrency) || concurrency < 1) {
++    throw new RangeError("concurrency must be a positive integer");
++  }
++  if (!Number.isSafeInteger(maxRetries) || maxRetries < 0) {
++    throw new RangeError("maxRetries must be a non-negative integer");
++  }
++  if (
++    timeoutMs !== undefined &&
++    (!Number.isSafeInteger(timeoutMs) ||
++      timeoutMs < 1 ||
++      timeoutMs > MAX_TIMEOUT_MS)
++  ) {
++    throw new RangeError("timeoutMs must be a positive supported integer");
++  }
++  if (
++    signal !== undefined &&
++    (signal === null ||
++      typeof signal !== "object" ||
++      typeof signal.aborted !== "boolean" ||
++      typeof signal.addEventListener !== "function" ||
++      typeof signal.removeEventListener !== "function")
++  ) {
++    throw new TypeError("signal must be an AbortSignal");
++  }
++
++  return { concurrency, maxRetries, timeoutMs, signal };
++}
++
++function createAbortError() {
++  const error = new Error(ABORT_MESSAGE);
++  error.name = "AbortError";
++  return error;
++}
++
++function createTimeoutError(timeoutMs) {
++  const error = new Error(`Job timed out after ${timeoutMs}ms`);
++  error.name = "TimeoutError";
++  return error;
++}
++
++function runAttempt(job, index, attempt, worker, timeoutMs, callerSignal) {
++  const controller = new AbortController();
++  let timeoutId;
++  let cancellationError;
++  let rejectCancellation;
++
++  const cancellationPromise = new Promise((_resolve, reject) => {
++    rejectCancellation = reject;
++  });
++  const cancel = (error) => {
++    if (cancellationError !== undefined) return;
++    cancellationError = error;
++    rejectCancellation(error);
++    controller.abort(error);
++  };
++  const onCallerAbort = () => cancel(createAbortError());
++
++  if (callerSignal !== undefined) {
++    callerSignal.addEventListener("abort", onCallerAbort, { once: true });
++    if (callerSignal.aborted) onCallerAbort();
++  }
++  if (timeoutMs !== undefined && cancellationError === undefined) {
++    timeoutId = setTimeout(() => cancel(createTimeoutError(timeoutMs)), timeoutMs);
++  }
++
++  let workerPromise;
++  if (cancellationError === undefined) {
++    try {
++      workerPromise = Promise.resolve(
++        worker(job, index, { attempt, signal: controller.signal }),
++      );
++    } catch (error) {
++      workerPromise = Promise.reject(error);
++    }
++  } else {
++    workerPromise = cancellationPromise;
++  }
++
++  if (cancellationError !== undefined && workerPromise !== cancellationPromise) {
++    workerPromise.catch(() => {});
++  }
++  const outcome =
++    cancellationError === undefined
++      ? Promise.race([workerPromise, cancellationPromise])
++      : cancellationPromise;
++
++  return outcome.finally(() => {
++    if (timeoutId !== undefined) clearTimeout(timeoutId);
++    if (callerSignal !== undefined) {
++      callerSignal.removeEventListener("abort", onCallerAbort);
++    }
++  });
++}
++
++async function runJob(job, index, worker, options) {
++  let attempt = 1;
++  while (true) {
++    if (options.signal !== undefined && options.signal.aborted) {
++      return rejected(ABORT_MESSAGE);
++    }
++
++    try {
++      const value = await runAttempt(
++        job,
++        index,
++        attempt,
++        worker,
++        options.timeoutMs,
++        options.signal,
++      );
++      return { status: "fulfilled", value };
++    } catch (error) {
++      if (options.signal !== undefined && options.signal.aborted) {
++        return rejected(ABORT_MESSAGE);
++      }
++      if (attempt > options.maxRetries) {
++        return rejected(errorMessage(error));
++      }
++      attempt += 1;
++    }
++  }
++}
++
++async function runJobs(jobs, worker, options) {
+   if (!Array.isArray(jobs)) {
+     throw new TypeError("jobs must be an array");
+   }
+@@ -8,18 +151,41 @@ async function runJobs(jobs, worker) {
+     throw new TypeError("worker must be a function");
+   }
+ 
+-  const results = [];
+-  for (let index = 0; index < jobs.length; index += 1) {
+-    try {
+-      const value = await worker(jobs[index], index);
+-      results.push({ status: "fulfilled", value });
+-    } catch (error) {
+-      results.push({
+-        status: "rejected",
+-        reason: error instanceof Error ? error.message : String(error),
+-      });
++  const settings = validateOptions(options);
++  const jobCount = jobs.length;
++  const results = new Array(jobCount);
++  if (jobCount === 0) return results;
++
++  if (settings.signal !== undefined && settings.signal.aborted) {
++    return Array.from(
++      { length: jobCount },
++      () => rejected(ABORT_MESSAGE),
++    );
++  }
++
++  let nextIndex = 0;
++  async function consumeJobs() {
++    while (nextIndex < jobCount) {
++      if (settings.signal !== undefined && settings.signal.aborted) return;
++      const index = nextIndex;
++      nextIndex += 1;
++      results[index] = await runJob(jobs[index], index, worker, settings);
++    }
++  }
++
++  const runnerCount = Math.min(settings.concurrency, jobCount);
++  await Promise.all(
++    Array.from({ length: runnerCount }, () => consumeJobs()),
++  );
++
++  if (settings.signal !== undefined && settings.signal.aborted) {
++    for (let index = 0; index < results.length; index += 1) {
++      if (results[index] === undefined) {
++        results[index] = rejected(ABORT_MESSAGE);
++      }
+     }
+   }
++
+   return results;
+ }
+ 
+diff --git a/test/scheduler.test.js b/test/scheduler.test.js
+index d46329c..a31660d 100644
+--- a/test/scheduler.test.js
++++ b/test/scheduler.test.js
+@@ -37,3 +37,131 @@ test("validates arguments", async () => {
+   await assert.rejects(() => runJobs(null, async () => {}), /jobs must be an array/);
+   await assert.rejects(() => runJobs([], null), /worker must be a function/);
+ });
++
++function deferred() {
++  let resolve;
++  let reject;
++  const promise = new Promise((resolvePromise, rejectPromise) => {
++    resolve = resolvePromise;
++    reject = rejectPromise;
++  });
++  return { promise, resolve, reject };
++}
++
++test("bounds concurrency and preserves result order", async () => {
++  const gates = Array.from({ length: 4 }, () => deferred());
++  const starts = Array.from({ length: 4 }, () => deferred());
++  const calls = [];
++  let active = 0;
++  let maxActive = 0;
++
++  const resultPromise = runJobs(
++    [0, 1, 2, 3],
++    async (job) => {
++      calls.push(job);
++      active += 1;
++      maxActive = Math.max(maxActive, active);
++      starts[job].resolve();
++      try {
++        return await gates[job].promise;
++      } finally {
++        active -= 1;
++      }
++    },
++    { concurrency: 2 },
++  );
++
++  await Promise.all([starts[0].promise, starts[1].promise]);
++  assert.deepEqual(calls, [0, 1]);
++  gates[1].resolve("one");
++  await starts[2].promise;
++  gates[0].resolve("zero");
++  await starts[3].promise;
++  gates[2].resolve("two");
++  gates[3].resolve("three");
++
++  assert.deepEqual(await resultPromise, [
++    { status: "fulfilled", value: "zero" },
++    { status: "fulfilled", value: "one" },
++    { status: "fulfilled", value: "two" },
++    { status: "fulfilled", value: "three" },
++  ]);
++  assert.equal(maxActive, 2);
++});
++
++test(
++  "retries failed and timed-out attempts and handles late rejection",
++  { timeout: 1_000 },
++  async () => {
++    const late = deferred();
++    const seen = [];
++    const result = await runJobs(
++      ["failure", "timeout"],
++      (job, index, { attempt, signal }) => {
++        seen.push(`${job}:${index}:${attempt}:${signal.aborted}`);
++        if (job === "failure" && attempt === 1) throw new Error("retry");
++        if (job === "timeout" && attempt === 1) return late.promise;
++        return `${job}-done`;
++      },
++      { maxRetries: 1, timeoutMs: 10 },
++    );
++
++    assert.deepEqual(result, [
++      { status: "fulfilled", value: "failure-done" },
++      { status: "fulfilled", value: "timeout-done" },
++    ]);
++    assert.deepEqual(seen, [
++      "failure:0:1:false",
++      "failure:0:2:false",
++      "timeout:1:1:false",
++      "timeout:1:2:false",
++    ]);
++    late.reject(new Error("late rejection"));
++    await new Promise((resolve) => setImmediate(resolve));
++  },
++);
++
++test("caller abort stops launches and rejects queued jobs", async () => {
++  const controller = new AbortController();
++  const started = [];
++  const signals = [];
++  const resultPromise = runJobs(
++    [0, 1, 2, 3],
++    (job, index, { signal }) => {
++      started.push(job);
++      signals.push(signal);
++      return new Promise(() => {});
++    },
++    { concurrency: 2, signal: controller.signal },
++  );
++
++  assert.deepEqual(started, [0, 1]);
++  controller.abort(new Error("caller-specific reason"));
++  const result = await resultPromise;
++  assert.ok(signals.every((signal) => signal.aborted));
++  assert.deepEqual(
++    result,
++    Array.from({ length: 4 }, () => ({
++      status: "rejected",
++      reason: "Job aborted",
++    })),
++  );
++});
++
++test("invalid options fail before workers start", async () => {
++  let calls = 0;
++  for (const options of [
++    null,
++    { concurrency: 0 },
++    { maxRetries: -1 },
++    { timeoutMs: 0 },
++    { signal: {} },
++  ]) {
++    await assert.rejects(() =>
++      runJobs([1], () => {
++        calls += 1;
++      }, options),
++    );
++  }
++  assert.equal(calls, 0);
++});

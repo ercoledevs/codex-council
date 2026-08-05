@@ -2,6 +2,39 @@
 
 All notable changes to Codex Council are documented in this file.
 
+## [1.1.0] - 2026-08-05
+
+### Added
+
+- Added Codex Hyper as a bundled implementation skill under `skills/codex-hyper/`,
+  including its FAQ, execution references, and UI metadata.
+- Codex Mind can optionally hand a Council-approved proposal to the bundled
+  `$codex-council:codex-hyper` skill for implementation.
+
+### Changed
+
+- The Mind pipeline is now Forge → Council → optional Hyper. Its combined estimate
+  still covers Forge + Council only; Hyper has a separate execution preflight and
+  authorization gate.
+- Reworked the website and README around the released proposal → review →
+  implementation pipeline, concise maintainer-led positioning, and explicit limits.
+- The public Evidence Lab now presents only the completed, replayable Hyper scheduler
+  case. Failed and incomplete research artifacts remain archived outside `docs/`.
+
+### Safety
+
+- Hyper is eligible only after an explicit implementation request, a Council `build`
+  verdict, zero live blockers, and a bundle-integrity availability check. If the
+  bundled skill is unexpectedly unavailable, Mind returns a ready handoff instead of
+  emulating it.
+- Material scope drift invalidates Council approval and returns the proposal to
+  `revise` before execution continues.
+
+### Compatibility
+
+- Hyper is bundled inside the Codex Council plugin and remains optional at runtime.
+  Existing Forge → Council runs remain unchanged when implementation is not requested.
+
 ## [1.0.0] - 2026-07-10
 
 ### Added
@@ -63,7 +96,7 @@ All notable changes to Codex Council are documented in this file.
 - Existing plugin-local session history requires no destructive migration.
 - The helper runtime remains Python standard-library only.
 
-### Deferred
+### Explicit non-goals
 
 - Making Decision Runtime output authoritative or allowing it to alter verdicts.
 - Cross-session semantic memory, automatic recovery without operator action, and

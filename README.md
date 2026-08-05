@@ -6,24 +6,34 @@
 
 ![Codex Council cover](assets/cover.svg)
 
-**Make Codex argue with itself before you ship.**
+**From an idea to reviewed, verified code in Codex.**
 
-Codex Council turns one Codex request into a small panel review: several reviewers
-answer independently, their work is anonymized and ranked on a rubric, and a Chairman
-writes the final call — with a local token estimate shown up front. It runs entirely inside
-Codex and **never calls a third‑party model API**.
+Codex Council is an open-source development workflow plugin for Codex. Forge turns
+goals and constraints into an implementation proposal. Council challenges that
+proposal through isolated roles and anonymous review. Mind coordinates the gates.
+Hyper applies an authorized change to the repository and closes only on executed
+checks and a mandatory falsification pass. Estimates are local and shown before each
+costly stage; the plugin does not call third-party model APIs.
 
-📖 **[Website](https://ercoledevs.github.io/codex-council/)** · 🧭 **[Wiki / playbook](https://ercoledevs.github.io/codex-council/wiki.html)** · 🧠 **[Decision Runtime](https://ercoledevs.github.io/codex-council/runtime.html)** · 📝 **[Changelog](CHANGELOG.md)** · 🇮🇹 **[Italiano](https://ercoledevs.github.io/codex-council/it/)**
+Maintained independently by [@ercoledevs](https://github.com/ercoledevs);
+source, releases, changes, and issues stay public.
 
-> **One honest caveat, up front.** The "diversity" here comes from isolated role
-> prompts and anonymous review, not from multiple model vendors. That's enough to
-> break single‑pass anchoring and surface dissent — it is **not** the same as a panel
-> of independent labs. The whole project is built around saying that plainly.
+📖 **[Website](https://ercoledevs.github.io/codex-council/)** ·
+🧭 **[Wiki](https://ercoledevs.github.io/codex-council/wiki.html)** ·
+✅ **[Completed run](https://ercoledevs.github.io/codex-council/examples.html)** ·
+💻 **[Source](https://github.com/ercoledevs/codex-council)** ·
+📦 **[Releases](https://github.com/ercoledevs/codex-council/releases)** ·
+📝 **[Changelog](CHANGELOG.md)** ·
+🐛 **[Issues](https://github.com/ercoledevs/codex-council/issues)** ·
+🇮🇹 **[Italiano](https://ercoledevs.github.io/codex-council/it/)**
 
-> **New in 1.0.0:** an experimental, opt-in Decision Runtime can project completed
-> sessions into deterministic Decision Cells and a simpler frontier log, compare the
-> two, persist transactional shadow generations, validate typed patches, and produce
-> fail-closed impact plans. Legacy Council artifacts and verdicts remain authoritative.
+> Role separation can make anchoring and dissent easier to inspect. It is not
+> multi-vendor independence and does not prove correctness. Project checks still
+> decide whether a change is ready.
+
+> **Included in the current release:** Council, Forge, Mind, Hyper, Alters, frontend
+> evidence review, local session tooling, and Decision Runtime. Decision Runtime is
+> released as an experimental, opt-in, non-authoritative sidecar.
 
 ---
 
@@ -36,6 +46,7 @@ Codex and **never calls a third‑party model API**.
 - [Modes & token budget](#modes--token-budget)
 - [Forging proposals](#forging-proposals)
 - [Codex Mind](#codex-mind)
+- [Codex Hyper](#codex-hyper)
 - [Decision Runtime](#decision-runtime)
 - [How to prompt it](#how-to-prompt-it)
 - [Tuning roles (alters)](#tuning-roles-alters)
@@ -44,19 +55,22 @@ Codex and **never calls a third‑party model API**.
 - [Limits](#limits)
 - [Install options](#install-options)
 - [Development](#development)
+- [Why I built it](#why-i-built-it)
 - [Credits & license](#credits--license)
 
 ---
 
 ## When to use it
 
-Reach for the council when a confident, wrong answer is expensive — a migration you
-can't undo, a regression users will hit, a tradeoff you can't call alone. For small,
-reversible, checkable work, plain Codex is faster.
+Use Codex Council when a development task needs more structure than one direct
+implementation pass: the proposal is still unclear, the decision is expensive to
+reverse, or the repository change needs independent falsification. For small,
+reversible work with an obvious check, plain Codex is usually enough.
 
 | Good fit | Skip it |
 | --- | --- |
-| Architecture decisions, risky diffs, migrations | Tiny edits and quick questions |
+| Idea → proposal → review → implementation | Tiny edits and quick questions |
+| Architecture decisions, risky diffs, migrations | A localized fix with one obvious test |
 | Security, privacy, data‑loss risk | Anything you can verify yourself in a minute |
 | Frontend/UX behavior and release go/no‑go | A task that just needs one straightforward answer |
 | Creative implementation shaping with Codex Forge | Rubber-stamp validation |
@@ -71,16 +85,19 @@ reversible, checkable work, plain Codex is faster.
 npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
 ```
 
-**2. Ask for a review** in chat — just say what to review and what you care about:
+**2. Ask for the full development path** in chat:
 
 ```text
-Use Codex Council to review this architecture decision.
-Focus on blockers, rollback, and verification.
+Use $codex-council:codex-mind to turn this request into an implementation proposal,
+review it, and—only if the verdict is build with no blockers—offer
+$codex-council:codex-hyper to implement it. Show each estimate and ask before editing.
 ```
 
-**3. Accept the estimate.** Before any Standard/Deep run, the council shows a token
-estimate and waits for your OK. "Use Codex Council" is a request, not permission to
-spend — and `expanded` needs a separate, explicit yes.
+**3. Accept the gates.** Mind shows one estimate for Forge + Council. If the result
+is a blocker-free `build`, Mind shows the Hyper execution preflight, confirms
+authorization already given for the unchanged scope or obtains it if missing, then
+invokes Hyper. Material scope, risk, or sensitive actions require fresh authorization.
+`expanded` always needs an additional explicit yes.
 
 That's it. Everything below is detail you can reach for when you need it.
 
@@ -88,14 +105,28 @@ That's it. Everything below is detail you can reach for when you need it.
 
 ## How it works
 
-One request becomes four stages:
+The complete path has four owned stages:
+
+| Stage | Owner | Concrete output |
+| --- | --- | --- |
+| **1. Propose** | Forge | One bounded implementation proposal, or `nonconverged` with dissent. |
+| **2. Review** | Council | A Final Call with approval status, blockers, dissent, confidence, and required verification. |
+| **3. Gate** | Mind | `build`, `revise`, or `stop`, plus a controlled handoff that stops on nonconvergence, blockers, scope drift, or missing authorization. |
+| **4. Implement** | Hyper | Repository changes, executed checks, falsification result, rollback, and residual risk. Relay adds a fresh verifier. |
+
+Use Mind for the full sequence or invoke Forge, Council, and Hyper separately when
+the task already starts at a later stage.
+
+### How Council reviews
+
+A Council review uses four steps:
 
 | Stage | What happens |
 | --- | --- |
-| **1. First opinions** | Up to six reviewers answer independently, in parallel, before seeing each other's work. |
+| **1. First opinions** | Up to six isolated role prompts run in parallel before seeing each other's work. |
 | **2. Anonymous review** | Outputs lose their authorship (Candidate A–F) and are ranked/scored on a rubric — not on who sounds senior. |
 | **3. Aggregation** | Scores combine deterministically (locally, when reviewer JSON exists). Blockers and dissent are kept, not averaged away. |
-| **4. Chairman synthesis** | The main agent writes the final call from saved outputs — winner, dissent, blockers, verification. Not just "the highest score wins." |
+| **4. Chairman synthesis** | The main agent writes the final call from saved outputs — decision, confidence, dissent, blockers, and verification. |
 
 The final answer leads with the decision and a **confidence** level (high / medium /
 low / blocked), separates **blockers** from **refinements**, keeps **dissent**
@@ -106,8 +137,11 @@ the verification is how you make it real.
 
 ## The council
 
-A default full Standard run uses six reviewers. Opt-in adaptive panels may use fewer;
-hard-risk work still returns to full coverage. Each lens guards a different concern:
+A default full Standard run uses six role members, then blinded review. Its
+scaffold prepares Performance Impact Reviewer and Coverage Integrator roles;
+deterministic scoring runs only when complete reviewer JSON exists. Opt-in
+adaptive panels may use fewer; hard-risk work still returns to full coverage.
+Each lens guards a different concern:
 
 | Role | Lens |
 | --- | --- |
@@ -122,11 +156,11 @@ hard-risk work still returns to full coverage. Each lens guards a different conc
 
 Turn it on with `--frontend-review` (or `--type frontend`) for UI/UX work:
 
-- **Leonardo da Vinci** — a brutally honest UX/UI critic. A Leonardo blocker lowers
-  final confidence even when the technical scores are high.
-- **Bob** — a browser evidence runner. He drives a real browser and reports
-  pass/fail. **Bob never votes**, and nothing is called "verified" until Bob (or
-  equivalent browser evidence) actually ran the path.
+- **Leonardo da Vinci** — a UX/UI reviewer focused on interaction quality,
+  accessibility, and visible regressions. A Leonardo blocker lowers final confidence.
+- **Bob** — a browser evidence runner. When a target and browser tool are
+  available, he attempts the requested path and reports PASS / FAIL / UNKNOWN.
+  **Bob never votes**; UI behavior is verified only for paths that actually ran.
 
 ---
 
@@ -148,7 +182,7 @@ Output detail is controlled by `--token-budget`, which defaults to `compact`:
 | --- | --- |
 | `compact` *(default)* | normal decisions — tight outputs, smallest reference set |
 | `balanced` | real tradeoffs and ambiguity — more detail, only on the risky parts |
-| `expanded` | security/data‑loss/irreversible — full evidence. **Blocked until you confirm.** |
+| `expanded` | larger context and output allowance for hard cases. It does not guarantee complete evidence. **Blocked until you confirm.** |
 
 Typed synthesis templates are available via `--type architecture|implementation|decision|skill|frontend`.
 
@@ -156,10 +190,10 @@ Typed synthesis templates are available via `--type architecture|implementation|
 
 ## Forging proposals
 
-`codex-forge` is the creative sibling of Codex Council:
+`codex-forge` turns an idea into one bounded, review-ready proposal:
 
 - **Forge creates** a bounded implementation proposal from several creative lenses.
-- **Council judges** whether that proposal is safe, coherent, and worth shipping.
+- **Council reviews** the proposal for blockers, dissent, and required verification.
 
 Forge uses five creator roles:
 
@@ -171,11 +205,11 @@ Forge uses five creator roles:
 | **Margaret Hamilton** | safety, reliability, rollback, privacy |
 | **John von Neumann** | performance, complexity, cost, simplification |
 
-The loop is deliberately bounded: one structured round by default, then a second
+The loop is bounded: one structured round by default, then a second
 round — which you approve after round 1, or which starts automatically when round 1
 comes back strongly discordant — and a hard cap of three. If the creators still do
 not converge, Forge returns `nonconverged` with persistent dissent instead of forcing
-fake consensus.
+consensus. Forge proposes; it does not verify correctness.
 
 ```text
 Use Codex Forge to design a bounded implementation proposal for this idea.
@@ -192,10 +226,10 @@ Use Council after Forge when the forged proposal needs judgment.
 
 ## Codex Mind
 
-`codex-mind` runs that whole arc for you — Forge, then Council, in one guided pass.
-If you don't have a proposal yet, it asks what to build first. You see **one combined
-estimate** up front (both stages, summed) and get a single **build / revise / stop**
-call at the end, with blockers, dissent, and verification.
+`codex-mind` runs Forge, then Council, under one accepted deliberation estimate. If
+you do not have a proposal yet, Mind asks what to create. It passes the proposal—not
+the full Forge transcripts—to Council and returns one **build / revise / stop**
+decision with blockers, dissent, and verification.
 
 Each run opens with an ASCII digital‑brain banner, then:
 
@@ -204,22 +238,72 @@ Each run opens with an ASCII digital‑brain banner, then:
 3. Forges the proposal.
 4. Hands only the proposal to Council — never full transcripts — and judges it.
 5. Returns the verdict.
+6. It may hand the approved scope to the bundled Hyper workflow only when
+   implementation was explicitly requested, the verdict is `build`, no live blocker
+   remains, and `$codex-council:codex-hyper` is available.
+7. After authorization is confirmed, Hyper enters Relay, implements the approved
+   scope through one root writer, runs falsification, and returns `completed` or
+   `blocked` with `PASS`, `FAIL`, or `UNKNOWN` evidence.
 
 It honours stop conditions: a Forge `nonconverged` or a Council blocker pauses the run
 rather than forcing it forward, so a full pipeline doesn't burst your token budget.
+Hyper remains a separate, optional implementation step. Mind closes the Council
+agents, passes only the approved scope and evidence, then shows a separate execution
+preflight. It confirms authorization already given for the unchanged scope or obtains
+it if missing; material scope or risk changes require fresh authorization. If the
+bundled Hyper skill fails its availability check, Mind returns a ready handoff and
+asks for a plugin reload instead of emulating it. Material scope drift sends the
+proposal back to `revise`.
 
 ```text
-Use Codex Mind to forge a proposal for this idea and then run it through the council.
+Use Codex Mind to forge a proposal for this idea and run it through the council. If the
+verdict is build with no blockers, offer $codex-council:codex-hyper for implementation and show its
+separate execution preflight before proceeding.
+```
+
+---
+
+## Codex Hyper
+
+`codex-hyper` is the implementation workflow bundled with Codex Council. Invoke it
+directly for a complex authorized code change, or let Mind hand it a blocker-free
+`build`. A Mind handoff requires a Council `build` plus valid implementation
+authorization; direct Hyper invocation needs an authorized implementation request,
+but not a prior Council run.
+
+Hyper chooses the smallest justified route:
+
+| Route | Use it when | Topology |
+| --- | --- | --- |
+| **Solo** | A direct Hyper task is clear, localized, reversible, low-risk, and has a deterministic check. | Root Codex inspects, writes, tests, and reviews. |
+| **Relay** | Every approved Mind handoff; also direct tasks where root cause, impact, contracts, concurrency, data, build, or deployment need separate investigation. | One or two bounded read-only explorers → root-only writer → fresh read-only verifier. |
+
+Its method is explicit:
+
+1. **Contract** — define observable done, scope, constraints, rollback, checks, and route.
+2. **Observe** — read repository rules, worktree, code, tests, and the smallest safe baseline.
+3. **Orient** — verify claims against source and map every acceptance criterion to evidence.
+4. **Act** — apply small reversible patches and run focused checks after meaningful increments.
+5. **Falsify** — challenge the contract, raw diff, and raw check results; Relay uses a fresh read-only verifier, while Solo reports its reduced independent coverage. Critical `FAIL` or `UNKNOWN` blocks completion.
+6. **Close** — reconcile every done item, inspect the final diff, report rollback and residual risk.
+
+Hyper never uses parallel writers. Agent agreement is not treated as proof: conflicts
+return to files, commands, tests, or reproducible counterexamples. Its execution
+preflight and authorization remain distinct from Mind's Forge + Council estimate.
+
+```text
+Use $codex-council:codex-hyper to implement this change with the smallest justified agent topology and
+evidence-backed verification.
 ```
 
 ---
 
 ## Decision Runtime
 
-Version 1.0 adds a **local decision-intelligence lab** for completed sessions. It is
-not a second Chairman and it never changes a verdict. It projects allowlisted legacy
-evidence into two representations, compares them, and can persist the result as an
-isolated transactional sidecar:
+Version 1.0 adds an experimental local view of saved evidence from completed
+sessions. It is not a second Chairman and does not change a verdict. It projects
+allowlisted legacy artifacts into two representations, compares them, and can persist
+the result as an isolated transactional sidecar:
 
 | Capability | v1.0 status |
 | --- | --- |
@@ -230,7 +314,6 @@ isolated transactional sidecar:
 | Typed JSON Decision Patches | opt-in, sidecar-only |
 | Fail-closed impact plan | advisory only; never dispatches agents |
 | Legacy session and verdict | stable and authoritative |
-| Learned scheduling, semantic memory, automatic early exit | deferred |
 
 The intended flow is deliberately one-way:
 
@@ -276,14 +359,14 @@ and applied only by an explicit purge command.
 
 See the [Decision Runtime showcase](https://ercoledevs.github.io/codex-council/runtime.html)
 for the product view, or the [technical contract](skills/codex-council/references/decision-runtime.md)
-for schemas, recovery states, replay gates, and the deferred roadmap.
+for schemas, constraints, recovery states, and replay gates.
 
 ---
 
 ## How to prompt it
 
-A council prompt isn't a question — it's a decision to pressure‑test. The shape that
-works:
+A useful Council prompt names the decision, evidence, constraints, and expected
+verification:
 
 ```text
 [Standard|Deep|Frontend] Council: review <the specific decision>.
@@ -313,15 +396,16 @@ than a vibe, point at evidence, and state your hard constraints. Don't ask it to
 confirm" — the council preserves dissent on purpose. Explaining the council ("how does
 it work?") is not running it; an ambiguous ask gets one clarifying line, no dispatch.
 
-➡️ The [Wiki](https://ercoledevs.github.io/codex-council/wiki.html) has a 16‑recipe
-cookbook with paste‑ready prompts for common situations.
+➡️ The [Wiki](https://ercoledevs.github.io/codex-council/wiki.html) has 30
+paste-ready prompt templates for common situations.
 
 ---
 
 ## Tuning roles (alters)
 
-An **alter** is a bounded, local tweak to how one reviewer behaves — make Ada blunter,
-point Seymour at database cost, tell Leonardo to stop being polite about bad UI.
+An **alter** is a bounded, local adjustment to one reviewer's focus, tone, or extra
+checks—for example API boundaries for Ada, database cost for Seymour, or mobile
+accessibility for Leonardo.
 
 Tuning is **advisory only**: it can sharpen focus and tone, but it can never remove
 blockers, dissent, verification, anonymization, or Bob's non‑voting status. Bob isn't
@@ -329,7 +413,7 @@ tunable. Always preview before saving:
 
 ```bash
 python3 scripts/codex_council.py alters preview --role leonardo \
-  --tone "more brutally honest about confusing interaction design" \
+  --tone "direct about confusing interaction design" \
   --domain-focus "mobile UI, modal accessibility, and click-through regressions"
 ```
 
@@ -341,7 +425,8 @@ See [CLI reference → Tune roles](#cli-reference) for the full command set.
 
 The helper script (`scripts/codex_council.py`) is stdlib‑only. For everyday use you
 don't need it at all — ask in chat. The CLI is for **traceable sessions, estimates,
-scoring, and stats** you want to keep. Sections are collapsed; click to expand.
+scoring, and stats** you want to keep. `init` scaffolds session artifacts; it does
+not dispatch agents or execute the review. Sections are collapsed; click to expand.
 
 <details>
 <summary><b>Setup & estimate</b></summary>
@@ -658,6 +743,8 @@ codex-council/
 │   └── references/                  # roles, rubric, protocol, token budget, …
 ├── skills/codex-council-alters/     # role-tuning skill
 ├── skills/codex-forge/              # creative proposal forging skill
+├── skills/codex-mind/               # guided Forge -> Council orchestration
+├── skills/codex-hyper/              # bundled implementation + falsification skill
 ├── docs/                            # the website (GitHub Pages)
 ├── CHANGELOG.md
 ├── assets/
@@ -667,6 +754,19 @@ codex-council/
 
 The public site in `docs/` is published with GitHub Pages from the `main` branch
 (`/docs` folder) → https://ercoledevs.github.io/codex-council/
+
+---
+
+## Why I built it
+
+I built Codex Council because one Codex pass can blur four different jobs: defining
+the change, judging the design, editing the repository, and proving the result. I
+wanted a repeatable path that turns an idea into a bounded proposal, exposes blockers
+and dissent before implementation, then applies the authorized scope without hiding
+the checks needed to close it.
+
+I maintain the project independently. The source, releases, changelog, and issue
+tracker stay public so you can inspect what changed and report what does not work.
 
 ---
 

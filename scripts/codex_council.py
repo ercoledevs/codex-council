@@ -297,6 +297,15 @@ REQUIRED_REFERENCES = [
     "workflow-recipes.md",
 ]
 
+REQUIRED_HYPER_FILES = [
+    "SKILL.md",
+    "FAQ.md",
+    "agents/openai.yaml",
+    "references/routing-policy.md",
+    "references/execution-contracts.md",
+    "references/evaluation-protocol.md",
+]
+
 SYNTHESIS_TEMPLATES = {
     "general": "Recommendation -> Council Result -> Blocking Issues -> Refinements -> Implementation Shape -> Verification -> Audit Notes.",
     "architecture": "Architecture verdict -> Top blockers -> Tradeoffs -> Migration/rollback shape -> Verification.",
@@ -2145,7 +2154,12 @@ def collect_post_execution_estimate(session_dir: Path, metadata: dict[str, Any])
     missing_data: list[str] = []
     if not member_prompt_paths:
         missing_data.append("missing member prompts")
-    if not reviewer_prompt_paths and metadata.get("mode") != "fast" and not metadata.get("skill_review"):
+    if (
+        not reviewer_prompt_paths
+        and metadata.get("mode") != "fast"
+        and not metadata.get("skill_review")
+        and metadata.get("session_type") != "forge"
+    ):
         missing_data.append("missing reviewer prompts")
     if not chairman_prompt_paths:
         missing_data.append("missing chairman synthesis prompt")
@@ -2995,6 +3009,7 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
 
 def validate_runtime_contract(root: Path) -> list[str]:
     skill_dir = root / "skills" / "codex-council"
+    hyper_dir = root / "skills" / "codex-hyper"
     references_dir = skill_dir / "references"
     required_paths = [
         root / ".codex-plugin" / "plugin.json",
@@ -3004,6 +3019,7 @@ def validate_runtime_contract(root: Path) -> list[str]:
         root / "scripts" / "council_cells.py",
     ]
     required_paths.extend(references_dir / filename for filename in REQUIRED_REFERENCES)
+    required_paths.extend(hyper_dir / filename for filename in REQUIRED_HYPER_FILES)
     return [f"missing runtime file: {path.relative_to(root).as_posix()}" for path in required_paths if not path.exists()]
 
 

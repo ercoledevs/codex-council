@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-07-23-url-state",
+  "captured_on": "2026-07-23",
+  "status": "INCOMPLETE_BROWSER_UNKNOWN",
+  "plugin": {
+    "name": "codex-council",
+    "version": "1.0.0+codex.20260716085645",
+    "source_commit": "95732dd3bbd5e440dbaa448aae94e59ce9c21473",
+    "source_worktree": "dirty"
+  },
+  "runtime": {
+    "model_id": null,
+    "token_usage": null,
+    "wall_clock_duration": null,
+    "reason_unavailable": "Stable telemetry was not exposed by the runtime."
+  },
+  "provenance": {
+    "outcome_replay": "PASS_SOURCE_CHECKS",
+    "workflow_provenance": "PARTIAL",
+    "captured": [
+      "frozen baseline and checksums",
+      "exact task text",
+      "final patch for each arm",
+      "normalized final source-check excerpts",
+      "final verifier summaries"
+    ],
+    "unavailable": [
+      "raw implementation-agent transcripts",
+      "raw explorer transcripts",
+      "raw pre-repair verifier transcripts and exact probe commands",
+      "complete dirty-worktree archive"
+    ]
+  },
+  "workflow_inputs_sha256": {
+    "skills/codex-hyper/SKILL.md": "2f766a1417db401887ff4f9aeb3eb0565d4ad847ff45470cca626446d6087f2e",
+    "skills/codex-hyper/references/evaluation-protocol.md": "a8e900e51ad86673e46d896a9ead76dd4896047431629d9b5f6cae1d5b316309",
+    "skills/codex-hyper/references/execution-contracts.md": "f176728c6a01b8ddadf59bb6a6861d0ceb468203e3a8464e3497642423bab59f",
+    "skills/codex-hyper/references/routing-policy.md": "20233dfecfe5b4da136a30795f470f77842041c17df7aaf875df0dba81a87660"
+  },
+  "published_evidence_verification": {
+    "verified_on": "2026-07-24",
+    "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest tests.test_docs.DocsTests.test_evidence_lab_records_are_replayable_and_honest",
+    "result": "PASS",
+    "scope": "baseline hashes, task hash, git apply --check, patch application, codec tests, and JavaScript syntax; browser excluded"
+  },
+  "baseline": {
+    "syntax": "PASS",
+    "sha256": {
+      "index.html": "4a34a2f85dd0a4a66bead511bb491ff501b7a6fcd33a4c357fc5baa09c6eab8d",
+      "styles.css": "6c05222a4dc10eb29a59c2b80aaf039ddd9ec4f8f3c1005d0c8e3463f412dbe0",
+      "app.js": "b935f89ce98a2c17d0ed7f8bc34df9dcfe0b81456bad497168b8e1d272ab8314"
+    }
+  },
+  "task_sha256": "8079534ad8dc8b2dcdc7f7a7692a9ed703a7d49c0282a134a4ae2f62b0cb47a5",
+  "arms": {
+    "plain": {
+      "files_changed": 7,
+      "insertions": 262,
+      "deletions": 24,
+      "codec_tests": {
+        "passed": 4,
+        "failed": 0
+      },
+      "syntax": "PASS",
+      "published_patch_replay": "PASS",
+      "source_verdict": "PASS",
+      "browser_verdict": "UNKNOWN"
+    },
+    "hyper": {
+      "route": "Relay",
+      "files_changed": 7,
+      "insertions": 330,
+      "deletions": 23,
+      "codec_tests": {
+        "passed": 4,
+        "failed": 0
+      },
+      "syntax": "PASS",
+      "published_patch_replay": "PASS",
+      "source_verdict": "PASS_AFTER_REPAIR",
+      "browser_verdict": "UNKNOWN"
+    }
+  },
+  "browser_gate": {
+    "playwright_approval": "PENDING",
+    "executed": false,
+    "claims": {
+      "hydration": "UNKNOWN",
+      "history": "UNKNOWN",
+      "keyboard": "UNKNOWN",
+      "focus": "UNKNOWN",
+      "console_errors": "UNKNOWN",
+      "horizontal_overflow": "UNKNOWN"
+    }
+  },
+  "comparison_limits": [
+    "The browser acceptance gate has not executed.",
+    "This is one case study, not a statistical benchmark.",
+    "No speed, token-efficiency, or general quality claim is supported."
+  ]
+}

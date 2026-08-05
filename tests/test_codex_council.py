@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -643,6 +644,19 @@ class CodexCouncilSessionTests(unittest.TestCase):
 
         self.assertTrue(any("missing reference" in problem or "missing runtime file" in problem for problem in problems))
 
+    def test_runtime_contract_rejects_plugin_without_bundled_hyper(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "codex-council"
+            shutil.copytree(plugin_root, root, ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"))
+            shutil.rmtree(root / "skills" / "codex-hyper")
+
+            problems = cc.validate_runtime_contract(root)
+
+        self.assertTrue(problems)
+        self.assertTrue(all("skills/codex-hyper/" in problem for problem in problems), problems)
+        self.assertTrue(any(problem.endswith("skills/codex-hyper/SKILL.md") for problem in problems), problems)
+
     def test_skill_body_stays_compact(self):
         plugin_root = Path(__file__).resolve().parents[1]
         skill_text = (plugin_root / "skills" / "codex-council" / "SKILL.md").read_text(encoding="utf-8")
@@ -805,6 +819,21 @@ class CodexCouncilSessionTests(unittest.TestCase):
         self.assertIn("not actual Codex usage", rendered)
         self.assertNotIn(tmp, serialized)
         self.assertTrue(stats["validation"]["ok"], stats["validation"]["problems"])
+
+    def test_forge_stats_do_not_require_nonexistent_reviewer_prompts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            session = init_session(
+                "Forge Stats",
+                Path(tmp),
+                session_root=Path(tmp) / "state",
+                session_type="forge",
+            )
+            stats = cc.collect_session_stats(session)
+
+        self.assertNotIn(
+            "missing reviewer prompts",
+            stats["post_execution_estimate"]["missing_data"],
+        )
 
     def test_stats_command_writes_reports_and_json(self):
         plugin_root = Path(__file__).resolve().parents[1]
@@ -1162,12 +1191,40 @@ class CodexCouncilSessionTests(unittest.TestCase):
         self.assertIn("hard cap of three", text)
         self.assertIn("does not validate truth", text)
 
+    def test_hyper_skill_is_a_complete_bundled_plugin_skill(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        hyper_root = plugin_root / "skills" / "codex-hyper"
+        required_files = (
+            "SKILL.md",
+            "FAQ.md",
+            "agents/openai.yaml",
+            "references/routing-policy.md",
+            "references/execution-contracts.md",
+            "references/evaluation-protocol.md",
+        )
+
+        for relative in required_files:
+            path = hyper_root / relative
+            with self.subTest(path=str(path.relative_to(plugin_root))):
+                self.assertTrue(path.is_file(), f"missing bundled Hyper file: {relative}")
+                self.assertTrue(path.read_text(encoding="utf-8").strip())
+
+        skill = (hyper_root / "SKILL.md").read_text(encoding="utf-8")
+        metadata = (hyper_root / "agents" / "openai.yaml").read_text(encoding="utf-8")
+        readme = (plugin_root / "README.md").read_text(encoding="utf-8")
+        self.assertIn("name: codex-hyper", skill)
+        self.assertIn('display_name: "Codex Hyper"', metadata)
+        self.assertIn("## Codex Hyper", readme)
+        self.assertIn("skills/codex-hyper/", readme)
+        self.assertIn("Route every accepted Mind handoff through Relay", skill)
+
     def test_mind_skill_chains_forge_then_council(self):
         plugin_root = Path(__file__).resolve().parents[1]
         skill_path = plugin_root / "skills" / "codex-mind" / "SKILL.md"
         text = skill_path.read_text(encoding="utf-8")
+        normalized = " ".join(text.replace("**", "").split())
         self.assertIn("brain-banner.md", text)
-        self.assertIn("combined preflight estimate", text)
+        self.assertRegex(normalized, r"combined (?:deliberation )?preflight estimate")
         self.assertIn("not full Forge transcripts", text)
         self.assertIn("Forge", text)
         self.assertIn("Council", text)
@@ -1175,6 +1232,72 @@ class CodexCouncilSessionTests(unittest.TestCase):
         banner = banner_path.read_text(encoding="utf-8")
         self.assertIn("```", banner)
         self.assertIn("((()))", banner)  # the ASCII brain art is present
+
+    def test_mind_hyper_stage_is_optional_bundled_and_has_own_preflight(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        skill = (plugin_root / "skills" / "codex-mind" / "SKILL.md").read_text(encoding="utf-8")
+        normalized = " ".join(skill.replace("**", "").lower().split())
+
+        self.assertIn("$codex-council:codex-hyper", skill)
+        self.assertNotIn("`$codex-hyper`", skill)
+        self.assertIn("optional", normalized)
+        self.assertIn("bundled", normalized)
+        for forbidden in (
+            "external `$codex-hyper`",
+            "external $codex-hyper",
+            "external codex hyper",
+            "external optional companion",
+            "separately installed",
+            "installed separately",
+            "separate installation",
+        ):
+            with self.subTest(forbidden=forbidden):
+                self.assertNotIn(forbidden, skill.lower())
+        self.assertRegex(
+            normalized,
+            r"combined (?:deliberation )?(?:preflight )?estimate[^.]{0,240}forge\s*\+\s*council[^.]{0,100}only",
+        )
+        self.assertRegex(
+            normalized,
+            r"(?:hyper|\$codex-council:codex-hyper)[^.]{0,180}(?:separate|dedicated|its own)[^.]{0,100}(?:execution )?preflight"
+            r"|(?:separate|dedicated|its own)[^.]{0,100}(?:execution )?preflight[^.]{0,180}(?:hyper|\$codex-council:codex-hyper)",
+        )
+
+    def test_mind_protocol_fail_closed_hyper_gate_and_handoff(self):
+        plugin_root = Path(__file__).resolve().parents[1]
+        protocol_path = plugin_root / "skills" / "codex-mind" / "references" / "mind-protocol.md"
+        protocol = protocol_path.read_text(encoding="utf-8")
+        normalized = " ".join(protocol.lower().split())
+
+        # The eligibility gate is cumulative, not a menu of independent reasons to execute.
+        self.assertRegex(
+            normalized,
+            r"(?:cumulative|all (?:of )?(?:the )?following|only (?:when|if) all(?: \w+)?)",
+        )
+        self.assertIn("explicit", normalized)
+        self.assertIn("implementation", normalized)
+        self.assertRegex(normalized, r"council[^.]{0,140}`?build`?")
+        self.assertRegex(normalized, r"(?:no|zero)[^.]{0,100}(?:live )?blocker")
+        self.assertRegex(
+            normalized,
+            r"\$codex-council:codex-hyper[^.]{0,140}availab|availab[^.]{0,140}\$codex-council:codex-hyper",
+        )
+
+        # Deliberation agents must be gone before a fresh implementation stage starts.
+        self.assertRegex(
+            normalized,
+            r"close[^.]{0,100}council[^.]{0,120}before[^.]{0,120}"
+            r"(?:evaluat|invok|load|run|start)[^.]{0,80}(?:\$codex-council:codex-hyper|hyper)",
+        )
+
+        # Missing capability and approval-invalidating scope changes both fail closed.
+        self.assertRegex(normalized, r"(?:unavailable|not available|absent)[^.]{0,180}do not emulate")
+        self.assertRegex(normalized, r"do not emulate[^.]{0,180}handoff|handoff[^.]{0,180}do not emulate")
+        self.assertRegex(
+            normalized,
+            r"(?:scope drift|scope[^.]{0,100}(?:change|changes|changed))"
+            r"[^.]{0,220}(?:revise|invalidat)",
+        )
 
     def test_check_update_reports_available_release_without_network(self):
         with tempfile.TemporaryDirectory() as tmp:

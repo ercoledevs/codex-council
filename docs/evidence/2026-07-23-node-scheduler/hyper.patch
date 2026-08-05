@@ -1,0 +1,526 @@
+diff --git a/README.md b/README.md
+index d3384d2..e372b99 100644
+--- a/README.md
++++ b/README.md
+@@ -8,3 +8,31 @@ Run the baseline:
+ ```bash
+ npm test
+ ```
++
++## Scheduler contract
++
++`runJobs(jobs, worker, options)` always resolves to results in input order.
++Each result is either `{ status: "fulfilled", value }` or
++`{ status: "rejected", reason }`. Omitting `options` preserves the original
++sequential, no-retry behavior.
++
++Options:
++
++- `concurrency` is a positive safe integer and defaults to `1`.
++- `maxRetries` is a non-negative integer below
++  `Number.MAX_SAFE_INTEGER` and defaults to `0`.
++- `timeoutMs` is an optional per-attempt timeout from `0` through
++  `2_147_483_647`.
++- `signal` is an optional caller `AbortSignal`.
++
++When options are supplied, the worker receives
++`(job, index, { attempt, signal })`. Omitting options keeps the original
++two-argument callback shape. Attempts are one-based and each retry gets a fresh
++signal. Failures and timeouts are retried up to `maxRetries`; caller
++cancellation is never retried. After caller cancellation, active attempts
++receive an aborted signal and unclaimed jobs receive a stable rejected result.
++
++Timeout and caller cancellation release the scheduler's logical slot even when
++a worker promise has not settled. JavaScript cannot terminate work that ignores
++its aborted signal, so physical resource bounding after cancellation requires
++cooperative workers.
+diff --git a/src/scheduler.js b/src/scheduler.js
+index a75a081..e64687e 100644
+--- a/src/scheduler.js
++++ b/src/scheduler.js
+@@ -1,6 +1,172 @@
+ "use strict";
+ 
+-async function runJobs(jobs, worker) {
++const MAX_TIMEOUT_MS = 2_147_483_647;
++const ACTIVE_ABORT_REASON = "Job aborted";
++const NOT_STARTED_ABORT_REASON = "Job not started because the caller aborted";
++
++function rejectionReason(error) {
++  try {
++    if (error instanceof Error && typeof error.message === "string") {
++      return error.message;
++    }
++    return String(error);
++  } catch (_coercionError) {
++    return "Worker rejected with an unprintable reason";
++  }
++}
++
++function rejected(reason) {
++  return { status: "rejected", reason };
++}
++
++function isAbortSignal(signal) {
++  return typeof AbortSignal !== "undefined" && signal instanceof AbortSignal;
++}
++
++function normalizeOptions(options) {
++  const passContext = options !== undefined;
++  if (options === undefined) options = {};
++  if (options === null || typeof options !== "object" || Array.isArray(options)) {
++    throw new TypeError("options must be an object");
++  }
++
++  const concurrency =
++    options.concurrency === undefined ? 1 : options.concurrency;
++  const maxRetries =
++    options.maxRetries === undefined ? 0 : options.maxRetries;
++  const timeoutMs = options.timeoutMs === undefined ? null : options.timeoutMs;
++  const signal = options.signal === undefined ? null : options.signal;
++
++  if (!Number.isSafeInteger(concurrency) || concurrency < 1) {
++    throw new RangeError("concurrency must be a positive safe integer");
++  }
++  if (
++    !Number.isSafeInteger(maxRetries) ||
++    maxRetries < 0 ||
++    maxRetries >= Number.MAX_SAFE_INTEGER
++  ) {
++    throw new RangeError(
++      "maxRetries must be a non-negative integer below Number.MAX_SAFE_INTEGER",
++    );
++  }
++  if (
++    options.timeoutMs !== undefined &&
++    (!Number.isSafeInteger(timeoutMs) ||
++      timeoutMs < 0 ||
++      timeoutMs > MAX_TIMEOUT_MS)
++  ) {
++    throw new RangeError(
++      `timeoutMs must be an integer from 0 through ${MAX_TIMEOUT_MS}`,
++    );
++  }
++  if (options.signal !== undefined && !isAbortSignal(signal)) {
++    throw new TypeError("signal must be AbortSignal-compatible");
++  }
++
++  return { concurrency, maxRetries, timeoutMs, signal, passContext };
++}
++
++function runAttempt(job, index, attempt, worker, settings) {
++  const attemptController = new AbortController();
++
++  return new Promise((resolve) => {
++    let settled = false;
++    let timeoutId;
++    let onCallerAbort;
++
++    function cleanup() {
++      if (timeoutId !== undefined) clearTimeout(timeoutId);
++      if (onCallerAbort) {
++        settings.signal.removeEventListener("abort", onCallerAbort);
++      }
++    }
++
++    function finish(outcome, abortReason) {
++      if (settled) return;
++      settled = true;
++      cleanup();
++      if (abortReason && !attemptController.signal.aborted) {
++        attemptController.abort(abortReason);
++      }
++      resolve(outcome);
++    }
++
++    if (settings.signal) {
++      onCallerAbort = () => {
++        const error = new Error(ACTIVE_ABORT_REASON);
++        error.name = "AbortError";
++        finish({ kind: "caller-aborted", reason: error.message }, error);
++      };
++      settings.signal.addEventListener("abort", onCallerAbort, { once: true });
++      if (settings.signal.aborted) {
++        onCallerAbort();
++        return;
++      }
++    }
++
++    if (settings.timeoutMs !== null) {
++      timeoutId = setTimeout(() => {
++        const error = new Error(
++          `Job timed out after ${settings.timeoutMs}ms`,
++        );
++        error.name = "TimeoutError";
++        finish({ kind: "timed-out", reason: error.message }, error);
++      }, settings.timeoutMs);
++    }
++
++    if (settings.signal?.aborted) {
++      onCallerAbort();
++      return;
++    }
++
++    let workerResult;
++    try {
++      workerResult = settings.passContext
++        ? worker(job, index, {
++            attempt,
++            signal: attemptController.signal,
++          })
++        : worker(job, index);
++    } catch (error) {
++      finish({ kind: "failed", reason: rejectionReason(error) });
++      return;
++    }
++
++    Promise.resolve(workerResult).then(
++      (value) => finish({ kind: "fulfilled", value }),
++      (error) => finish({ kind: "failed", reason: rejectionReason(error) }),
++    );
++  });
++}
++
++async function runOneJob(job, index, worker, settings) {
++  for (let attempt = 1; attempt <= settings.maxRetries + 1; attempt += 1) {
++    if (settings.signal?.aborted) {
++      return rejected(ACTIVE_ABORT_REASON);
++    }
++
++    const outcome = await runAttempt(
++      job,
++      index,
++      attempt,
++      worker,
++      settings,
++    );
++    if (outcome.kind === "fulfilled") {
++      return { status: "fulfilled", value: outcome.value };
++    }
++    if (outcome.kind === "caller-aborted") {
++      return rejected(outcome.reason);
++    }
++    if (attempt > settings.maxRetries) {
++      return rejected(outcome.reason);
++    }
++  }
++
++  throw new Error("unreachable scheduler state");
++}
++
++async function runJobs(jobs, worker, options) {
+   if (!Array.isArray(jobs)) {
+     throw new TypeError("jobs must be an array");
+   }
+@@ -8,16 +174,42 @@ async function runJobs(jobs, worker) {
+     throw new TypeError("worker must be a function");
+   }
+ 
+-  const results = [];
+-  for (let index = 0; index < jobs.length; index += 1) {
+-    try {
+-      const value = await worker(jobs[index], index);
+-      results.push({ status: "fulfilled", value });
+-    } catch (error) {
+-      results.push({
+-        status: "rejected",
+-        reason: error instanceof Error ? error.message : String(error),
+-      });
++  if (options === undefined) {
++    const legacyResults = [];
++    for (let index = 0; index < jobs.length; index += 1) {
++      try {
++        const value = await worker(jobs[index], index);
++        legacyResults.push({ status: "fulfilled", value });
++      } catch (error) {
++        legacyResults.push(rejected(rejectionReason(error)));
++      }
++    }
++    return legacyResults;
++  }
++
++  const settings = normalizeOptions(options);
++  if (jobs.length === 0) return [];
++
++  const queue = jobs.slice();
++  const results = new Array(queue.length);
++  let nextIndex = 0;
++
++  async function runLane() {
++    while (true) {
++      if (settings.signal?.aborted) return;
++      const index = nextIndex;
++      if (index >= queue.length) return;
++      nextIndex += 1;
++      results[index] = await runOneJob(queue[index], index, worker, settings);
++    }
++  }
++
++  const laneCount = Math.min(settings.concurrency, queue.length);
++  await Promise.all(Array.from({ length: laneCount }, runLane));
++
++  for (let index = 0; index < results.length; index += 1) {
++    if (results[index] === undefined) {
++      results[index] = rejected(NOT_STARTED_ABORT_REASON);
+     }
+   }
+   return results;
+diff --git a/test/scheduler.test.js b/test/scheduler.test.js
+index d46329c..954d0dd 100644
+--- a/test/scheduler.test.js
++++ b/test/scheduler.test.js
+@@ -37,3 +37,254 @@ test("validates arguments", async () => {
+   await assert.rejects(() => runJobs(null, async () => {}), /jobs must be an array/);
+   await assert.rejects(() => runJobs([], null), /worker must be a function/);
+ });
++
++test("omitting options preserves the two-argument callback shape", async () => {
++  const observed = [];
++
++  await runJobs([1], function (job, index) {
++    observed.push([job, index, arguments.length]);
++  });
++
++  assert.deepEqual(observed, [[1, 0, 2]]);
++});
++
++test("omitting options preserves the legacy dynamic array loop", async () => {
++  const jobs = [0, 1, 2];
++
++  const result = await runJobs(jobs, async (job) => {
++    if (job === 0) jobs.length = 1;
++    return job;
++  });
++
++  assert.deepEqual(result, [{ status: "fulfilled", value: 0 }]);
++});
++
++function deferred() {
++  let resolve;
++  let reject;
++  const promise = new Promise((resolvePromise, rejectPromise) => {
++    resolve = resolvePromise;
++    reject = rejectPromise;
++  });
++  return { promise, resolve, reject };
++}
++
++test("bounds concurrency and preserves input order", async () => {
++  const started = Array.from({ length: 4 }, () => deferred());
++  const gates = Array.from({ length: 4 }, () => deferred());
++  let active = 0;
++  let peak = 0;
++
++  const resultPromise = runJobs(
++    [0, 1, 2, 3],
++    async (job) => {
++      active += 1;
++      peak = Math.max(peak, active);
++      started[job].resolve();
++      try {
++        return await gates[job].promise;
++      } finally {
++        active -= 1;
++      }
++    },
++    { concurrency: 2 },
++  );
++
++  await Promise.all([started[0].promise, started[1].promise]);
++  gates[1].resolve("one");
++  await started[2].promise;
++  gates[0].resolve("zero");
++  await started[3].promise;
++  gates[3].resolve("three");
++  gates[2].resolve("two");
++
++  assert.equal(peak, 2);
++  assert.deepEqual(await resultPromise, [
++    { status: "fulfilled", value: "zero" },
++    { status: "fulfilled", value: "one" },
++    { status: "fulfilled", value: "two" },
++    { status: "fulfilled", value: "three" },
++  ]);
++});
++
++test("retries failures with one-based attempts and fresh signals", async () => {
++  const attempts = [];
++  const signals = [];
++
++  const result = await runJobs(
++    ["job"],
++    (_job, _index, context) => {
++      attempts.push(context.attempt);
++      signals.push(context.signal);
++      if (context.attempt < 3) throw new Error(`failed-${context.attempt}`);
++      return "done";
++    },
++    { maxRetries: 2 },
++  );
++
++  assert.deepEqual(attempts, [1, 2, 3]);
++  assert.equal(new Set(signals).size, 3);
++  assert.deepEqual(result, [{ status: "fulfilled", value: "done" }]);
++});
++
++test("timeout aborts an attempt, releases the lane, and consumes late failure", async () => {
++  const late = deferred();
++  const seen = [];
++
++  const result = await runJobs(
++    ["slow", "next"],
++    (job, _index, { attempt, signal }) => {
++      seen.push([job, attempt, signal]);
++      if (job === "slow" && attempt === 1) return late.promise;
++      return `${job}-${attempt}`;
++    },
++    { concurrency: 1, maxRetries: 1, timeoutMs: 5 },
++  );
++
++  assert.equal(seen[0][2].aborted, true);
++  assert.deepEqual(
++    seen.map(([job, attempt]) => [job, attempt]),
++    [["slow", 1], ["slow", 2], ["next", 1]],
++  );
++  assert.deepEqual(result, [
++    { status: "fulfilled", value: "slow-2" },
++    { status: "fulfilled", value: "next-1" },
++  ]);
++
++  late.reject(new Error("late failure"));
++  await new Promise((resolve) => setImmediate(resolve));
++});
++
++test("caller aborts active attempts and prevents new launches", async () => {
++  const controller = new AbortController();
++  const started = [];
++  const activeSignals = [];
++
++  const resultPromise = runJobs(
++    [0, 1, 2, 3],
++    (job, _index, { signal }) => {
++      started.push(job);
++      activeSignals.push(signal);
++      return new Promise(() => {});
++    },
++    { concurrency: 2, signal: controller.signal },
++  );
++
++  assert.deepEqual(started, [0, 1]);
++  controller.abort();
++  const result = await resultPromise;
++
++  assert.ok(activeSignals.every((signal) => signal.aborted));
++  assert.deepEqual(started, [0, 1]);
++  assert.deepEqual(result, [
++    { status: "rejected", reason: "Job aborted" },
++    { status: "rejected", reason: "Job aborted" },
++    {
++      status: "rejected",
++      reason: "Job not started because the caller aborted",
++    },
++    {
++      status: "rejected",
++      reason: "Job not started because the caller aborted",
++    },
++  ]);
++});
++
++test("a pre-aborted signal starts no workers", async () => {
++  const controller = new AbortController();
++  controller.abort();
++  let calls = 0;
++
++  const result = await runJobs(
++    [1, 2],
++    () => {
++      calls += 1;
++    },
++    { signal: controller.signal },
++  );
++
++  assert.equal(calls, 0);
++  assert.deepEqual(
++    result,
++    Array.from({ length: 2 }, () => ({
++      status: "rejected",
++      reason: "Job not started because the caller aborted",
++    })),
++  );
++});
++
++test("worker-triggered caller abort wins over a synchronous throw", async () => {
++  const controller = new AbortController();
++  const started = [];
++
++  const result = await runJobs(
++    [0, 1],
++    (job) => {
++      started.push(job);
++      controller.abort();
++      throw new Error("worker failure after abort");
++    },
++    { maxRetries: 2, signal: controller.signal },
++  );
++
++  assert.deepEqual(started, [0]);
++  assert.deepEqual(result, [
++    { status: "rejected", reason: "Job aborted" },
++    {
++      status: "rejected",
++      reason: "Job not started because the caller aborted",
++    },
++  ]);
++});
++
++test("invalid options reject before a worker starts", async () => {
++  let calls = 0;
++  const worker = () => {
++    calls += 1;
++  };
++  const invalid = [
++    null,
++    [],
++    { concurrency: 0 },
++    { concurrency: null },
++    { concurrency: 1.5 },
++    { maxRetries: -1 },
++    { maxRetries: null },
++    { timeoutMs: -1 },
++    { timeoutMs: null },
++    { timeoutMs: 2_147_483_648 },
++    { maxRetries: Number.MAX_SAFE_INTEGER },
++    { signal: null },
++    { signal: {} },
++    {
++      signal: {
++        aborted: false,
++        addEventListener() {},
++        removeEventListener() {},
++      },
++    },
++  ];
++
++  for (const options of invalid) {
++    await assert.rejects(() => runJobs([1], worker, options));
++  }
++  assert.equal(calls, 0);
++});
++
++test("non-coercible rejection reasons settle without an unhandled rejection", async () => {
++  const hostileReason = Object.create(null);
++
++  const result = await runJobs(
++    ["hostile"],
++    () => Promise.reject(hostileReason),
++    {},
++  );
++
++  assert.deepEqual(result, [
++    {
++      status: "rejected",
++      reason: "Worker rejected with an unprintable reason",
++    },
++  ]);
++  await new Promise((resolve) => setImmediate(resolve));
++});

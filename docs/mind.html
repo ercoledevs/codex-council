@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Mind - Codex Council</title>
-    <meta name="description" content="Codex Mind is the guided pipeline: it forges a proposal, then runs it through the council, end to end — with one combined estimate up front and a clear build / revise / stop verdict.">
+    <meta name="description" content="Codex Mind orchestrates Forge, Council, and the gated handoff to Hyper: proposal, review, and authorized repository implementation in one guided workflow.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/mind.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/mind.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/mind.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/mind.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Codex Mind">
-    <meta property="og:description" content="The guided pipeline: forge a proposal, then judge it with the council — one combined estimate, one build / revise / stop verdict.">
+    <meta property="og:description" content="Forge the proposal, review it with Council, then have Hyper implement and verify the authorized, blocker-free scope.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/mind.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Mind">
-    <meta name="twitter:description" content="The guided pipeline: forge a proposal, then judge it with the council — one combined estimate, one build / revise / stop verdict.">
+    <meta name="twitter:description" content="One guided path from proposal to reviewed and authorized implementation, with every gate visible.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html" aria-current="page">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/mind.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -70,19 +70,21 @@
       <section class="section section-tight">
         <div class="section-inner">
           <p class="eyebrow">Codex Mind</p>
-          <h1>One guided run, idea to verdict.</h1>
+          <h1>From idea to validated code. Every gate visible.</h1>
           <p class="lead">
-            Codex Mind chains the two halves of the plugin: it forges a proposal, then puts it
-            through the council — in one guided pass. If you don't have a proposal yet, it asks what
-            to build first. You get one combined cost estimate up front and a single
-            build / revise / stop call at the end.
+            Mind orchestrates Forge, Council, and the optional gated path to bundled Codex Hyper. Forge
+            produces the bounded proposal; Council returns build, revise, or stop. When
+            implementation is requested and the result is a blocker-free build, Mind shows the
+            Hyper execution preflight and confirms authorization for the unchanged scope. Hyper
+            then enters Relay, applies the approved change through one root writer, and returns
+            PASS, FAIL, or UNKNOWN evidence.
           </p>
 
           <figure class="brain-frame" aria-label="Codex Mind starts each run with an ASCII digital brain banner.">
             <pre class="brain-art" data-brain="assets/brain.txt" aria-hidden="true"></pre>
           </figure>
-          <p class="wiki-lead" style="margin-top:16px;">
-            Every Mind run opens with this banner — the signal that the guided pipeline has begun.
+          <p class="wiki-lead brain-caption">
+            The banner marks the start of the guided Forge-to-Council-to-Hyper path.
           </p>
         </div>
       </section>
@@ -90,10 +92,10 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">The pipeline</p>
-          <h2>Forge invents. Council judges. Mind runs both.</h2>
+          <h2>Forge proposes. Council decides. Hyper implements and verifies.</h2>
           <figure class="forge-stage">
             <svg class="forge-anim" viewBox="0 0 1200 230" role="img"
-                 aria-label="The Codex Mind pipeline: your idea goes to Forge, the forged proposal goes to Council, and the result is a build, revise, or stop verdict.">
+                 aria-label="The Codex Mind pipeline: Forge creates the proposal, Council returns build, revise, or stop, and after a blocker-free build plus valid implementation authorization, Hyper executes the approved scope in Relay and verifies it.">
               <title>The Codex Mind pipeline</title>
               <defs>
                 <marker id="fg-ah-brand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
@@ -123,7 +125,7 @@
               <rect class="fg-docline" x="924" y="116" width="200" height="8" rx="3"></rect>
               <rect class="fg-docline" x="924" y="134" width="160" height="8" rx="3"></rect>
               <g class="fg-checkwrap"><g class="fg-check"><circle cx="1126" cy="84" r="17"></circle><path d="M1118,84 l5,6 l11,-13"></path></g></g>
-              <text class="fg-mini" x="1025" y="196" text-anchor="middle">BUILD · REVISE · STOP</text>
+              <text class="fg-mini" x="1025" y="196" text-anchor="middle">HYPER · IMPLEMENT · VERIFY</text>
             </svg>
           </figure>
         </div>
@@ -132,32 +134,43 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">How the guided run works</p>
-          <h2>Four moves, fully guided.</h2>
+          <h2>Five gated steps.</h2>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>Start</h3>
-              <p>The brain banner appears. If there's no proposal yet, Mind asks one focused question: what should we build, and the hard constraints.</p>
+              <p>If there is no proposal yet, Mind asks for the intended outcome and hard constraints.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>Estimate once</h3>
-              <p>One combined token estimate for both stages, shown and accepted up front — so you see the full cost before anything runs.</p>
+              <p>One combined token estimate for Forge + Council only, shown and accepted up front. Hyper execution is not hidden inside it.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Forge</h3>
-              <p>Five creators shape a bounded proposal (auto second round only on strong discord, hard cap three). You see it before it moves on.</p>
+              <p>Five role prompts shape a bounded proposal. Forge can stop nonconverged and never exceeds three rounds.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>
-              <h3>Judge &amp; decide</h3>
-              <p>The council reviews the proposal and returns one call — build, revise, or stop — with blockers, dissent, and the exact verification.</p>
+              <h3>Council</h3>
+              <p>Council returns build, revise, or stop with blockers, dissent, confidence, and required verification.</p>
+            </div>
+            <div class="step">
+              <div class="step-number">05</div>
+              <h3>Hyper execution</h3>
+              <p>Mind shows the preflight and confirms existing authorization or obtains it if missing. Hyper enters Relay, applies the approved change through one root writer, runs the required checks, and closes only with no critical FAIL or UNKNOWN.</p>
             </div>
           </div>
           <div class="callout">
-            <strong>Checkpoints, not surprises</strong>
-            If Forge can't converge, Mind surfaces the dissent and asks before paying for a council review. If the council finds a blocker, the run stops at revise or stop — never "build" over a live blocker.
+            <strong>Mind orchestrates; Hyper owns implementation</strong>
+            Mind invokes <code>$codex-council:codex-hyper</code> only after implementation intent,
+            a build verdict, zero live blockers, unchanged scope, a complete handoff, and valid
+            authorization for that scope. The preflight confirms existing authorization or obtains
+            it if missing; material scope, risk, or sensitive actions require fresh authorization.
+            Every Mind handoff enters Relay. Otherwise Mind stops without editing. If the bundled
+            skill cannot be loaded, Mind returns the handoff instead of emulating it.
+            <a href="hyper.html">Read how Hyper implements →</a>
           </div>
         </div>
       </section>
@@ -165,19 +178,23 @@
       <section class="section band">
         <div class="section-inner">
           <p class="eyebrow">When to reach for which</p>
-          <h2>Three doors into the same building.</h2>
+          <h2>Choose the workflow that matches the input.</h2>
           <div class="grid">
             <article class="card">
               <h3>Forge alone</h3>
-              <p>You only need a shape for an idea. <a href="forge.html">Invent a proposal →</a></p>
+              <p>You need a bounded proposal, not a verdict. <a href="forge.html">Shape the idea →</a></p>
             </article>
             <article class="card">
               <h3>Council alone</h3>
-              <p>You already have a plan and want it pressure-tested. <a href="index.html">Judge a proposal →</a></p>
+              <p>You already have a proposal and need structured review. <a href="index.html">Run Council →</a></p>
             </article>
             <article class="card">
               <h3>Mind</h3>
-              <p>You have an idea and want to go all the way to a decision in one guided pass.</p>
+              <p>You need Forge, Council, and the controlled implementation handoff in one guided path.</p>
+            </article>
+            <article class="card">
+              <h3>Hyper alone</h3>
+              <p>You already have an authorized repository change and need implementation with explicit checks. <a href="hyper.html">See the method →</a></p>
             </article>
           </div>
         </div>
@@ -187,21 +204,25 @@
         <div class="section-inner">
           <p class="eyebrow">Use it</p>
           <h2>Hand Mind an idea.</h2>
-          <p>In chat — give it something to build, and it runs the whole pipeline:</p>
+          <p>In chat — give it an idea and say explicitly whether approved implementation should be offered:</p>
           <div class="prompt">
-            <span class="prompt-tag">Prompt</span>
+            <span class="prompt-tag">Prompt example</span>
             <code>Use Codex Mind to forge a proposal for &lt;your idea&gt; and then run it
 through the council. Show me the combined estimate first, and end with a
-clear build / revise / stop call.</code>
+clear build / revise / stop call. If it is build with no blockers, scope is
+unchanged, and implementation is requested, hand the approved scope to
+$codex-council:codex-hyper and show its separate execution preflight.</code>
           </div>
-          <p style="margin-top:24px;">Mind doesn't add new commands — it reuses Forge and Council under the hood. The
-            combined estimate is just both stages, summed:</p>
+          <p style="margin-top:24px;">Mind orchestrates the bundled skills. The CLI estimate shown
+            for deliberation is only Forge + Council, summed:</p>
           <pre><code># Estimate both stages up front (shown as one range), then accept once.
 python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --type forge --token-budget compact
 python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --token-budget compact</code></pre>
           <div class="callout">
-            <strong>Cheap by design</strong>
-            Two stages, one accepted estimate, compact by default. The handoff between them is just the proposal — never full transcripts — so a full run doesn't double your tokens.
+            <strong>Know what the estimate covers</strong>
+            The accepted deliberation estimate covers Forge and Council only, and the proposal—not
+            full transcripts—moves between them. Hyper is included in the plugin but retains a
+            separate execution preflight and authorization because implementation can edit the repository.
           </div>
         </div>
       </section>
@@ -211,11 +232,12 @@ python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
-          <a href="forge.html">Forge</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="usage.html">Install</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
           <a href="limits.html">Limits</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>

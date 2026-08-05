@@ -7,27 +7,29 @@
       (function () {
         try {
           var t = localStorage.getItem("cc-theme");
-          if (t) document.documentElement.setAttribute("data-theme", t);
-        } catch (e) {}
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
         document.documentElement.classList.add("js");
       })();
     </script>
     <title>Decision Runtime - Codex Council</title>
-    <meta name="description" content="See the reasoning behind a Codex Council verdict through an experimental, opt-in shadow view that leaves the original decision untouched.">
+    <meta name="description" content="Inspect saved Codex Council artifacts through an experimental, opt-in shadow view. The original session and verdict remain authoritative.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/runtime.html">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/runtime.html">
     <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/runtime.html">
     <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/runtime.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Codex Council Decision Runtime">
-    <meta property="og:description" content="Trace risks, dissent, evidence, and verification in an experimental shadow view while the original Council verdict stays authoritative.">
+    <meta property="og:description" content="Inspect saved risks, dissent, evidence, and verification in a non-authoritative experimental view.">
     <meta property="og:url" content="https://ercoledevs.github.io/codex-council/runtime.html">
     <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Codex Council Decision Runtime">
-    <meta name="twitter:description" content="See the reasoning behind the verdict without changing the original Council decision.">
+    <meta name="twitter:description" content="Inspect saved Council artifacts in an experimental view without changing the original decision.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,12 +48,10 @@
           <span>Codex Council</span>
         </a>
         <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Use Cases</a>
-          <a href="examples.html">Examples</a>
-          <a href="usage.html">Usage</a>
-          <a href="runtime.html" aria-current="page">Runtime</a>
-          <a href="forge.html">Forge</a>
-          <a href="mind.html">Mind</a>
+          <a href="use-cases.html">Product</a>
+          <a href="examples.html">Evidence</a>
+          <a class="is-active" href="wiki.html" aria-current="location">Docs</a>
+          <a class="nav-install" href="usage.html">Install</a>
         </div>
         <div class="nav-actions">
           <a class="lang-switch" href="it/runtime.html" hreflang="it" aria-label="Versione italiana">IT</a>
@@ -69,18 +69,18 @@
     <main id="main">
       <section class="section section-tight">
         <div class="section-inner">
-          <p class="eyebrow">Decision intelligence in 1.0</p>
-          <h1>See the reasoning behind the verdict.</h1>
+          <p class="eyebrow">Experimental Decision Runtime</p>
+          <h1>Inspect the saved decision trail.</h1>
           <p class="lead">
-            Codex Council already surfaces blockers, dissent, and verification. Decision Runtime
-            turns that saved trail into an inspectable shadow, so you can follow what changed,
-            compare a richer view with a simpler one, and keep the original decision untouched.
+            Decision Runtime projects an optional view from saved Council artifacts. It exposes
+            recorded claims, risks, dissent, and verification—not hidden model reasoning. The
+            original files and verdict remain authoritative.
           </p>
 
           <figure class="ascii-frame" role="img" aria-label="A centered Codex Council terminal banner showing six members, two reviewers, and the evidence-led review flow.">
             <pre class="ascii-art" aria-hidden="true"><code>+------------------------------------------------------------------------------+
 |                                CODEX COUNCIL                                 |
-|                    INDEPENDENT / ANONYMOUS / EVIDENCE-LED                    |
+|                     ISOLATED ROLE PROMPTS / EVIDENCE-LED                     |
 |                                                                              |
 |           [ADA]  [GRACE]  [HYPATIA]  [FLORENCE]  [TURING]  [CRAY]            |
 |                  \       \       \       /       /       /                   |
@@ -98,24 +98,24 @@
 
       <section class="section band">
         <div class="section-inner">
-          <p class="eyebrow">Why it matters</p>
-          <h2>More signal. Less decision archaeology.</h2>
+          <p class="eyebrow">What it shows</p>
+          <h2>A structured view of recorded evidence.</h2>
           <div class="grid two">
             <article class="card">
-              <h3>Trace the decision</h3>
-              <p>Bring claims, risks, dissent, and verification into one trail; typed updates can add explicit links when they matter.</p>
+              <h3>Claims and evidence</h3>
+              <p>Collect recorded claims, risks, checks, and source links in one inspectable projection.</p>
             </article>
             <article class="card">
-              <h3>Keep dissent visible</h3>
-              <p>A losing view does not disappear. It stays available beside the selected direction and the evidence that could reopen it.</p>
+              <h3>Recorded dissent</h3>
+              <p>Keep alternative views beside the selected direction and the evidence that could reopen it.</p>
             </article>
             <article class="card">
-              <h3>Compare before committing</h3>
-              <p>Decision Cells are checked against a compact frontier export from the same facts, with fidelity and size reported side by side.</p>
+              <h3>Local comparison</h3>
+              <p>Compare a Decision Cell projection with a compact export derived from the same saved facts.</p>
             </article>
             <article class="card">
-              <h3>Recover without drama</h3>
-              <p>The shadow can be inspected, ignored, or removed while the original Council session remains usable.</p>
+              <h3>Reversible shadow</h3>
+              <p>Inspect, ignore, or remove the projection without changing the source session.</p>
             </article>
           </div>
         </div>
@@ -124,27 +124,27 @@
       <section class="section">
         <div class="section-inner">
           <p class="eyebrow">How it fits</p>
-          <h2>The verdict stays first. Insight sits beside it.</h2>
+          <h2>The source artifacts stay first.</h2>
           <div class="steps">
             <div class="step">
               <div class="step-number">01</div>
               <h3>Run Council</h3>
-              <p>Review, scoring, dissent, and Chairman synthesis work exactly as before.</p>
+              <p>Complete the normal review, scoring, dissent, and Chairman synthesis.</p>
             </div>
             <div class="step">
               <div class="step-number">02</div>
               <h3>Save the trail</h3>
-              <p>The session keeps a compact evidence trail that stays easy to inspect later.</p>
+              <p>Keep the session, verdict, evidence links, and recorded checks as the source record.</p>
             </div>
             <div class="step">
               <div class="step-number">03</div>
               <h3>Opt into shadow</h3>
-              <p>Decision Runtime projects an additional view only when you explicitly ask for it.</p>
+              <p>Project the additional view only when you explicitly request it.</p>
             </div>
             <div class="step">
               <div class="step-number">04</div>
               <h3>Inspect and compare</h3>
-              <p>Explore the structured view without changing the saved verdict or forcing a migration.</p>
+              <p>Use the projection as an aid; return to the original artifacts for authoritative detail.</p>
             </div>
           </div>
         </div>
@@ -152,39 +152,39 @@
 
       <section class="section band">
         <div class="section-inner">
-          <p class="eyebrow">Honest status</p>
-          <h2>Experimental by choice.</h2>
+          <p class="eyebrow">Current status</p>
+          <h2>Experimental and non-authoritative.</h2>
           <div class="grid">
             <article class="card">
-              <h3>Stable core</h3>
-              <p>Existing sessions, artifacts, scoring, and verdicts remain the source of truth.</p>
+              <h3>Original artifacts first</h3>
+              <p>Existing sessions, evidence, scoring, and verdicts remain the source of truth.</p>
             </article>
             <article class="card">
-              <h3>Opt-in shadow</h3>
-              <p>The new view stays local, off by default, and outside the authoritative decision path.</p>
+              <h3>Local and opt-in</h3>
+              <p>The shadow stays off by default and outside the authoritative decision path.</p>
             </article>
             <article class="card">
-              <h3>Evidence before claims</h3>
-              <p>1.0 makes no promise of measured token or latency savings. Replay and benchmarks come first.</p>
+              <h3>No savings claim</h3>
+              <p>No measured token or latency benefit is promised without replay and benchmark evidence.</p>
             </article>
           </div>
           <div class="callout">
-            <strong>Legacy-authoritative</strong>
-            If the shadow is missing, unknown, or unhealthy, Codex Council keeps using the original session and verdict.
+            <strong>Source-authoritative</strong>
+            If the shadow is missing or unhealthy, ignore it. The original session and verdict remain usable and authoritative.
           </div>
         </div>
       </section>
 
       <section class="section">
         <div class="section-inner">
-          <p class="eyebrow">Explore 1.0</p>
-          <h2>Start with the value. Open the internals only when you need them.</h2>
+          <p class="eyebrow">Use it selectively</p>
+          <h2>Keep the experiment separate from the record.</h2>
           <p class="lead">
-            Upgrade without converting existing sessions, then explore the shadow on your terms.
-            The Wiki keeps the full CLI, safety, and recovery contract.
+            Existing sessions do not need conversion. The Wiki documents the CLI, safety contract,
+            and recovery path for anyone who chooses to test the shadow view.
           </p>
           <div class="actions">
-            <a class="button" href="usage.html#upgrade-1-0">Upgrade to 1.0</a>
+            <a class="button" href="usage.html#upgrade-1-0">Stay current</a>
             <a class="button secondary" href="wiki.html#runtime">Open the technical guide</a>
             <a class="button secondary" href="limits.html">Read safety &amp; limits</a>
           </div>
@@ -196,12 +196,13 @@
       <div class="footer-grid">
         <div>
           <strong>Codex Council</strong>
-          <p>A council workflow for Codex. MIT licensed.</p>
+          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
         </div>
         <div class="footer-links">
-          <a href="usage.html#upgrade-1-0">Upgrade</a>
-          <a href="limits.html">Safety &amp; limits</a>
-          <a href="wiki.html">Wiki</a>
+          <a href="usage.html">Install</a>
+          <a href="examples.html">Evidence</a>
+          <a href="wiki.html">Playbook</a>
+          <a href="limits.html">Limits</a>
           <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
         </div>
       </div>
