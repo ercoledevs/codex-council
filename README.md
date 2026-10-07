@@ -56,6 +56,7 @@ source, releases, changes, and issues stay public.
 - [Install options](#install-options)
 - [Development](#development)
 - [Why I built it](#why-i-built-it)
+- [Support the project](#support-the-project)
 - [Credits & license](#credits--license)
 
 ---
@@ -767,6 +768,14 @@ the checks needed to close it.
 
 I maintain the project independently. The source, releases, changelog, and issue
 tracker stay public so you can inspect what changed and report what does not work.
+
+---
+
+## Support the project
+
+If Codex Council helps you, you can support its independent development and
+maintenance with a voluntary contribution via [PayPal](https://www.paypal.me/SalvatoreErcole117).
+Thank you for supporting the project!
 
 ---
 
