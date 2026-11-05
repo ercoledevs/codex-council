@@ -1,14 +1,102 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <title>Codex Council — Architecture handbook</title>
-  <rect width="1200" height="630" fill="#232421"/>
-  <path d="M60 96H1140 M60 534H1140" stroke="#676355"/>
-  <g fill="#efb06a" font-family="monospace" font-size="22" letter-spacing="2"><text x="60" y="72">CODEX COUNCIL</text><text x="60" y="582">FORGE  /  COUNCIL  /  HYPER</text></g>
-  <g font-family="Georgia,serif" fill="#fff6e7" font-size="92"><text x="55" y="292">Architecture</text><text x="55" y="395">handbook.</text></g>
-  <g color="#efb06a" transform="translate(638 23) scale(2.05)"><g fill="none" stroke="currentColor" stroke-linejoin="round">
-    <rect x="59" y="140" width="56" height="56" rx="10" stroke-width="12"/>
-    <rect x="141" y="60" width="56" height="56" rx="10" stroke-width="12"/>
-    <rect x="109" y="109" width="38" height="38" rx="7" stroke-width="10"/>
-    <rect x="82" y="82" width="29" height="29" rx="5" stroke-width="9"/>
-    <rect x="146" y="146" width="29" height="29" rx="5" stroke-width="9"/>
-  </g></g>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     width="1240" height="340" viewBox="0 0 1240 340" role="img" aria-labelledby="title description">
+  <title id="title">Codex Council</title>
+  <desc id="description">An architectural drawing of the five-square emblem in plan and exploded isometric views, beside the Forge, Council and Hyper workflow.</desc>
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M20 0H0V20" fill="none" stroke="#9e9e86" stroke-opacity=".17"/>
+    </pattern>
+    <pattern id="major-grid" width="100" height="100" patternUnits="userSpaceOnUse">
+      <rect width="100" height="100" fill="url(#grid)"/>
+      <path d="M100 0H0V100" fill="none" stroke="#cdc7a5" stroke-opacity=".17"/>
+    </pattern>
+    <linearGradient id="paper">
+      <stop stop-color="#20221f"/>
+      <stop offset=".53" stop-color="#242621"/>
+      <stop offset="1" stop-color="#2d302a"/>
+    </linearGradient>
+    <linearGradient id="fade">
+      <stop stop-color="#20221f" stop-opacity=".99"/>
+      <stop offset=".4" stop-color="#20221f" stop-opacity=".95"/>
+      <stop offset=".7" stop-color="#20221f" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bronze" x2=".8" y2="1">
+      <stop stop-color="#ffe1a5"/>
+      <stop offset=".55" stop-color="#f6ba72"/>
+      <stop offset="1" stop-color="#e29b54"/>
+    </linearGradient>
+    <!-- The five contours share the proportions and join positions of assets/mark.svg. -->
+    <g id="mark" fill="none">
+      <rect x="59" y="140" width="56" height="56" rx="10" stroke-width="12"/>
+      <rect x="141" y="60" width="56" height="56" rx="10" stroke-width="12"/>
+      <rect x="109" y="109" width="38" height="38" rx="7" stroke-width="10"/>
+      <rect x="82" y="82" width="29" height="29" rx="5" stroke-width="9"/>
+      <rect x="146" y="146" width="29" height="29" rx="5" stroke-width="9"/>
+    </g>
+    <g id="axon" transform="matrix(1.48 -.68 1.11 .79 -331.52 -14.08)">
+      <use xlink:href="#mark"/>
+    </g>
+    <path id="cross" d="M-7 0H7M0-7V7" fill="none" stroke="#e1d5b3" stroke-width="1.4"/>
+  </defs>
+
+  <rect width="1240" height="340" fill="url(#paper)"/>
+  <rect width="1240" height="340" fill="url(#major-grid)"/>
+  <rect width="1240" height="340" fill="url(#fade)"/>
+  <path d="M21 50V21H50M1190 21H1219V50M21 290V319H50M1190 319H1219V290"
+        fill="none" stroke="#b2a48a" stroke-width="1.5"/>
+
+  <g font-family="'SFMono-Regular', Consolas, monospace">
+    <path d="M58 82H87" stroke="#efb574" stroke-width="3"/>
+    <text x="101" y="87" fill="#e8c89c" font-size="15" letter-spacing="2.3">ARCHITECTURE PLUGIN FOR CODEX</text>
+    <text x="54" y="190" font-family="Georgia, 'Times New Roman', serif"
+          font-size="89" letter-spacing="-4" fill="#fff5df">Codex Council</text>
+    <g fill="#f5e7cf" font-size="18">
+      <text x="58" y="258">Forge</text>
+      <text x="194" y="258">Council</text>
+      <text x="359" y="258">Hyper</text>
+    </g>
+    <g stroke="#d5a36c" fill="none" stroke-width="1.6">
+      <path d="M125 252H174l-6-5m6 5-6 5"/>
+      <path d="M284 252h53" stroke-dasharray="3 4"/>
+      <path d="m331 247 6 5-6 5"/>
+    </g>
+  </g>
+
+  <!-- Orthographic projection, with the outside extent of the symbol dimensioned. -->
+  <g transform="translate(668 158)">
+    <g fill="none" stroke="#ccbb99">
+      <circle r="77" stroke-opacity=".48" stroke-dasharray="2 5"/>
+      <path d="M-94 0H96M0-91V95" stroke-opacity=".65" stroke-dasharray="13 4 2 4"/>
+      <path d="M-47 57V80m94-23v23m-49-8h-46m49 0h47m-97 4 6-8m88 8 6-8"/>
+    </g>
+    <g transform="scale(.64) translate(-128 -128)" stroke="#d6c7a6">
+      <use xlink:href="#mark"/>
+    </g>
+  </g>
+
+  <!-- Exploded projection. Vertical registration lines locate the copper piece on its trace. -->
+  <g transform="translate(965 147)">
+    <g fill="none" stroke="#c9bea0" stroke-opacity=".45">
+      <path d="m-212 64 201 106 216-99-201-106z"/>
+      <path d="m-207-12 412 219m-420-37 431-198" stroke-dasharray="14 5 2 5"/>
+      <path d="M-94-35V34m123-128v68m62 64v66m-122-11v66" stroke-dasharray="4 5"/>
+    </g>
+    <use xlink:href="#axon" y="64" stroke="#8a846e" opacity=".72"/>
+    <use xlink:href="#axon" y="17" stroke="#754e33"/>
+    <use xlink:href="#axon" y="13" stroke="#966538"/>
+    <use xlink:href="#axon" y="9" stroke="#a87543"/>
+    <use xlink:href="#axon" y="5" stroke="#b7804a"/>
+    <use xlink:href="#axon" stroke="url(#bronze)"/>
+    <g fill="none" stroke="#d9c59d" stroke-width="1">
+      <path d="m70-85 34-32h63m-97 32 6-1m-6 1 1-6"/>
+      <path d="m87 103 24 22h54"/>
+    </g>
+  </g>
+  <g font-family="Consolas, monospace" font-size="12" letter-spacing="1.8" fill="#ddd6c3">
+    <text x="668" y="273" text-anchor="middle">PLAN</text>
+    <text x="1078" y="26">PROFILE</text>
+    <text x="1080" y="289">TRACE</text>
+  </g>
+  <use xlink:href="#cross" x="771" y="58"/>
+  <use xlink:href="#cross" x="1168" y="229"/>
 </svg>
