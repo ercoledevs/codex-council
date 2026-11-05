@@ -10,7 +10,7 @@ Forge is bounded convergent creation for Codex: five creators shape one buildabl
 ## Non-Negotiables
 
 - Reuse Codex Council preflight, token budgets, plugin-local sessions, stats, banner, and agent lifecycle. Never dispatch without the preflight estimate and user acceptance.
-- Default `compact`. `balanced` only for real ambiguity. `expanded` only with explicit confirmation. Expand one divergence, not the whole session.
+- Use [adaptive interview](../codex-council/references/architecture-interview.md) for decisions with architectural consequences; preserve settled answers across creator waves. Expand one divergence, not the whole session.
 - The loop is bounded: one structured round is the default. The next round is normally an optional second round you accept after the round-1 synthesis — but if round 1 is strongly discordant (creators disagree from the start), it starts automatically. A hard cap of three rounds always holds, and every extra round re-briefs only the unresolved divergence.
 - If creators do not converge, return `nonconverged` with persistent dissent. Never manufacture consensus.
 - Every proposal must be designed to clear the security & stability floor (see protocol). An item it cannot meet is a blocker, and blockers block convergence.
@@ -21,25 +21,25 @@ Forge is bounded convergent creation for Codex: five creators shape one buildabl
 
 ## Token Router
 
-Default `compact`. Escalate only what risk requires.
+Choose `simple`, `mid` (default), or `ultra`. All Forge runs keep five creator lenses. Simple and mid share the compact allowance; ultra allows a longer synthesis.
 
 | Need | Action |
 | --- | --- |
 | shape a new idea into a buildable proposal | Forge, one round, compact |
-| meaningful ambiguity or competing shapes | Forge `balanced`; expand only the divergence |
+| meaningful ambiguity or competing shapes | Ask targeted questions; re-brief only the divergence |
 | judge an existing proposal | hand off to Codex Council; do not Forge |
-| security, data loss, irreversible surface | Forge stays compact, but require Deep Council before building |
+| security, data loss, irreversible surface | Forge stays compact, but require full deep Council coverage before building |
 
 Preflight (the estimate already counts re-brief overhead):
 
 ```bash
-python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --mode standard --type forge --token-budget compact
+python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --type forge --effort mid
 ```
 
 Scaffold after acceptance (`expanded` needs `--confirm-expanded`):
 
 ```bash
-python3 <plugin-root>/scripts/codex_council.py init --topic "<topic>" --root <workspace> --mode standard --type forge --token-budget compact --confirm-estimate
+python3 <plugin-root>/scripts/codex_council.py init --topic "<topic>" --root <workspace> --type forge --effort mid --confirm-estimate
 ```
 
 ## Roles
@@ -58,7 +58,7 @@ Proposals should be modern (current, justified best practice — not trendy-but-
 
 1. Classify: Forge creates/designs; Council judges/reviews. Route judgment to Council; treat explaining as meta (one line, no dispatch).
 2. Run the mandatory preflight estimate; show the range; get acceptance. Block `expanded` without explicit confirmation.
-3. Paste the Forge banner in chat. Dispatch the five creators in parallel with the compact brief.
+3. Paste the Forge banner in chat. Dispatch all five creators in waves that fit the host, using the compact brief.
 4. Collect outputs, close the creators, keep constraints, risks, and dissent.
 5. Run a separate synthesis: one detailed, buildable unified proposal that honors the floor and keeps dissent visible.
 6. Score with `forge-convergence` when score JSON exists (novelty, feasibility, user fit, risk control, implementation clarity, alignment). Converged needs minimum alignment >= 7, low score spread, no blockers, no dissent.

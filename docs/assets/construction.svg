@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 250">
+  <title>Codex Council — five connected squares</title>
+  <defs><pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M20 0H0V20" fill="none" stroke="#e2bc86" stroke-opacity=".15" stroke-width="1"/></pattern></defs>
+  <rect width="380" height="250" fill="#2d2d29"/><rect width="380" height="250" fill="url(#grid)"/>
+  <g fill="none" stroke="#dcab70" stroke-opacity=".65" stroke-width=".9" stroke-dasharray="4 5"><path d="M0 125H380 M190 0V250 M65 250L315 0"/><circle cx="190" cy="125" r="94"/></g>
+  <g color="#efb06a" transform="translate(43 -22) scale(1.15)"><g fill="none" stroke="currentColor" stroke-linejoin="round">
+    <rect x="59" y="140" width="56" height="56" rx="10" stroke-width="12"/>
+    <rect x="141" y="60" width="56" height="56" rx="10" stroke-width="12"/>
+    <rect x="109" y="109" width="38" height="38" rx="7" stroke-width="10"/>
+    <rect x="82" y="82" width="29" height="29" rx="5" stroke-width="9"/>
+    <rect x="146" y="146" width="29" height="29" rx="5" stroke-width="9"/>
+  </g></g>
+  <path d="M14 28V14H28 M352 14H366V28 M14 222V236H28 M352 236H366V222" fill="none" stroke="#dfc49d" stroke-width="1.5"/>
+</svg>

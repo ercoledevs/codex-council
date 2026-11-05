@@ -1,4 +1,4 @@
 interface:
   display_name: "Codex Mind"
-  short_description: "Proposal, review, and gated Hyper implementation"
-  default_prompt: "Use $codex-council:codex-mind to forge and judge my idea, then offer $codex-council:codex-hyper only after an authorized Council build."
+  short_description: "Adaptive architecture interview, design, review and build"
+  default_prompt: "Use $codex-council:codex-mind to interview me about a feature from scratch, design its first working slice and review it. Offer $codex-council:codex-hyper only after an authorized Council build."

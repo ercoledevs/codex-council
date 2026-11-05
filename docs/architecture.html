@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Architecture guide · Codex Council</title>
+    <meta name="description" content="Design a working feature from an adaptive interview and testable decisions.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/architecture.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/architecture.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/architecture.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/architecture.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Architecture guide · Codex Council">
+    <meta property="og:description" content="Design a working feature from an adaptive interview and testable decisions.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/architecture.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Architecture guide · Codex Council">
+    <meta name="twitter:description" content="Design a working feature from an adaptive interview and testable decisions.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="assets/icon.png">
+    <link rel="stylesheet" href="styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f2">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#20221f">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header"><div class="topbar">
+        <a class="brand" href="index.html"><img src="assets/icon.png" alt="" width="32" height="32"> Codex Council</a>
+        <span class="book-title">Architecture handbook</span><div class="nav-actions">
+        <a href="https://github.com/ercoledevs/codex-council" class="repo-link">GitHub ↗</a><a href="it/architecture.html" hreflang="it" lang="it">IT</a>
+        <button type="button" data-theme-toggle hidden aria-label="Dark theme" aria-pressed="true">◐</button>
+        </div></div></header>
+    <div class="handbook"><details class="guide-nav" open><summary>Browse handbook</summary>
+      <nav aria-label="Handbook navigation">
+        <div class="guide-search" hidden><label for="guide-query">Find a guide</label><input id="guide-query" type="search" placeholder="Find a guide" autocomplete="off"></div>
+        <div class="nav-links">
+          <div class="guide-group"><strong>Handbook</strong>
+            <a href="index.html">Overview</a>
+            <a href="usage.html">Installation & CLI</a>
+            <a href="architecture.html" aria-current="page">Architecture guide</a>
+            <a href="use-cases.html">Use cases</a>
+          </div>
+          <div class="guide-group"><strong>Workflows</strong>
+            <a href="mind.html">Mind</a>
+            <a href="forge.html">Forge</a>
+            <a href="wiki.html#method">Council</a>
+            <a href="hyper.html">Hyper</a>
+            <a href="alters.html">Role tuning</a>
+          </div>
+          <div class="guide-group"><strong>Reference</strong>
+            <a href="wiki.html">Technical wiki</a>
+            <a href="examples.html">Evidence lab</a>
+            <a href="runtime.html">Decision Runtime</a>
+            <a href="limits.html">Limits</a>
+          </div></div><p class="search-status" role="status"></p>
+      </nav></details><div class="page-column">
+
+    <main id="main">
+        <section class="section">
+        <p class="eyebrow">Architecture guide</p>
+        <h1>Design a feature from zero</h1>
+        <p class="lead">Start with the first caller and an outcome they can observe. Use Mind to join discovery, design and review in one conversation.</p>
+        <pre><code>$codex-council:codex-mind · mid
+Design a recoverable job queue from scratch. Ask me about choices that change the contract. Return the first working slice and its failure test.</code></pre>
+      </section>
+        <section id="interview">
+        <h2>Work through open decisions</h2>
+        <ol class="method-rail">
+        <li>Describe one real use. The lead looks up repository facts and asks the independent questions that affect the design.</li>
+        <li>Specialists send questions from their own lens. The lead merges duplicates, gives a recommendation with its trade-off, and asks follow-ups only after prerequisites are settled.</li>
+        <li>Delegate reversible details explicitly. The brief carries settled choices into one design with boundaries, contracts, recovery, and an acceptance example.</li>
+        <li>Council challenges the proposal. With a build verdict and your authorization, Hyper implements the approved slices and executes the checks.</li>
+      </ol>
+      </section>
+        <section id="effort">
+        <h2>Choose an effort</h2>
+        <ul class="efforts">
+        <li><strong>simple</strong><span>One opinion for a reversible choice.</span></li>
+        <li><strong>mid</strong><span>Three members and one reviewer for everyday architecture.</span></li>
+        <li><strong>ultra</strong><span>Six members and five reviewers for deeper scrutiny.</span></li>
+      </ul>
+        <p>These are ordinary Council counts. Hard risks require full coverage. Forge always has five creators. Skill review has three lenses. Frontend review adds Leonardo and browser evidence from Bob. Read the estimate before dispatch.</p>
+      </section>
+        <p>Add <code>--details</code> to <code>estimate</code> for a component breakdown.</p>
+        <section id="cases">
+        <h2>Worked scenarios</h2>
+        <p>Design exercises with a decision and a reproducible check.</p>
+        <article class="scenario" id="queue">
+        <h3>Recoverable job queue</h3>
+        <p>A worker stops after committing a side effect. Who issues the idempotency key, and when may it expire?</p>
+        <p>Once the caller owns the key, agree the retry window. Design the submission contract, durable job state and worker acknowledgement.</p>
+        <p><strong>Acceptance test</strong> · Kill the worker between commit and acknowledgement. Submit the same key again and count committed results.</p>
+      </article>
+        <article class="scenario" id="tenant">
+        <h3>Tenant-aware access</h3>
+        <p>A support user works across two accounts. Which tenant grants authority, and who can revoke it?</p>
+        <p>Decide the ownership boundary first. Then specify the authorization check at read time and how permission caches expire.</p>
+        <p><strong>Acceptance test</strong> · Open a session, revoke the grant, and attempt the same read from both accounts. Check the agreed revocation deadline and audit record.</p>
+      </article>
+        <article class="scenario" id="events">
+        <h3>Versioned event ingestion</h3>
+        <p>An offline device sends old events after an upgrade. Which versions must the receiver accept?</p>
+        <p>Agree retention before choosing a decoder. Define version detection, ordering and a quarantine path for unknown payloads.</p>
+        <p><strong>Acceptance test</strong> · Replay an old event, its duplicate and an unknown version. Inspect persisted records, quarantine and offsets after restart.</p>
+      </article>
+      </section>
+        <section id="local">
+        <h2>Keep a local decision brief</h2>
+        <p>For a long interview, create a new file, adapt its questions, then add an answer or a delegated assumption to each settled decision. Run interview again to see which questions are ready.</p>
+        <pre><code>python3 scripts/codex_council.py interview --start "Recover a job" &gt; brief.json
+python3 scripts/codex_council.py interview --input brief.json
+python3 scripts/codex_council.py estimate --topic "Job queue" --effort mid --brief brief.json
+python3 scripts/codex_council.py init --topic "Job queue" --effort mid --brief brief.json --confirm-estimate</code></pre>
+      </section>
+        <section id="research">
+        <h2>Research behind the method</h2>
+        <p>These studies informed design choices. The local evidence lab reports separately what was exercised in this plugin.</p>
+        <p>This October preprint tests requirement understanding separately from implementation on 100 greenfield tasks. We use separate readback and acceptance checks. <a href="https://arxiv.org/abs/2610.31854">SWE-Clar · 2026</a></p>
+        <p>The authors select questions by the uncertainty they resolve in tool calls. We adapt that principle by asking which answer would change the design. <a href="https://aclanthology.org/2026.findings-acl.2028/">Structured Uncertainty · ACL 2026</a></p>
+        <p>Coordination costs varied across sequential and decomposable tasks. We use bounded panels and reserve specialist time for independent questions. <a href="https://arxiv.org/abs/2512.08296">Scaling Agent Systems · 2026 revision</a></p>
+        <p>A human elicitation study compared interviews, focus groups and surveys for explainability. Broad surveys produced redundant needs. The lead consolidates questions before asking. <a href="https://doi.org/10.1109/RE63999.2025.00025">Obaidi et al. · RE 2025</a></p>
+        <p>The workshop method refines stakeholder concerns into prioritized scenarios. We turn the most important scenario into a test for the first working slice. <a href="https://www.sei.cmu.edu/library/quality-attribute-workshops-qaws-third-edition/">Quality Attribute Workshops · SEI</a></p>
+      </section></main>
+
+    <footer class="footer"><p>@ercoledevs · MIT licensed</p><div><a href="https://github.com/ercoledevs/codex-council/releases">Release</a> · <a href="https://github.com/ercoledevs/codex-council/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/ercoledevs/codex-council/issues">Issue tracker</a> · <a href="https://www.paypal.me/SalvatoreErcole117">Support</a></div></footer>
+    </div></div>
+    <script src="site.js" defer></script>
+  </body>
+</html>

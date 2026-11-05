@@ -23,49 +23,18 @@ Codex-only council: independent opinions, anonymous ranking, optional browser ev
 
 ## Preflight Gate - Mandatory
 
-Before Standard/Deep/Expanded:
+Choose one effort: `simple` for a bounded question, `mid` (default) for architecture, `ultra` for a full challenge. The CLI selects the panel and budget. Hard risks raise Council coverage before estimation. Inspect the actual panel. Risk matching is heuristic. For a known hard risk the router missed, choose ultra, add frontend review when relevant, and re-estimate before dispatch. Treat "use Codex Council" as request, not cost acceptance.
 
-1. Estimate mode, counts, evidence, and range.
-2. Show the preflight estimate and ask acceptance.
-3. Wait for confirmation before dispatch.
-4. Treat "use Codex Council" as request, not cost acceptance.
-5. Block `expanded` unless the user explicitly confirms expanded.
-
-Proposal-only defaults Fast unless Standard is accepted. Router shortcuts are opt-in; hard risk forces full.
-
-## Token Router
-
-Default `compact`; escalate only the risky part.
-
-| Need | Action |
-| --- | --- |
-| small reversible decision | Fast Chairman review |
-| implementation/architecture/performance decision | Standard six-member council |
-| security, data loss, migration, irreversible, close tie | Deep reviewers |
-| frontend/UI/UX/browser behavior | add `--frontend-review` |
-| plugin/skill usability review | add `--type skill` or `--skill-review` |
-| customize member behavior | use `codex-council-alters`, no council dispatch |
-| audit trail | scaffold session with CLI |
-| project/replay completed evidence | Decision Runtime, no council dispatch |
-
-First profile: ask plan, model, reasoning, budget; store with consent.
-
-Preflight:
+1. Resolve material ambiguity with the [adaptive interview](references/architecture-interview.md). Members send the lead questions; the lead groups independent decisions, gives a recommendation, and waits only on affected branches.
+2. Show the preflight estimate, panel and risk overrides. Get acceptance before dispatch. Legacy expanded runs need explicit confirmation.
+3. Scaffold the accepted configuration. For chat, paste the ASCII banner in chat. Do not rely on hidden shell stdout.
 
 ```bash
-python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --mode standard --token-budget compact
+python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --effort mid
+python3 <plugin-root>/scripts/codex_council.py init --topic "<topic>" --effort mid --confirm-estimate
 ```
 
-Scaffold after acceptance:
-
-```bash
-python3 <plugin-root>/scripts/codex_council.py init --topic "<topic>" --root <workspace> --mode standard --token-budget compact --confirm-estimate
-```
-
-`expanded` requires `--confirm-expanded`.
-Use `--type architecture|implementation|decision|skill|frontend`.
-Sessions use plugin-local `.codex-council/sessions`; `doctor`/`dashboard` inspect health. Frontend uses `--frontend-review`.
-For chat, paste the ASCII banner in chat before dispatch. Do not rely on hidden shell stdout. At close, persist prompts/outputs before `stats --session <dir>`. Report pre/post; artifact-only stays separate. Missing data means `coverage: partial`. Relay stats in chat. Never claim billing tokens.
+Use `--type architecture|implementation|decision|skill|frontend` and optionally the same settled `--brief` for both commands. For UI evidence use frontend review. For role tuning use Alters. For post-run projection use Decision Runtime. Offer profile calibration only when relevant; store with consent.
 
 ## Reference Loading
 
@@ -88,9 +57,9 @@ Load the smallest reference set:
 2. Run preflight, show range, ask acceptance; gate `expanded`.
 3. Print the compact ASCII banner in chat for visible council starts.
 4. Disclose active local role tuning, if any, before dispatch.
-5. Dispatch six first-opinion agents only when explicitly requested.
+5. Dispatch only the roles in the accepted panel. Use host-sized waves.
 6. Collect outputs, close member agents, keep blockers/verification.
-7. Strip identities, label Candidate A-F, review/rank with rubric.
+7. Strip identities and assign letters to actual candidates only. A solo opinion has no peer ranking.
 8. For frontend, run Leonardo after anonymization and Bob before synthesis.
 9. Aggregate reviewer JSON with the CLI when present.
 10. Synthesize from saved artifacts. Persist compact artifacts and Relay stats in chat.

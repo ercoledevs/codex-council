@@ -14,7 +14,7 @@
         document.documentElement.classList.add("js");
       })();
     </script>
-    <title>Codex Council — From proposal to verified code in Codex</title>
+    <title>Codex Council · Architecture handbook</title>
     <meta name="description" content="An end-to-end Codex development plugin: Forge creates the implementation proposal, Council reviews it, Mind controls the gates, and Hyper applies and verifies the repository change.">
     <link rel="canonical" href="https://ercoledevs.github.io/codex-council/">
     <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/">
@@ -32,149 +32,63 @@
     <meta name="twitter:description" content="Forge the proposal, review the decision, implement the authorized change, and close on evidence.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f2">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#20221f">
   </head>
-  <body class="home-noir">
+  <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <nav class="nav" aria-label="Main navigation">
-        <a class="brand" href="index.html">
-          <img src="assets/icon.png" alt="">
-          <span>Codex Council</span>
-        </a>
-        <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Product</a>
-          <a href="examples.html">Evidence</a>
-          <a href="wiki.html">Docs</a>
-          <a class="nav-install" href="usage.html">Install</a>
-        </div>
-        <div class="nav-actions">
-          <a class="lang-switch" href="it/index.html" hreflang="it" aria-label="Versione italiana">IT</a>
-          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="true">
-            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
-            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          </button>
-          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-          </button>
-        </div>
-      </nav>
-    </header>
+    <header class="site-header"><div class="topbar">
+        <a class="brand" href="index.html"><img src="assets/icon.png" alt="" width="32" height="32"> Codex Council</a>
+        <span class="book-title">Architecture handbook</span><div class="nav-actions">
+        <a href="https://github.com/ercoledevs/codex-council" class="repo-link">GitHub ↗</a><a href="it/index.html" hreflang="it" lang="it">IT</a>
+        <button type="button" data-theme-toggle hidden aria-label="Dark theme" aria-pressed="true">◐</button>
+        </div></div></header>
+    <div class="handbook"><details class="guide-nav" open><summary>Browse handbook</summary>
+      <nav aria-label="Handbook navigation">
+        <div class="guide-search" hidden><label for="guide-query">Find a guide</label><input id="guide-query" type="search" placeholder="Find a guide" autocomplete="off"></div>
+        <div class="nav-links">
+          <div class="guide-group"><strong>Handbook</strong>
+            <a href="index.html" aria-current="page">Overview</a>
+            <a href="usage.html">Installation & CLI</a>
+            <a href="architecture.html">Architecture guide</a>
+            <a href="use-cases.html">Use cases</a>
+          </div>
+          <div class="guide-group"><strong>Workflows</strong>
+            <a href="mind.html">Mind</a>
+            <a href="forge.html">Forge</a>
+            <a href="wiki.html#method">Council</a>
+            <a href="hyper.html">Hyper</a>
+            <a href="alters.html">Role tuning</a>
+          </div>
+          <div class="guide-group"><strong>Reference</strong>
+            <a href="wiki.html">Technical wiki</a>
+            <a href="examples.html">Evidence lab</a>
+            <a href="runtime.html">Decision Runtime</a>
+            <a href="limits.html">Limits</a>
+          </div></div><p class="search-status" role="status"></p>
+      </nav></details><div class="page-column">
 
     <main id="main">
-      <section class="hero home-hero">
-        <div class="hero-inner home-hero-inner">
-          <div class="hero-content home-hero-content">
-            <p class="eyebrow">End-to-end development workflow for Codex</p>
-            <h1>Take an idea to reviewed, verified code.</h1>
-            <p class="hero-copy">Forge writes the implementation proposal. Council challenges it. Mind controls the handoff. Hyper applies the authorized change and closes on executed checks.</p>
-            <div class="actions">
-              <a class="button" href="usage.html#install">Install Codex Council</a>
-              <a class="button secondary" href="examples.html">Inspect a successful run</a>
-            </div>
-            <p class="home-trust-line">Independent project · MIT licensed · public source · no third-party model APIs.</p>
-            <div class="home-signal-row" role="list" aria-label="Product workflow">
-              <div class="home-signal" role="listitem"><span>01</span><strong>Propose</strong></div>
-              <div class="home-signal" role="listitem"><span>02</span><strong>Review</strong></div>
-              <div class="home-signal" role="listitem"><span>03</span><strong>Implement</strong></div>
-              <div class="home-signal" role="listitem"><span>04</span><strong>Verify</strong></div>
-            </div>
-          </div>
-        </div>
+        <section class="handbook-hero">
+      <div class="hero-text">
+        <p class="eyebrow">Developer documentation</p>
+      <h1>Architecture<br>handbook.</h1>
+      <p class="lead">Design, review and build complex features with Codex. Start with the decisions that shape your system.</p>
+      <div class="actions"><a class="button primary" href="architecture.html">Read the guide <span aria-hidden="true">→</span></a><a class="button secondary" href="usage.html#install">Install plugin</a></div></div>
+      <figure class="construction"><img src="assets/construction.svg" width="380" height="250" alt=""><figcaption>Codex Council <span>v1.2.0</span></figcaption></figure>
       </section>
-
-      <section class="section home-suite">
-        <div class="section-inner">
-          <div class="suite-head">
-            <p class="eyebrow">Four workflows · one development path</p>
-            <h2>Start from the idea or call the exact stage you need.</h2>
-            <p class="lead">Use Mind for proposal → review → implementation, or invoke Forge, Council, and Hyper directly.</p>
-          </div>
-
-          <div class="workflow-bento">
-            <article class="workflow-card forge-card">
-              <div class="workflow-kicker"><span class="workflow-index">01</span> Propose</div>
-              <h3>Forge <span>Shape the idea.</span></h3>
-              <p>Turns goals and constraints into one bounded implementation proposal, or returns nonconverged with the disagreement preserved.</p>
-              <a class="workflow-link" href="forge.html">Explore Forge <span aria-hidden="true">→</span></a>
-            </article>
-
-            <article class="workflow-card council-card">
-              <div class="workflow-kicker"><span class="workflow-index">02</span> Review</div>
-              <h3>Council <span>Challenge the answer.</span></h3>
-              <p>Reviews a concrete proposal or diff through isolated roles, anonymous scoring, blockers, dissent, and required verification.</p>
-              <a class="workflow-link" href="use-cases.html">Explore Council <span aria-hidden="true">→</span></a>
-            </article>
-
-            <article class="workflow-card mind-card">
-              <div class="workflow-kicker"><span class="workflow-index">03</span> Orchestrate</div>
-              <h3>Mind <span>Run the whole path.</span></h3>
-              <p>Runs Forge and Council, stops on revise or stop, then has Hyper execute and verify the blocker-free, authorized scope.</p>
-              <a class="workflow-link" href="mind.html">Explore Mind <span aria-hidden="true">→</span></a>
-            </article>
-
-            <article class="workflow-card hyper-card">
-              <div class="workflow-kicker"><span class="workflow-index">04</span> Implement &amp; verify</div>
-              <h3>Hyper <span>Turn intent into code.</span></h3>
-              <p>Applies an authorized repository change with adaptive Solo or Relay routing, one writer, executed checks, and a falsification gate.</p>
-              <a class="workflow-link" href="hyper.html">Explore Hyper <span aria-hidden="true">→</span></a>
-            </article>
-          </div>
-
-          <div class="proof-strip" role="list" aria-label="Why Codex Council">
-            <div class="proof-item" role="listitem"><strong>Dissent stays visible.</strong><span>Sharp objections survive the score.</span></div>
-            <div class="proof-item" role="listitem"><strong>The estimate comes first.</strong><span>See the local heuristic before agents run.</span></div>
-            <div class="proof-item" role="listitem"><strong>Execution stays explicit.</strong><span>A verdict is not permission to edit.</span></div>
-            <div class="proof-item" role="listitem"><strong>It stays inside Codex.</strong><span>No outside model APIs to configure.</span></div>
-          </div>
-          <p class="honesty-line">Role diversity comes from isolated prompts inside Codex—not multiple model providers.</p>
-        </div>
+      <section class="home-chapter">
+        <h2>Start with a use case</h2>
+        <div class="case-grid"><a class="case" href="architecture.html#queue"><strong>Recoverable job queue</strong><span>A worker stops after committing a side effect. Who issues the idempotency key, and when may it expire?</span><b aria-hidden="true">↗</b></a><a class="case" href="architecture.html#tenant"><strong>Tenant-aware access</strong><span>A support user works across two accounts. Which tenant grants authority, and who can revoke it?</span><b aria-hidden="true">↗</b></a><a class="case" href="architecture.html#events"><strong>Versioned event ingestion</strong><span>An offline device sends old events after an upgrade. Which versions must the receiver accept?</span><b aria-hidden="true">↗</b></a></div>
       </section>
+      <section class="home-chapter">
+        <h2>Workflow reference</h2>
+        <div class="chapter-list"><a class="workflow-link" href="mind.html"><strong>Mind</strong><span>Guide the conversation from an idea to an approved build.</span><b aria-hidden="true">→</b></a><a class="workflow-link" href="forge.html"><strong>Forge</strong><span>Design boundaries, contracts and the first working slice.</span><b aria-hidden="true">→</b></a><a class="workflow-link" href="wiki.html"><strong>Council</strong><span>Challenge a decision and preserve the evidence.</span><b aria-hidden="true">→</b></a><a class="workflow-link" href="hyper.html"><strong>Hyper</strong><span>Implement the agreed scope and verify the result.</span><b aria-hidden="true">→</b></a></div>
+      </section></main>
 
-      <section class="section home-close">
-        <div class="section-inner">
-          <div class="home-close-shell">
-            <div class="home-close-copy">
-              <p class="eyebrow">Independent and open source</p>
-              <h2>Built by one maintainer, in public.</h2>
-              <p>I built Codex Council to separate proposal, review, implementation, and verification while keeping one traceable path through Codex. Source, changes, and feedback stay visible on GitHub.</p>
-              <div class="actions">
-                <a class="button" href="https://github.com/ercoledevs/codex-council">View the source</a>
-                <a class="button secondary" href="https://github.com/ercoledevs/codex-council/issues">Open an issue</a>
-              </div>
-            </div>
-            <div class="home-close-proof" role="list" aria-label="Open-source trust signals">
-              <div class="close-point" role="listitem"><span>License</span><strong>MIT</strong></div>
-              <div class="close-point" role="listitem"><span>Changes</span><strong>Public changelog</strong></div>
-              <div class="close-point" role="listitem"><span>Feedback</span><strong>Public GitHub issues</strong></div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <div class="footer-grid">
-        <div>
-          <strong>Codex Council</strong>
-          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
-        </div>
-        <div class="footer-links">
-          <a href="usage.html">Install</a>
-          <a href="examples.html">Evidence</a>
-          <a href="wiki.html">Playbook</a>
-          <a href="limits.html">Limits</a>
-          <a href="https://github.com/ercoledevs/codex-council/releases">Releases</a>
-          <a href="https://github.com/ercoledevs/codex-council/blob/main/CHANGELOG.md">Changelog</a>
-          <a href="https://github.com/ercoledevs/codex-council/issues">Issues</a>
-        </div>
-      </div>
-    </footer>
+    <footer class="footer"><p>@ercoledevs · MIT licensed</p><div><a href="https://github.com/ercoledevs/codex-council/releases">Release</a> · <a href="https://github.com/ercoledevs/codex-council/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/ercoledevs/codex-council/issues">Issue tracker</a> · <a href="https://www.paypal.me/SalvatoreErcole117">Support</a></div></footer>
+    </div></div>
     <script src="site.js" defer></script>
   </body>
 </html>

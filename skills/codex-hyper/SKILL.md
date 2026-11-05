@@ -31,6 +31,10 @@ risk.
 - Do not broaden authorization. A request to analyze, review, or plan does not
   authorize implementation.
 
+## Greenfield implementation
+
+Use the [adaptive interview](../codex-council/references/architecture-interview.md) when missing decisions affect the contract. Accept simple, mid or ultra as a work-depth preference. Choose Solo or Relay internally from the risk gates. Each explorer sends the lead unresolved user decisions with their consequences. Build through the real entry point in vertical slices. For each slice check the acceptance example, recovery behavior and integration with the previous slice.
+
 ## Select the route
 
 Read [routing policy](references/routing-policy.md) when the route is not

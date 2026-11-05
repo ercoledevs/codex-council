@@ -2,13 +2,15 @@
 
 Use this only when optimizing a council run. Token savings must not remove blockers, dissent, verification, confidence, anonymization, or Bob's non-voting status.
 
-## Profiles
+## Internal profiles
+
+The public effort presets select the allowance: simple and mid use compact, ultra uses balanced. Escalating for risk changes Council coverage independently. The advanced expanded profile can be requested explicitly.
 
 | Profile | Use | Cap |
 | --- | --- | --- |
 | compact | default, normal decisions | tight outputs, smallest reference set |
 | balanced | blockers, ambiguity, non-trivial tradeoffs | more detail only on risks |
-| expanded | security, data loss, migrations, irreversible work | full evidence and audit trail |
+| expanded | explicit request for a larger allowance | more room for evidence and audit notes |
 
 Escalate profile, not every stage. A compact run may still expand one blocker.
 `expanded` requires explicit confirmation after showing the pre-session estimate. Prefer targeted blocker expansion over full-session expansion.

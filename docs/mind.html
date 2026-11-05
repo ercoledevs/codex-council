@@ -32,39 +32,42 @@
     <meta name="twitter:description" content="One guided path from proposal to reviewed and authorized implementation, with every gate visible.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f2">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#20221f">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <nav class="nav" aria-label="Main navigation">
-        <a class="brand" href="index.html">
-          <img src="assets/icon.png" alt="">
-          <span>Codex Council</span>
-        </a>
-        <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Product</a>
-          <a href="examples.html">Evidence</a>
-          <a href="wiki.html">Docs</a>
-          <a class="nav-install" href="usage.html">Install</a>
-        </div>
-        <div class="nav-actions">
-          <a class="lang-switch" href="it/mind.html" hreflang="it" aria-label="Versione italiana">IT</a>
-          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
-            <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
-            <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          </button>
-          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-          </button>
-        </div>
-      </nav>
-    </header>
+    <header class="site-header"><div class="topbar">
+        <a class="brand" href="index.html"><img src="assets/icon.png" alt="" width="32" height="32"> Codex Council</a>
+        <span class="book-title">Architecture handbook</span><div class="nav-actions">
+        <a href="https://github.com/ercoledevs/codex-council" class="repo-link">GitHub ↗</a><a href="it/mind.html" hreflang="it" lang="it">IT</a>
+        <button type="button" data-theme-toggle hidden aria-label="Dark theme" aria-pressed="true">◐</button>
+        </div></div></header>
+    <div class="handbook"><details class="guide-nav" open><summary>Browse handbook</summary>
+      <nav aria-label="Handbook navigation">
+        <div class="guide-search" hidden><label for="guide-query">Find a guide</label><input id="guide-query" type="search" placeholder="Find a guide" autocomplete="off"></div>
+        <div class="nav-links">
+          <div class="guide-group"><strong>Handbook</strong>
+            <a href="index.html">Overview</a>
+            <a href="usage.html">Installation & CLI</a>
+            <a href="architecture.html">Architecture guide</a>
+            <a href="use-cases.html">Use cases</a>
+          </div>
+          <div class="guide-group"><strong>Workflows</strong>
+            <a href="mind.html" aria-current="page">Mind</a>
+            <a href="forge.html">Forge</a>
+            <a href="wiki.html#method">Council</a>
+            <a href="hyper.html">Hyper</a>
+            <a href="alters.html">Role tuning</a>
+          </div>
+          <div class="guide-group"><strong>Reference</strong>
+            <a href="wiki.html">Technical wiki</a>
+            <a href="examples.html">Evidence lab</a>
+            <a href="runtime.html">Decision Runtime</a>
+            <a href="limits.html">Limits</a>
+          </div></div><p class="search-status" role="status"></p>
+      </nav></details><div class="page-column">
 
     <main id="main">
       <section class="section section-tight">
@@ -80,8 +83,10 @@
             PASS, FAIL, or UNKNOWN evidence.
           </p>
 
-          <figure class="brain-frame" aria-label="Codex Mind starts each run with an ASCII digital brain banner.">
-            <pre class="brain-art" data-brain="assets/brain.txt" aria-hidden="true"></pre>
+          <figure class="brain-frame" aria-label="Codex Mind starts each run with a compact workflow banner.">
+            <pre class="brain-art" aria-hidden="true">[] []  MIND
+  []   brief &gt; forge &gt; council
+[] []                  + verified build</pre>
           </figure>
           <p class="wiki-lead brain-caption">
             The banner marks the start of the guided Forge-to-Council-to-Hyper path.
@@ -216,8 +221,8 @@ $codex-council:codex-hyper and show its separate execution preflight.</code>
           <p style="margin-top:24px;">Mind orchestrates the bundled skills. The CLI estimate shown
             for deliberation is only Forge + Council, summed:</p>
           <pre><code># Estimate both stages up front (shown as one range), then accept once.
-python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --type forge --token-budget compact
-python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard --token-budget compact</code></pre>
+python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --type forge --effort mid
+python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --effort mid</code></pre>
           <div class="callout">
             <strong>Know what the estimate covers</strong>
             The accepted deliberation estimate covers Forge and Council only, and the proposal—not
@@ -228,21 +233,8 @@ python3 scripts/codex_council.py estimate --topic "&lt;idea&gt;" --mode standard
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="footer-grid">
-        <div>
-          <strong>Codex Council</strong>
-          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
-        </div>
-        <div class="footer-links">
-          <a href="usage.html">Install</a>
-          <a href="examples.html">Evidence</a>
-          <a href="wiki.html">Playbook</a>
-          <a href="limits.html">Limits</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
-        </div>
-      </div>
-    </footer>
+    <footer class="footer"><p>@ercoledevs · MIT licensed</p><div><a href="https://github.com/ercoledevs/codex-council/releases">Release</a> · <a href="https://github.com/ercoledevs/codex-council/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/ercoledevs/codex-council/issues">Issue tracker</a> · <a href="https://www.paypal.me/SalvatoreErcole117">Support</a></div></footer>
+    </div></div>
     <script src="site.js" defer></script>
   </body>
 </html>

@@ -4,13 +4,13 @@ Load this only when actually forging. Keep `SKILL.md` as the routing kernel. Eve
 
 ## Stage 0: Preflight (reused from Council)
 
-- If no consumer profile exists, ask plan, model, reasoning effort, and optional budget; store only with consent.
+- Use defaults unless the user asks to calibrate the estimate. Store only with consent.
 - Estimate with `--type forge` and show the range in chat; the estimate already includes a re-brief overhead. Get acceptance before dispatch. `expanded` must not run without explicit confirmation.
 - Classify the trigger: creating/designing is Forge; judging/reviewing is Council; explaining/comparing is `meta` (answer in one line, no dispatch). If intent is unclear, ask one line.
 
 ## Stage 1: One compact creative round
 
-Dispatch the five creators in parallel. Order each prompt for prompt-cache hits — stable text first, variable last:
+Dispatch the five creators in waves that fit the host. For every design-changing unknown, send the lead a question, consequence and recommendation. The lead merges duplicates, asks the user, and re-briefs affected creators. Order each prompt for prompt-cache hits — stable text first, variable last:
 
 1. role contract + lens (stable)
 2. output schema (stable)
@@ -70,7 +70,7 @@ The assessment also returns `second_round`, which decides how the next round is 
 Detail is paid once, here, not five times across creators. Run a separate synthesis pass over the saved creator outputs and the synthesis-input manifest (not chat memory):
 
 - Lead with what to build and why this shape won.
-- `Implementation Shape`: modules and interfaces, data shapes, sequencing, and the key edge cases.
+- `Implementation Shape`: first working slice, domain boundaries, interface and data contracts, failure recovery, sequencing, measurable acceptance scenarios and the decisions that justify them.
 - Keep the strongest creative idea; graft the useful parts of the runners-up; keep real dissent visible instead of averaging it away.
 - Honor the security & stability floor explicitly, and carry every unmet item into `Safety And Performance Notes` as something Council must check.
 - End with concrete `Verification` and a ready-to-send `Next Prompt` for Council judgment.

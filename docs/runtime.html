@@ -32,39 +32,42 @@
     <meta name="twitter:description" content="Inspect saved Council artifacts in an experimental view without changing the original decision.">
     <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
     <link rel="icon" href="assets/icon.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap">
     <link rel="stylesheet" href="styles.css">
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f8f6">
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a100e">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f2">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#20221f">
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <nav class="nav" aria-label="Main navigation">
-        <a class="brand" href="index.html">
-          <img src="assets/icon.png" alt="">
-          <span>Codex Council</span>
-        </a>
-        <div class="nav-links" id="nav-links">
-          <a href="use-cases.html">Product</a>
-          <a href="examples.html">Evidence</a>
-          <a class="is-active" href="wiki.html" aria-current="location">Docs</a>
-          <a class="nav-install" href="usage.html">Install</a>
-        </div>
-        <div class="nav-actions">
-          <a class="lang-switch" href="it/runtime.html" hreflang="it" aria-label="Versione italiana">IT</a>
-          <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" aria-pressed="false">
-            <svg class="moon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <svg class="sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </button>
-          <button class="icon-button nav-toggle" type="button" data-nav-toggle aria-label="Toggle menu" aria-controls="nav-links" aria-expanded="false">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-      </nav>
-    </header>
+    <header class="site-header"><div class="topbar">
+        <a class="brand" href="index.html"><img src="assets/icon.png" alt="" width="32" height="32"> Codex Council</a>
+        <span class="book-title">Architecture handbook</span><div class="nav-actions">
+        <a href="https://github.com/ercoledevs/codex-council" class="repo-link">GitHub ↗</a><a href="it/runtime.html" hreflang="it" lang="it">IT</a>
+        <button type="button" data-theme-toggle hidden aria-label="Dark theme" aria-pressed="true">◐</button>
+        </div></div></header>
+    <div class="handbook"><details class="guide-nav" open><summary>Browse handbook</summary>
+      <nav aria-label="Handbook navigation">
+        <div class="guide-search" hidden><label for="guide-query">Find a guide</label><input id="guide-query" type="search" placeholder="Find a guide" autocomplete="off"></div>
+        <div class="nav-links">
+          <div class="guide-group"><strong>Handbook</strong>
+            <a href="index.html">Overview</a>
+            <a href="usage.html">Installation & CLI</a>
+            <a href="architecture.html">Architecture guide</a>
+            <a href="use-cases.html">Use cases</a>
+          </div>
+          <div class="guide-group"><strong>Workflows</strong>
+            <a href="mind.html">Mind</a>
+            <a href="forge.html">Forge</a>
+            <a href="wiki.html#method">Council</a>
+            <a href="hyper.html">Hyper</a>
+            <a href="alters.html">Role tuning</a>
+          </div>
+          <div class="guide-group"><strong>Reference</strong>
+            <a href="wiki.html">Technical wiki</a>
+            <a href="examples.html">Evidence lab</a>
+            <a href="runtime.html" aria-current="page">Decision Runtime</a>
+            <a href="limits.html">Limits</a>
+          </div></div><p class="search-status" role="status"></p>
+      </nav></details><div class="page-column">
 
     <main id="main">
       <section class="section section-tight">
@@ -77,21 +80,10 @@
             original files and verdict remain authoritative.
           </p>
 
-          <figure class="ascii-frame" role="img" aria-label="A centered Codex Council terminal banner showing six members, two reviewers, and the evidence-led review flow.">
-            <pre class="ascii-art" aria-hidden="true"><code>+------------------------------------------------------------------------------+
-|                                CODEX COUNCIL                                 |
-|                     ISOLATED ROLE PROMPTS / EVIDENCE-LED                     |
-|                                                                              |
-|           [ADA]  [GRACE]  [HYPATIA]  [FLORENCE]  [TURING]  [CRAY]            |
-|                  \       \       \       /       /       /                   |
-|       +--------------------------------------------------------------+       |
-|       |     FIRST OPINIONS &gt; ANONYMOUS REVIEW &gt; CHAIRMAN VERDICT     |       |
-|       +--------------------------------------------------------------+       |
-|                                                                              |
-|                         STANDARD / GENERAL / COMPACT                         |
-|                    MEMBERS 06 / REVIEWERS 02 / RUNNERS 00                    |
-|                             GATES / PERFORMANCE                              |
-+------------------------------------------------------------------------------+</code></pre>
+          <figure class="ascii-frame" role="img" aria-label="Mid effort council with three members and one reviewer">
+            <pre class="ascii-art" aria-hidden="true"><code>[] []  CODEX COUNCIL / mid / triad
+  []   inspect &gt; review &gt; decide
+[] []  3 members, 1 reviewer, 0 runners</code></pre>
           </figure>
         </div>
       </section>
@@ -192,21 +184,8 @@
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="footer-grid">
-        <div>
-          <strong>Codex Council</strong>
-          <p>Independent open-source project by @ercoledevs. MIT licensed.</p>
-        </div>
-        <div class="footer-links">
-          <a href="usage.html">Install</a>
-          <a href="examples.html">Evidence</a>
-          <a href="wiki.html">Playbook</a>
-          <a href="limits.html">Limits</a>
-          <a href="https://github.com/ercoledevs/codex-council">GitHub</a>
-        </div>
-      </div>
-    </footer>
+    <footer class="footer"><p>@ercoledevs · MIT licensed</p><div><a href="https://github.com/ercoledevs/codex-council/releases">Release</a> · <a href="https://github.com/ercoledevs/codex-council/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/ercoledevs/codex-council/issues">Issue tracker</a> · <a href="https://www.paypal.me/SalvatoreErcole117">Support</a></div></footer>
+    </div></div>
     <script src="site.js" defer></script>
   </body>
 </html>

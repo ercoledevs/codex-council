@@ -4,13 +4,13 @@ Load this only when running Codex Mind. Mind sequences Codex Forge and Codex Cou
 
 ## Stage 0: Banner and intake
 
-1. Paste the ASCII brain banner from `references/brain-banner.md` verbatim, inside a fenced code block, as the first thing in the run. Nothing before it; no text inside it.
+1. Paste the ASCII brain banner from `references/brain-banner.md` verbatim, inside a fenced code block, as the first thing in the run. Show it once.
 2. Capture the execution intent as one of:
    - `decision-only`: invent and judge, then stop with a recommendation;
    - `implement-if-approved`: offer implementation only if every Hyper gate later passes.
 3. Decide the entry:
    - A proposal already exists (the user pasted one, or a prior Forge produced one) -> confirm it in one line and skip to the Council path.
-   - No proposal yet -> ask exactly one focused question: what should we create, and what are the hard constraints (scope, compatibility, deadline, budget, privacy)? Do not interrogate; one question, then proceed.
+   - No proposal yet -> use the adaptive interview. Surface the first slice, constraints, decisions and acceptance example. Carry those into Forge.
 
 An up-front `implement-if-approved` request expresses intent, but does not approve an unbounded or changed implementation. Record the approved scope and any action-specific constraints for the later execution preflight.
 
@@ -19,13 +19,13 @@ An up-front `implement-if-approved` request expresses intent, but does not appro
 The estimate covers **Forge + Council only**. Estimate the deliberation stages that will actually run and, when both run, present one summed range:
 
 ```bash
-python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --mode standard --type forge --token-budget compact
-python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --mode <council-mode> --token-budget compact
+python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --type forge --effort <effort>
+python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --effort <effort>
 ```
 
-- Show the low-high range in chat and get acceptance before dispatching. Default `compact` for both stages.
+- Show the low-high range in chat and get acceptance before dispatching. Default to `mid` for both stages.
 - When a proposal already exists and Forge is skipped, estimate Council only rather than charging for a stage that will not run.
-- `<council-mode>` is `standard` by default, `deep` for security, data loss, migration, or irreversible work.
+- The effort presets preserve a full deep review for hard-risk Council work. Supply the same brief and risk context for estimation and scaffolding.
 - `expanded` is blocked unless the user explicitly confirms it, for either stage.
 - The Forge estimate already includes its re-brief overhead, so an automatic round 2 on strong discord stays inside the accepted Forge estimate.
 - If execution intent is `implement-if-approved`, disclose a possible third wave. State that Hyper is task-dependent, has its own estimate, and is subject to a separate execution preflight after judgment.
@@ -49,7 +49,9 @@ Never pass full Forge transcripts or per-creator outputs into Council. This is t
 
 ## Stage 4: Council stage
 
-Run Codex Council on the proposal as the thing under review (Standard, or Deep for security/data-loss/migration/irreversible). The Council keeps its own non-negotiables: anonymized review, rubric scoring, preserved dissent, no fake UI verification, and explicit verification.
+Check the final proposal for risk the initial brief omitted. If the roster, evidence needs or cost now exceed the accepted preflight, re-estimate that stage, explain the delta and obtain acceptance before dispatch.
+
+Run Codex Council on the proposal as the thing under review at the accepted effort and resolved risk floor. The Council keeps its own non-negotiables: anonymized review, rubric scoring, preserved dissent, no fake UI verification, and explicit verification.
 
 Normalize the Final Call to `build`, `revise`, or `stop`, and preserve every blocker separately from non-blocking refinements. A live blocker can never coexist with an executable `build` handoff.
 

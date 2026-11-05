@@ -2,6 +2,15 @@
 
 All notable changes to Codex Council are documented in this file.
 
+## [1.2.0] - 2026-11-05
+
+- Guide greenfield features through an adaptive specialist interview, a shared decision brief and testable vertical slices.
+- Choose `simple`, `mid` or `ultra` effort. Use the same resolved panel for forecasts, scaffolding and compact ASCII banners. Legacy controls and stored sessions remain supported.
+- Add the offline `interview` command and `--brief` for estimation and session creation. Detect invalid dependencies and surface independent questions.
+- Tune recurring specialist questions with `alters preview/configure --question`.
+- Create the expected reviewer artifacts for deep and reduced panels and reserve unique session directories for simultaneous starts.
+- Rebuild the bilingual handbook, add three architecture scenarios and research notes, and redraw the five-square mark.
+
 ## [1.1.0] - 2026-08-05
 
 ### Added

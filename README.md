@@ -1,14 +1,14 @@
 # Codex Council
 
-[![Latest release](https://img.shields.io/github/v/release/ercoledevs/codex-council?label=release&color=0f6b57)](https://github.com/ercoledevs/codex-council/releases)
-[![License: MIT](https://img.shields.io/badge/license-MIT-0f6b57)](LICENSE)
-[![Website](https://img.shields.io/badge/docs-website-0f6b57)](https://ercoledevs.github.io/codex-council/)
+[![Latest release](https://img.shields.io/github/v/release/ercoledevs/codex-council?label=release&color=995d20)](https://github.com/ercoledevs/codex-council/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-995d20)](LICENSE)
+[![Website](https://img.shields.io/badge/docs-website-995d20)](https://ercoledevs.github.io/codex-council/)
 
 ![Codex Council cover](assets/cover.svg)
 
-**From an idea to reviewed, verified code in Codex.**
+**Build a complex feature from its first design decision to its acceptance test.**
 
-Codex Council is an open-source development workflow plugin for Codex. Forge turns
+Codex Council is an open-source development workflow plugin for Codex. Start with an adaptive interview and one effort level: `simple`, `mid` or `ultra`. Forge turns
 goals and constraints into an implementation proposal. Council challenges that
 proposal through isolated roles and anonymous review. Mind coordinates the gates.
 Hyper applies an authorized change to the repository and closes only on executed
@@ -89,9 +89,9 @@ npx codex-marketplace add ercoledevs/codex-council --plugin --global -y
 **2. Ask for the full development path** in chat:
 
 ```text
-Use $codex-council:codex-mind to turn this request into an implementation proposal,
-review it, and—only if the verdict is build with no blockers—offer
-$codex-council:codex-hyper to implement it. Show each estimate and ask before editing.
+Use $codex-council:codex-mind at mid effort to design a recoverable job queue.
+Ask me the decisions that affect the contract. I want the approved first slice
+implemented and tested against worker restarts.
 ```
 
 **3. Accept the gates.** Mind shows one estimate for Forge + Council. If the result
@@ -167,25 +167,32 @@ Turn it on with `--frontend-review` (or `--type frontend`) for UI/UX work:
 
 ## Modes & token budget
 
-Pick the smallest mode that catches the risk. Escalate per blocker, not by default.
+Use one effort in chat or with `estimate` and `init`. The default is `mid`. Preflight shows the roster and local forecast in three lines, plus any risk override. Add `--details` or `--json` for the full estimate.
 
-| Mode | Use it for |
-| --- | --- |
-| `fast` | small, reversible, low‑risk decisions (a single Chairman pass) |
-| `standard` | implementation, architecture, and performance decisions (six members) |
-| `deep` | security, data loss, migrations, irreversible changes, or a close tie |
-| `--frontend-review` | UI/UX/browser behavior (adds Leonardo + Bob) |
-| `--type skill --skill-review` | plugin/skill usability (a cheap three‑lens panel) |
+| Effort | Ordinary Council run | Use it for |
+| --- | --- | --- |
+| `simple` | 1 member, 0 reviewers | A reversible, well-bounded choice |
+| `mid` | 3 members, 1 reviewer | Designing a feature or evaluating a contract |
+| `ultra` | 6 members, 5 reviewers | A full architecture challenge |
 
-Output detail is controlled by `--token-budget`, which defaults to `compact`:
+Hard-risk signals raise ordinary Council runs to full, deep review. Inspect the reason and estimate before dispatch. Frontend review adds a UX reviewer and a browser evidence runner. Forge retains five creators and skill reviews retain three lenses. Hyper selects its implementation route from the risk and available checks.
 
-| Budget | When |
-| --- | --- |
-| `compact` *(default)* | normal decisions — tight outputs, smallest reference set |
-| `balanced` | real tradeoffs and ambiguity — more detail, only on the risky parts |
-| `expanded` | larger context and output allowance for hard cases. It does not guarantee complete evidence. **Blocked until you confirm.** |
+For existing scripts, `--mode`, `--panel`, `--router`, and `--token-budget` retain their advanced meanings. Choose these flags or `--effort` in a given command. Existing sessions can be read in place. The advanced expanded budget requires explicit confirmation.
 
-Typed synthesis templates are available via `--type architecture|implementation|decision|skill|frontend`.
+### Architecture interview
+
+Start in chat with `$codex-council:codex-mind`, a concrete outcome and the effort you want. The lead checks repository facts, groups independent specialist questions and follows dependent branches after your answers. Delegate reversible details. The resulting design connects boundaries, failure recovery, a first working slice and an acceptance test.
+
+For a longer interview, start with a fresh local path. Adapt the questions in the generated JSON. Record actual answers in `answer` and delegated reversible decisions in `assumption`. A question's `after` list names its prerequisites. Run the second command after each round. A settled brief feeds both the estimator and the scaffold.
+
+```bash
+python3 scripts/codex_council.py interview --start "Recover interrupted jobs" > brief.json
+python3 scripts/codex_council.py interview --input brief.json
+python3 scripts/codex_council.py estimate --topic "Job queue" --effort mid --brief brief.json
+python3 scripts/codex_council.py init --topic "Job queue" --effort mid --brief brief.json --confirm-estimate
+```
+
+[Architecture guide with three worked scenarios and research sources](https://ercoledevs.github.io/codex-council/architecture.html) · [Guida in italiano](https://ercoledevs.github.io/codex-council/it/architecture.html)
 
 ---
 
@@ -217,8 +224,8 @@ Use Codex Forge to design a bounded implementation proposal for this idea.
 ```
 
 ```bash
-python3 scripts/codex_council.py estimate --topic "Forge a release workflow" --mode standard --type forge --token-budget compact
-python3 scripts/codex_council.py init --topic "Forge a release workflow" --root . --mode standard --type forge --confirm-estimate
+python3 scripts/codex_council.py estimate --topic "Forge a release workflow" --type forge --effort mid
+python3 scripts/codex_council.py init --topic "Forge a release workflow" --root . --type forge --effort mid --confirm-estimate
 ```
 
 Use Council after Forge when the forged proposal needs judgment.
@@ -232,9 +239,9 @@ you do not have a proposal yet, Mind asks what to create. It passes the proposal
 the full Forge transcripts—to Council and returns one **build / revise / stop**
 decision with blockers, dissent, and verification.
 
-Each run opens with an ASCII digital‑brain banner, then:
+Each run opens with a three-line workflow banner, then:
 
-1. Asks what to create — only if no proposal exists yet.
+1. Resolves open architectural decisions with an adaptive interview.
 2. Shows one combined estimate for Forge + Council; you accept once.
 3. Forges the proposal.
 4. Hands only the proposal to Council — never full transcripts — and judges it.
@@ -404,6 +411,12 @@ paste-ready prompt templates for common situations.
 
 ## Tuning roles (alters)
 
+Give a specialist a recurring design question. Preview the exact prompt first:
+
+```bash
+python3 scripts/codex_council.py alters preview --role ada --question "Who owns the durable state?"
+```
+
 An **alter** is a bounded, local adjustment to one reviewer's focus, tone, or extra
 checks—for example API boundaries for Ada, database cost for Seymour, or mobile
 accessibility for Leonardo.
@@ -440,7 +453,7 @@ python3 scripts/codex_council.py profile --plan Plus --model GPT-5.3-Codex --rea
 python3 scripts/codex_council.py profile
 
 # Estimate before starting, then accept the range.
-python3 scripts/codex_council.py estimate --topic "Architecture Review" --mode standard --token-budget compact
+python3 scripts/codex_council.py estimate --topic "Architecture Review" --effort mid
 
 # Optional adaptive router preview. Hard-risk flags still force full coverage.
 python3 scripts/codex_council.py estimate --topic "Docs cleanup" --router auto --panel auto --json
@@ -457,11 +470,11 @@ python3 scripts/codex_council.py classify-invocation --text "explain how council
 # Scaffold a session after accepting the estimate. --root is the workspace analyzed;
 # artifacts are stored in plugin-local .codex-council/sessions/, never in your project.
 python3 scripts/codex_council.py init --topic "Architecture Review" --root . \
-  --mode standard --token-budget compact --confirm-estimate
+  --effort mid --confirm-estimate
 
 # Frontend session (Leonardo + Bob).
 python3 scripts/codex_council.py init --topic "Modal Review" --root . \
-  --mode standard --frontend-review --confirm-estimate
+  --effort mid --frontend-review --confirm-estimate
 
 # Compact skill/tool review session.
 python3 scripts/codex_council.py init --topic "Skill Review" --root . \

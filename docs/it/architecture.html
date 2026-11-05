@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("cc-theme");
+          document.documentElement.setAttribute("data-theme", t || "dark");
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+        document.documentElement.classList.add("js");
+      })();
+    </script>
+    <title>Guida di architettura · Codex Council</title>
+    <meta name="description" content="Progetta una funzionalità con un’intervista adattiva e decisioni verificabili.">
+    <link rel="canonical" href="https://ercoledevs.github.io/codex-council/it/architecture.html">
+    <link rel="alternate" hreflang="en" href="https://ercoledevs.github.io/codex-council/architecture.html">
+    <link rel="alternate" hreflang="it" href="https://ercoledevs.github.io/codex-council/it/architecture.html">
+    <link rel="alternate" hreflang="x-default" href="https://ercoledevs.github.io/codex-council/architecture.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="it_IT">
+    <meta property="og:title" content="Guida di architettura · Codex Council">
+    <meta property="og:description" content="Progetta una funzionalità con un’intervista adattiva e decisioni verificabili.">
+    <meta property="og:url" content="https://ercoledevs.github.io/codex-council/it/architecture.html">
+    <meta property="og:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Guida di architettura · Codex Council">
+    <meta name="twitter:description" content="Progetta una funzionalità con un’intervista adattiva e decisioni verificabili.">
+    <meta name="twitter:image" content="https://ercoledevs.github.io/codex-council/assets/og-codex-council.png">
+    <link rel="icon" href="../assets/icon.png">
+    <link rel="stylesheet" href="../styles.css">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#faf8f2">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#20221f">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Vai al contenuto</a>
+    <header class="site-header"><div class="topbar">
+        <a class="brand" href="index.html"><img src="../assets/icon.png" alt="" width="32" height="32"> Codex Council</a>
+        <span class="book-title">Manuale di architettura</span><div class="nav-actions">
+        <a href="https://github.com/ercoledevs/codex-council" class="repo-link">GitHub ↗</a><a href="../architecture.html" hreflang="en" lang="en">EN</a>
+        <button type="button" data-theme-toggle hidden aria-label="Tema scuro" aria-pressed="true">◐</button>
+        </div></div></header>
+    <div class="handbook"><details class="guide-nav" open><summary>Sfoglia il manuale</summary>
+      <nav aria-label="Navigazione del manuale">
+        <div class="guide-search" hidden><label for="guide-query">Cerca una guida</label><input id="guide-query" type="search" placeholder="Cerca una guida" autocomplete="off"></div>
+        <div class="nav-links">
+          <div class="guide-group"><strong>Manuale</strong>
+            <a href="index.html">Panoramica</a>
+            <a href="usage.html">Installazione e CLI</a>
+            <a href="architecture.html" aria-current="page">Guida di architettura</a>
+            <a href="use-cases.html">Casi d’uso</a>
+          </div>
+          <div class="guide-group"><strong>Workflows</strong>
+            <a href="mind.html">Mind</a>
+            <a href="forge.html">Forge</a>
+            <a href="wiki.html#method">Council</a>
+            <a href="hyper.html">Hyper</a>
+            <a href="alters.html">Personalizza i ruoli</a>
+          </div>
+          <div class="guide-group"><strong>Riferimenti</strong>
+            <a href="wiki.html">Wiki tecnica</a>
+            <a href="examples.html">Prove eseguite</a>
+            <a href="runtime.html">Decision Runtime</a>
+            <a href="limits.html">Limiti</a>
+          </div></div><p class="search-status" role="status"></p>
+      </nav></details><div class="page-column">
+
+    <main id="main">
+        <section class="section">
+        <p class="eyebrow">Guida di architettura</p>
+        <h1>Progetta una funzionalità da zero</h1>
+        <p class="lead">Parti dal primo utilizzatore e da un risultato osservabile. Mind riunisce intervista, progetto e revisione nella stessa conversazione.</p>
+        <pre><code>$codex-council:codex-mind · mid
+Progetta da zero una coda di lavoro recuperabile. Chiedimi le scelte che cambiano il contratto. Definisci la prima funzionalità completa e il suo test di guasto.</code></pre>
+      </section>
+        <section id="interview">
+        <h2>Risolvi le decisioni aperte</h2>
+        <ol class="method-rail">
+        <li>Descrivi un caso reale. Il coordinatore verifica i fatti nel repository e raggruppa le domande indipendenti che cambiano il progetto.</li>
+        <li>Gli specialisti propongono domande dalla propria prospettiva. Il coordinatore unisce i duplicati, dà una raccomandazione motivata e aspetta le risposte da cui dipende la domanda successiva.</li>
+        <li>Delega i dettagli reversibili. Il brief raccoglie le scelte in un progetto con confini, contratti, recupero e un esempio di accettazione.</li>
+        <li>Council mette alla prova la proposta. Con un verdetto build e la tua autorizzazione, Hyper implementa le funzionalità approvate ed esegue le verifiche.</li>
+      </ol>
+      </section>
+        <section id="effort">
+        <h2>Scegli un effort</h2>
+        <ul class="efforts">
+        <li><strong>simple</strong><span>Un parere per una scelta reversibile.</span></li>
+        <li><strong>mid</strong><span>Tre membri e un revisore per le scelte architetturali ordinarie.</span></li>
+        <li><strong>ultra</strong><span>Sei membri e cinque revisori per una verifica approfondita.</span></li>
+      </ul>
+        <p>Questi numeri valgono per Council ordinario. I rischi elevati richiedono copertura completa. Forge usa cinque creatori, la revisione delle skill tre prospettive. Per il frontend si aggiungono Leonardo e le prove browser di Bob. Leggi la stima prima dell’avvio.</p>
+      </section>
+        <p>Aggiungi <code>--details</code> a <code>estimate</code> per il dettaglio dei costi stimati.</p>
+        <section id="cases">
+        <h2>Scenari guidati</h2>
+        <p>Esercizi di progettazione con una decisione e una verifica riproducibile.</p>
+        <article class="scenario" id="queue">
+        <h3>Coda di lavoro recuperabile</h3>
+        <p>Un worker si ferma dopo un effetto persistente. Chi assegna la chiave di idempotenza e quando può scadere?</p>
+        <p>Se la chiave appartiene al chiamante, concorda la finestra di retry. Progetta contratto di invio, stato persistente e conferma del worker.</p>
+        <p><strong>Test di accettazione</strong> · Interrompi il worker tra commit e conferma. Reinvia la stessa chiave e conta i risultati persistenti.</p>
+      </article>
+        <article class="scenario" id="tenant">
+        <h3>Accessi per tenant</h3>
+        <p>Un operatore lavora su due account. Quale tenant gli concede l’accesso e chi può revocarlo?</p>
+        <p>Stabilisci prima chi possiede i dati. Poi definisci il controllo in lettura e la scadenza delle autorizzazioni in cache.</p>
+        <p><strong>Test di accettazione</strong> · Apri una sessione, revoca il permesso e ripeti la lettura da entrambi gli account. Verifica il tempo di revoca concordato e la traccia di audit.</p>
+      </article>
+        <article class="scenario" id="events">
+        <h3>Acquisizione di eventi versionati</h3>
+        <p>Un dispositivo offline invia eventi vecchi dopo un aggiornamento. Quali versioni deve accettare il ricevitore?</p>
+        <p>Concorda la conservazione prima di scegliere il decoder. Definisci riconoscimento della versione, ordinamento e quarantena per payload sconosciuti.</p>
+        <p><strong>Test di accettazione</strong> · Riproduci un evento vecchio, un duplicato e una versione sconosciuta. Controlla record persistiti, quarantena e offset dopo il riavvio.</p>
+      </article>
+      </section>
+        <section id="local">
+        <h2>Conserva un brief locale</h2>
+        <p>Per un’intervista lunga crea un nuovo file, adatta le domande e inserisci answer oppure assumption per ogni decisione chiusa. Esegui di nuovo interview per vedere quali domande sono pronte.</p>
+        <pre><code>python3 scripts/codex_council.py interview --start "Recover a job" &gt; brief.json
+python3 scripts/codex_council.py interview --input brief.json
+python3 scripts/codex_council.py estimate --topic "Job queue" --effort mid --brief brief.json
+python3 scripts/codex_council.py init --topic "Job queue" --effort mid --brief brief.json --confirm-estimate</code></pre>
+      </section>
+        <section id="research">
+        <h2>Ricerca alla base del metodo</h2>
+        <p>Questi lavori hanno orientato le scelte progettuali. La sezione Prove eseguite riporta separatamente le verifiche sul plugin.</p>
+        <p>Questo preprint di ottobre valuta separatamente comprensione e implementazione su 100 progetti da zero. Da qui la distinzione fra riepilogo delle decisioni e prova di accettazione. <a href="https://arxiv.org/abs/2610.31854">SWE-Clar · 2026</a></p>
+        <p>Gli autori scelgono le domande in base all’incertezza che risolvono nelle chiamate a strumenti. Nel plugin chiediamo quale risposta cambierebbe il progetto. <a href="https://aclanthology.org/2026.findings-acl.2028/">Structured Uncertainty · ACL 2026</a></p>
+        <p>I costi di coordinamento variano tra compiti sequenziali e scomponibili. Usiamo gruppi limitati e riserviamo gli specialisti alle domande indipendenti. <a href="https://arxiv.org/abs/2512.08296">Scaling Agent Systems · 2026 revision</a></p>
+        <p>Uno studio con persone confronta interviste, focus group e sondaggi sulla spiegabilità. I sondaggi hanno prodotto anche requisiti ridondanti. Il coordinatore accorpa le domande prima di porle. <a href="https://doi.org/10.1109/RE63999.2025.00025">Obaidi et al. · RE 2025</a></p>
+        <p>Il metodo del SEI traduce le esigenze degli stakeholder in scenari prioritari. Usiamo il più importante per verificare la prima funzionalità completa. <a href="https://www.sei.cmu.edu/library/quality-attribute-workshops-qaws-third-edition/">Quality Attribute Workshops · SEI</a></p>
+      </section></main>
+
+    <footer class="footer"><p>@ercoledevs · Licenza MIT</p><div><a href="https://github.com/ercoledevs/codex-council/releases">Release</a> · <a href="https://github.com/ercoledevs/codex-council/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/ercoledevs/codex-council/issues">Issue tracker</a> · <a href="https://www.paypal.me/SalvatoreErcole117">Sostieni</a></div></footer>
+    </div></div>
+    <script src="../site.js" defer></script>
+  </body>
+</html>

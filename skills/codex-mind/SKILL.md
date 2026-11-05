@@ -1,6 +1,6 @@
 ---
 name: codex-mind
-description: Use when the user wants the full guided run — invent a proposal and then judge it — in one pass, with an optional implementation handoff after approval. Codex Mind orchestrates Codex Forge and Codex Council end to end, then may offer the bundled $codex-council:codex-hyper skill from the same plugin only when the Council returns build, no blocker remains, and implementation is explicitly authorized.
+description: Use for greenfield software architecture, new features from scratch, or when the user wants the full guided run — invent a proposal and then judge it — in one pass, with an optional implementation handoff after approval. Codex Mind orchestrates Codex Forge and Codex Council end to end, then may offer the bundled $codex-council:codex-hyper skill from the same plugin only when the Council returns build, no blocker remains, and implementation is explicitly authorized.
 ---
 
 # Codex Mind
@@ -13,9 +13,9 @@ Forge -> Council -> [Hyper, only when eligible and authorized]
 
 ## Non-Negotiables
 
-- At the very start, paste the ASCII brain banner from `references/brain-banner.md` verbatim in a code block. It is art only — never add text inside the drawing.
-- If no proposal exists yet, ask the user what to create before anything else — one focused question (goal + hard constraints), not a form.
-- One combined **deliberation preflight estimate** covers Forge + Council only. Show it once and get acceptance before dispatching either stage. Default `compact`. `expanded` only with explicit confirmation.
+- At the very start, paste the ASCII brain banner from `references/brain-banner.md` verbatim in a code block. Show it once for the whole workflow.
+- Run the [adaptive interview](../codex-council/references/architecture-interview.md) until material choices are settled. Keep a single brief across stages.
+- One combined **deliberation preflight estimate** covers Forge + Council only. Show it once and get acceptance before dispatching either stage. Choose one effort for deliberation: `simple`, `mid` (default), or `ultra`. `expanded` only with explicit confirmation.
 - Hyper is bundled in the same Codex Council plugin but remains a task-dependent execution stage. Never hide it inside the Forge + Council estimate or treat acceptance of that estimate as implicit implementation authorization.
 - Reuse every Forge and Council non-negotiable: preflight gate, plugin-local sessions, agent lifecycle (max six open agents, close each wave before the next), stats, and never claim billing tokens.
 - Hand a compact artifact between stages — the unified proposal plus Forge's `Next Prompt`, not full Forge transcripts. Council judges the proposal; it does not re-derive it.
@@ -33,7 +33,7 @@ Mind adds orchestration, not hidden agents. The deliberation has a Forge wave fo
 
 | Need | Action |
 | --- | --- |
-| new idea, no proposal yet | ask one question, then Forge -> Council, compact |
+| new idea, no proposal yet | resolve the first slice, then Forge -> Council |
 | a proposal already exists | confirm it, skip Forge, go straight to Council |
 | forge, judge, and implement if approved | disclose the optional third wave; estimate Forge + Council only; apply the Hyper gates after judgment |
 | security, data loss, migration, irreversible | keep Forge compact; run Deep Council before any build; preserve specialist safety workflows |
@@ -42,11 +42,11 @@ Mind adds orchestration, not hidden agents. The deliberation has a Forge wave fo
 ## Minimal Flow
 
 1. Paste the ASCII brain banner.
-2. Record whether the user wants decision only or implementation if approved. If a proposal already exists, confirm it and skip Forge; otherwise ask the one question: what should we create, and what are the hard constraints?
+2. Record whether the user wants decision only or implementation if approved. If a proposal already exists, confirm it and skip Forge; otherwise resolve the decision tree with the user.
 3. Deliberation preflight: estimate the Forge and Council stages that will actually run, show one summed range when both run, state explicitly that Hyper is excluded, and get acceptance. Block `expanded` without explicit confirmation.
 4. Forge stage: run Codex Forge (one bounded round; auto round 2 on strong discord; hard cap three). Produce the unified proposal.
 5. Show the proposal briefly. If Forge returned `nonconverged`, surface the dissent and ask before paying for Council. Otherwise continue within the accepted estimate. The user may refine or stop here.
-6. Council stage: run Codex Council on the proposal (Standard; Deep for security, data loss, migration, or irreversible work). Judge it and close every Council agent.
+6. Council stage: run Codex Council on the proposal (use the accepted effort and risk floor). Judge it and close every Council agent.
 7. Apply the Hyper eligibility gate. A result other than `build`, any live blocker, absent implementation intent, or unavailable `$codex-council:codex-hyper` stops execution without emulation.
 8. If eligible, show a separate Hyper execution preflight and confirm that the approved scope, constraints, and risk profile have not changed. Obtain any authorization still required.
 9. Invoke `$codex-council:codex-hyper` with only the approved proposal, immutable constraints, acceptance and verification criteria, and non-blocking dissent or risks. Hyper owns routing, implementation, and falsification.

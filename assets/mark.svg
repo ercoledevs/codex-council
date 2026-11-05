@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <title>Codex Council</title>
+  <rect width="256" height="256" rx="52" fill="#eda95d"/>
+  <g color="#252420" transform="translate(-20 -20) scale(1.15625)"><g fill="none" stroke="currentColor" stroke-linejoin="round">
+    <rect x="59" y="140" width="56" height="56" rx="10" stroke-width="12"/>
+    <rect x="141" y="60" width="56" height="56" rx="10" stroke-width="12"/>
+    <rect x="109" y="109" width="38" height="38" rx="7" stroke-width="10"/>
+    <rect x="82" y="82" width="29" height="29" rx="5" stroke-width="9"/>
+    <rect x="146" y="146" width="29" height="29" rx="5" stroke-width="9"/>
+  </g></g>
+</svg>

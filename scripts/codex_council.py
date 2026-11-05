@@ -22,8 +22,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 try:
-    from . import council_cells
+    from . import council_cells, council_interview
 except ImportError:  # Direct execution: python3 scripts/codex_council.py
+    import council_interview
     import council_cells  # type: ignore[no-redef]
 
 
@@ -106,6 +107,13 @@ EVIDENCE_RUNNER_FILES = {
     "bob-browser-customer-tester.md": "Bob - Browser Customer Tester",
 }
 
+# Presets select existing runtime primitives so old sessions remain readable.
+EFFORTS = {
+    "simple": ("fast", "compact", "solo"),
+    "mid": ("standard", "compact", "triad"),
+    "ultra": ("deep", "balanced", "full"),
+}
+HARD_FLAGS = {"privacy", "security", "data_loss", "frontend_evidence"}
 MODES = {"fast", "standard", "deep"}
 TOKEN_BUDGETS = {"compact", "balanced", "expanded"}
 SESSION_TYPES = {"general", "architecture", "implementation", "decision", "skill", "frontend", "forge"}
@@ -152,9 +160,9 @@ FORGE_STRONG_DISCORD_ALIGNMENT = 5.0
 FORGE_STRONG_DISCORD_STDEV = 2.0
 
 ROUTER_RISK_PATTERNS = {
-    "privacy": r"\b(privacy|redaction|redact|pii|personal data|public link|shareable|handoff|team link)\b",
-    "security": r"\b(security|secrets?|token|credentials?|permissions?|auth(?:entication|orization)?|oauth|csp|xss|csrf)\b",
-    "data_loss": r"\b(data loss|delete|migration|rollback|irreversible|production|billing|payment)\b",
+    "privacy": r"\b(privacy|redaction|redact|pii|personal data|public link|shareable|handoff|team link|dati personali)\b",
+    "security": r"\b(security|secrets?|(?:access|refresh|bearer|session|api)[ -]tokens?|tokens?(?![- ](?:budget|usage|cost|efficien|saving|estimate))|credentials?|permissions?|permess[io]|auth(?:entication|orization)?|oauth|csp|xss|csrf|sicurezza|credenziali|autenticazione|autorizzazione)\b",
+    "data_loss": r"\b(data loss|delet(?:e|es|ing|ion)|migrations?|rollback|irreversible|production|billing|payments?|eliminare|cancellare|produzione|migrazion[ei]|perdita di dati|irreversibile|pagament[oi])\b",
     "frontend_evidence": r"\b(frontend|ui|ux|browser|modal|click|focus|accessibility)\b",
     "performance": r"\b(performance|latency|throughput|memory|scale|cache|cost)\b",
 }
@@ -285,6 +293,7 @@ REQUIRED_FORGE_FINAL_SECTIONS = [
 ]
 
 REQUIRED_REFERENCES = [
+    "architecture-interview.md",
     "competency-packs.md",
     "decision-runtime.md",
     "execution-protocol.md",
@@ -544,7 +553,7 @@ def active_member_prompt_files(
         return SKILL_REVIEW_PROMPT_FILES
     if session_type == "forge":
         return FORGE_PROMPT_FILES
-    selected = set(_select_panel_filenames(list(MEMBER_PROMPT_FILES), topic, session_type, panel))
+    selected = active_role_files(False, session_type, panel, topic)
     return {filename: prompt for filename, prompt in MEMBER_PROMPT_FILES.items() if filename in selected}
 
 
@@ -590,8 +599,7 @@ def route_council_panel(
         raise ValueError("router must be off or auto")
     session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
     risk_flags = detect_risk_flags(topic, session_type, frontend_review)
-    hard_full_flags = {"privacy", "security", "data_loss", "frontend_evidence"}
-    forced_full = bool(hard_full_flags.intersection(risk_flags)) and not skill_review and session_type != "forge"
+    forced_full = bool(HARD_FLAGS.intersection(risk_flags)) and not skill_review and session_type != "forge"
     reasons: list[str] = []
     if forced_full:
         reasons.append("Hard-risk flags require full council coverage.")
@@ -779,6 +787,7 @@ def default_alter_entry(role_id: str) -> dict[str, Any]:
             "risk_posture": "",
             "evidence_preference": "",
             "extra_checks": [],
+            "question": "",
         },
         "estimated_added_tokens": 0,
     }
@@ -793,9 +802,11 @@ def compile_alter_instruction(
     evidence_preference: Optional[str] = None,
     extra_checks: Optional[list[str]] = None,
     instruction: Optional[str] = None,
+    question: Optional[str] = None,
 ) -> tuple[str, dict[str, Any]]:
     role_id = normalize_alter_role(role_id)
     dimensions = {
+        "question": _compact_text(question, "question", ALTER_FIELD_CHAR_CAP),
         "domain_focus": _compact_text(domain_focus, "domain_focus"),
         "strictness": _compact_text(strictness, "strictness"),
         "tone": _compact_text(tone, "tone"),
@@ -817,6 +828,8 @@ def compile_alter_instruction(
         clauses.append(f"Evidence preference: {dimensions['evidence_preference']}.")
     if dimensions["extra_checks"]:
         clauses.append("Extra checks: " + "; ".join(dimensions["extra_checks"]) + ".")
+    if dimensions["question"]:
+        clauses.append(f"If unresolved, send the lead this question: {dimensions['question']}")
     if bounded_instruction:
         clauses.append(f"Additional bounded instruction: {bounded_instruction}")
     if not clauses:
@@ -840,6 +853,7 @@ def build_alter_entry(
     extra_checks: Optional[list[str]] = None,
     instruction: Optional[str] = None,
     enabled: bool = True,
+    question: Optional[str] = None,
 ) -> dict[str, Any]:
     role_id = normalize_alter_role(role_id)
     compiled, dimensions = compile_alter_instruction(
@@ -851,6 +865,7 @@ def build_alter_entry(
         evidence_preference=evidence_preference,
         extra_checks=extra_checks,
         instruction=instruction,
+        question=question,
     )
     entry = default_alter_entry(role_id)
     entry.update(
@@ -950,6 +965,7 @@ def configure_alter(
     evidence_preference: Optional[str] = None,
     extra_checks: Optional[list[str]] = None,
     instruction: Optional[str] = None,
+    question: Optional[str] = None,
 ) -> dict[str, Any]:
     role_id = normalize_alter_role(role_id)
     data = load_alter_config(config_root)
@@ -962,6 +978,7 @@ def configure_alter(
         evidence_preference=evidence_preference,
         extra_checks=extra_checks,
         instruction=instruction,
+        question=question,
     )
     data["alters"][role_id] = entry
     path = save_alter_config(data, config_root)
@@ -1217,6 +1234,18 @@ def estimate_credits(model: str, input_tokens: int, output_tokens: int) -> Optio
     return round(credits, 4)
 
 
+def effort_settings(effort: str, risk_text: str, session_type: str, frontend_review: bool) -> tuple[str, str, str]:
+    if effort not in EFFORTS:
+        raise ValueError(f"unknown effort: {effort}")
+    mode, budget, panel = EFFORTS[effort]
+    if session_type in {"forge", "skill"}:
+        return mode, budget, "full"
+    if HARD_FLAGS.intersection(detect_risk_flags(risk_text, session_type, frontend_review)):
+        # The panel router records and explains the override of the requested panel.
+        mode = "deep"
+    return mode, budget, panel
+
+
 def estimate_pre_session(
     topic: str,
     mode: str = "standard",
@@ -1231,14 +1260,20 @@ def estimate_pre_session(
     router: str = "off",
     max_agents: Optional[int] = None,
     early_exit: bool = False,
+    effort: Optional[str] = None,
+    brief: str = "",
 ) -> dict[str, Any]:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
     if token_budget not in TOKEN_BUDGETS:
         raise ValueError(f"token_budget must be one of: {', '.join(sorted(TOKEN_BUDGETS))}")
     session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
+    risk_text = topic + ("\n" + brief if brief else "")
+    if effort:
+        mode, token_budget, panel = effort_settings(effort, risk_text, session_type, frontend_review)
+        router = "auto"
     route_decision = route_council_panel(
-        topic,
+        risk_text,
         mode=mode,
         session_type=session_type,
         frontend_review=frontend_review,
@@ -1259,12 +1294,16 @@ def estimate_pre_session(
         member_count = len(FORGE_ROLE_FILES)
         reviewer_count = 0
     else:
-        member_count = 1 if mode == "fast" else len(active_role_files(False, session_type, active_panel, topic))
-        reviewer_count = 0 if mode == "fast" else len(session_reviewers(mode, frontend_review, session_type=session_type, panel=active_panel))
+        member_count = len(active_role_files(False, session_type, active_panel, topic))
+        reviewer_count = len(session_reviewers(mode, frontend_review, session_type=session_type, panel=active_panel))
     evidence_count = len(session_evidence_runners(frontend_review))
+    context_tokens += estimate_tokens(len(brief))
     topic_tokens = estimate_tokens(len(topic))
     budget_factor = {"compact": 1.0, "balanced": 1.55, "expanded": 3.2}[token_budget]
-    mode_factor = {"fast": 0.35, "standard": 1.0, "deep": 1.75}[mode]
+    # Fixed specialist panels run the same review at a given output budget.
+    mode_factor = 1.0 if skill_review or session_type == "forge" else {
+        "fast": 0.35, "standard": 1.0, "deep": 1.75,
+    }[mode]
     reasoning_factor = {
         "none": 0.75,
         "minimal": 0.85,
@@ -1362,6 +1401,7 @@ def estimate_pre_session(
     }
     estimate = {
         "label": "estimated pre-session tokens",
+        "effort": effort,
         "source": "local heuristic from mode, token profile, role counts, optional context token hint, and compact local history",
         "is_actual_codex_usage": False,
         "limitation": "Not actual Codex token usage, remaining quota, billing telemetry, hidden prompt overhead, cached input, or tool-call accounting.",
@@ -1402,6 +1442,19 @@ def estimate_pre_session(
     return estimate
 
 
+def render_estimate_summary(estimate: dict[str, Any]) -> str:
+    interval = estimate["estimated_total_tokens_range"]
+    lines = [
+        f"{estimate['effort']} / {estimate['session_type']} / {estimate['panel']} panel",
+        f"Members {estimate['role_count']} | Reviewers {estimate['reviewer_count']} | Evidence {estimate['evidence_runner_count']}",
+        f"Forecast: {interval['low']:,}–{interval['high']:,} tokens (local estimate)",
+    ]
+    routing = estimate["router_decision"]
+    if routing["forced_full"]:
+        lines.append("Full review required: " + ", ".join(routing["risk_flags"]))
+    return "\n".join(lines)
+
+
 def render_pre_session_estimate(estimate: dict[str, Any]) -> str:
     pre = estimate.get("pre_execution_estimate", {})
     components = pre.get("components", {})
@@ -1410,7 +1463,7 @@ def render_pre_session_estimate(estimate: dict[str, Any]) -> str:
         "",
         "These numbers are local estimates, not actual Codex usage, remaining quota, or billing telemetry.",
         "",
-        f"- Mode: {estimate['mode']}",
+        f"- Effort: {estimate.get('effort') or 'custom'} / {estimate['panel']} panel ({estimate['mode']})",
         f"- Type: {estimate.get('session_type', 'general')}",
         f"- Token profile: {estimate['token_budget']}",
         f"- Roles/reviewers/evidence runners: {estimate['role_count']}/{estimate['reviewer_count']}/{estimate['evidence_runner_count']}",
@@ -1420,6 +1473,9 @@ def render_pre_session_estimate(estimate: dict[str, Any]) -> str:
         f"- Confidence: {estimate['confidence']}",
         f"- Local history multiplier: {estimate['history_multiplier']}",
     ]
+    routing = estimate.get("router_decision", {})
+    if routing.get("forced_full"):
+        lines.append("- Full coverage required by: " + ", ".join(routing["risk_flags"]))
     if components:
         lines.extend(
             [
@@ -1468,30 +1524,36 @@ def render_member_prompt(
     skill_review: bool = False,
     alter_config: Optional[dict[str, Any]] = None,
 ) -> str:
+    question_rule = (
+        "Read the relevant settled choices in brief.md. Check available facts yourself. "
+        "For each unresolved choice that would change your recommendation, send the lead "
+        "a question, its consequence and a suggested answer. Mark advice conditional until answered.\n"
+    )
     if session_type == "forge":
         lens = f"\nLens: {FORGE_LENSES.get(role, 'Create a useful proposal while preserving constraints.')}\n"
         return (
             f"You are {role} for Codex Forge.\n\n"
-            f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
             f"{lens}\n"
             "Generate one creative but implementable proposal. Respect immutable user/project constraints, privacy, "
             "token budget, and verification needs. Preserve useful dissent; do not claim validation or truth.\n\n"
             "Required sections:\n"
             "## Creative Proposal\n## Rationale\n## Constraints\n## Risks\n"
             "## Convergence Notes\n## Verification Needed\n"
+            f"{question_rule}"
+            f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
         )
     lens = f"\nLens: {SKILL_REVIEW_LENSES[role]}\n" if skill_review and role in SKILL_REVIEW_LENSES else ""
     alter_block = render_alter_prompt_block(active_alter_entry(alter_config or default_alter_config(), role) or {})
     return (
         f"You are {role} for Codex Council.\n\n"
-        f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
         f"{lens}\n"
         "Give an independent first opinion. Preserve blockers, dissent, verification, and confidence. "
         "Use compact output unless a blocker requires detail.\n\n"
         "Required sections:\n"
         "## Recommendation\n## Rationale\n## Blocking Issues\n"
         "## Non-Blocking Improvements\n## Verification Required\n## Confidence\n"
-        f"{alter_block}"
+        f"{alter_block}{question_rule}"
+        f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
     )
 
 
@@ -1506,10 +1568,11 @@ def render_reviewer_prompt(
     alter_block = render_alter_prompt_block(active_alter_entry(alter_config or default_alter_config(), reviewer) or {})
     return (
         f"You are {reviewer} for Codex Council.\n\n"
-        f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n\n"
         "Review anonymized candidates A-F when available. Rank candidates, preserve blockers, "
         "surface missing measurements, and keep the review compact.\n"
+        "Send the lead any unresolved user choice that changes your ranking and the trade-off.\n"
         f"{alter_block}"
+        f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
     )
 
 
@@ -1518,20 +1581,21 @@ def render_chairman_prompt(topic: str, mode: str, token_budget: str, session_typ
     if session_type == "forge":
         return (
             "You are the Forge synthesizer for Codex Forge.\n\n"
-            f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n\n"
             f"Synthesis template: {template}\n\n"
             "Run a separate creative synthesis using saved Forge outputs and the synthesis input manifest. "
             "Summarize divided opinions, re-brief only if the user approved another round, and return either "
             "a unified proposal or an explicit nonconverged result with persistent dissent. "
-            "Do not claim the proposal is validated truth.\n"
+            "For architecture, connect the first slice, interfaces, failure scenario and acceptance test. "
+            "Read brief.md; bring conflicting decisions back to the lead.\n"
+            f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
         )
     return (
         "You are the Chairman synthesizer for Codex Council.\n\n"
-        f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n\n"
         f"Synthesis template: {template}\n\n"
         "Run a separate synthesis pass using only saved member/reviewer outputs and the synthesis input manifest. "
         "Do not inline-synthesize during collection. Preserve dissent, blockers, performance impact, and verification. "
-        "Do not invent browser evidence or billing-token telemetry.\n"
+        "Read brief.md; carry unresolved user decisions into the verdict as blockers where material.\n"
+        f"Topic: {topic}\nMode: {mode}\nType: {session_type}\nToken profile: {token_budget}\n"
     )
 
 
@@ -1586,7 +1650,7 @@ def write_synthesis_input_manifest(
             "brief": "brief.md",
             "members": [f"members/{filename}" for filename in role_files],
             "reviewers": [f"reviews/{reviewer_filename(reviewer)}" for reviewer in reviewers],
-            "evidence_runners": [f"evidence-runners/{slugify(runner)}.md" for runner in evidence_runners],
+            "evidence_runners": [f"evidence-runners/{filename}" for filename, runner in EVIDENCE_RUNNER_FILES.items() if runner in evidence_runners],
             "score_example": "reviews/reviews.example.json",
         },
         "rules": [
@@ -1915,7 +1979,7 @@ def render_dispatch_announcement(
     reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type, panel))
     runners = len(session_evidence_runners(frontend_review))
     suffix = f", {runners} evidence runners" if runners else ""
-    return f"{panel_label} panel: dispatched {members} members, {reviewers} reviewers{suffix} ({token_budget})"
+    return f"{panel_label} panel: planned {members} members, {reviewers} reviewers{suffix} ({token_budget})"
 
 
 def render_council_banner(
@@ -1925,68 +1989,20 @@ def render_council_banner(
     skill_review: bool = False,
     session_type: str = "general",
     panel: str = "full",
+    effort: Optional[str] = None,
 ) -> str:
     reviewers = len(session_reviewers(mode, frontend_review, skill_review, session_type, panel))
     runners = len(session_evidence_runners(frontend_review))
-    gates = "performance"
     roles = len(active_role_files(skill_review, session_type, panel))
-    if skill_review:
-        gates = "skill-review"
-    if session_type == "forge":
-        gates = "bounded creation"
-    if frontend_review:
-        gates += " + UX + Bob"
-    width = 80
-    border = "+" + "-" * (width - 2) + "+"
-
-    def row(text: str = "") -> str:
-        inner_width = width - 4
-        if len(text) > inner_width:
-            raise ValueError(f"Banner row is too wide ({len(text)} > {inner_width}): {text}")
-        return f"| {text.center(inner_width)} |"
-
-    is_forge = session_type == "forge"
-    title = "CODEX FORGE" if is_forge else "CODEX COUNCIL"
-    tagline = "IMAGINE / SHAPE / CONVERGE" if is_forge else "INDEPENDENT / ANONYMOUS / EVIDENCE-LED"
-    members = (
-        "[FULLER]  [HEDY]  [KATHERINE]  [HAMILTON]  [VON NEUMANN]"
-        if is_forge
-        else "[ADA]  [GRACE]  [HYPATIA]  [FLORENCE]  [TURING]  [CRAY]"
-    )
-    connectors = (
-        r"\       \           |           /       /"
-        if is_forge
-        else r"\       \       \       /       /       /"
-    )
-    flow = (
-        "DIVERGE > SYNTHESIZE > RE-BRIEF > CONVERGE"
-        if is_forge
-        else "FIRST OPINIONS > ANONYMOUS REVIEW > CHAIRMAN VERDICT"
-    )
-    core_width = 64
-    core_border = "+" + "-" * (core_width - 2) + "+"
-    core_row = f"| {flow.center(core_width - 4)} |"
-    configuration = f"{mode.upper()} / {session_type.upper()} / {token_budget.upper()}"
-    counts = f"MEMBERS {roles:02d} / REVIEWERS {reviewers:02d} / RUNNERS {runners:02d}"
-
-    return "\n".join(
-        [
-            border,
-            row(title),
-            row(tagline),
-            row(),
-            row(members),
-            row(connectors),
-            row(core_border),
-            row(core_row),
-            row(core_border),
-            row(),
-            row(configuration),
-            row(counts),
-            row(f"GATES / {gates.upper()}"),
-            border,
-        ]
-    )
+    title = "FORGE" if session_type == "forge" else "COUNCIL"
+    flow = "explore > shape > converge" if session_type == "forge" else "inspect > review > decide"
+    selection = f"{effort} / {panel}" if effort else panel
+    counts = ", ".join(f"{n} {label}{'' if n == 1 else 's'}" for n, label in ((roles, "member"), (reviewers, "reviewer"), (runners, "runner")))
+    return "\n".join((
+        f"[] []  CODEX {title} / {selection}",
+        f"  []   {flow}",
+        f"[] []  {counts}",
+    ))
 
 
 def estimate_tokens(characters: int) -> int:
@@ -2154,12 +2170,7 @@ def collect_post_execution_estimate(session_dir: Path, metadata: dict[str, Any])
     missing_data: list[str] = []
     if not member_prompt_paths:
         missing_data.append("missing member prompts")
-    if (
-        not reviewer_prompt_paths
-        and metadata.get("mode") != "fast"
-        and not metadata.get("skill_review")
-        and metadata.get("session_type") != "forge"
-    ):
+    if not reviewer_prompt_paths and metadata.get("reviewers"):
         missing_data.append("missing reviewer prompts")
     if not chairman_prompt_paths:
         missing_data.append("missing chairman synthesis prompt")
@@ -2672,6 +2683,8 @@ def init_session(
     early_exit: bool = False,
     delta_from: Optional[Path] = None,
     decision_runtime: str = "off",
+    effort: Optional[str] = None,
+    brief: str = "",
 ) -> Path:
     if mode not in MODES:
         raise ValueError(f"mode must be one of: {', '.join(sorted(MODES))}")
@@ -2680,8 +2693,12 @@ def init_session(
     if decision_runtime not in DECISION_RUNTIME_MODES:
         raise ValueError(f"decision_runtime must be one of: {', '.join(sorted(DECISION_RUNTIME_MODES))}")
     session_type, frontend_review, skill_review = normalize_session_options(session_type, frontend_review, skill_review)
+    risk_text = topic + ("\n" + brief if brief else "")
+    if effort:
+        mode, token_budget, panel = effort_settings(effort, risk_text, session_type, frontend_review)
+        router = "auto"
     route_decision = route_council_panel(
-        topic,
+        risk_text,
         mode=mode,
         session_type=session_type,
         frontend_review=frontend_review,
@@ -2709,10 +2726,23 @@ def init_session(
             router=router,
             max_agents=max_agents,
             early_exit=early_exit,
+            effort=effort,
+            brief=brief,
         )
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     storage_root = session_storage_root(session_root)
-    session_dir = storage_root / f"{timestamp}-{slugify(topic)}"
+    storage_root.mkdir(parents=True, exist_ok=True)
+    # Reserve the directory atomically, including simultaneous runs of the same topic.
+    session_name = f"{timestamp}-{slugify(topic)}"
+    session_dir = storage_root / session_name
+    suffix = 1
+    while True:
+        try:
+            session_dir.mkdir(mode=0o700)
+            break
+        except FileExistsError:
+            suffix += 1
+            session_dir = storage_root / f"{session_name}-{suffix}"
     members_dir = session_dir / "members"
     reviews_dir = session_dir / "reviews"
     evidence_runners_dir = session_dir / "evidence-runners"
@@ -2735,9 +2765,10 @@ def init_session(
     if decision_runtime == "shadow":
         activation_tags.append("decision-runtime-shadow")
     dispatch_line = render_dispatch_announcement(mode, token_budget, frontend_review, skill_review, session_type, active_panel)
-    compiled_context = compile_context_capsule(topic)
+    compiled_context = compile_context_capsule(topic, context=brief)
 
     metadata = {
+        "effort": effort,
         "topic": topic,
         "mode": mode,
         "session_type": session_type,
@@ -2789,7 +2820,7 @@ def init_session(
     (session_dir / "brief.md").write_text(
         (
             f"# {'Codex Forge' if session_type == 'forge' else 'Codex Council'} Brief\n\nTopic: {topic}\nMode: {mode}\nType: {session_type}\n"
-            f"Token Profile: {token_budget}\n\n## Context\n\n## Constraints\n\n## Success Criteria\n"
+            f"Token Profile: {token_budget}\n\n## Context\n{brief}\n\n## Constraints\n\n## Success Criteria\n"
         ),
         encoding="utf-8",
     )
@@ -2806,15 +2837,21 @@ def init_session(
             f"# {role}\n\n" + "\n\n".join(sections) + "\n",
             encoding="utf-8",
         )
-    if not skill_review and session_type != "forge":
+    if "performance-impact-reviewer" in reviewers:
         (reviews_dir / "performance-impact-reviewer.md").write_text(
             "# Performance Impact Reviewer\n\n## Ranking\n\n## Performance Blockers\n\n## Missing Measurements\n\n## Verification Required\n",
             encoding="utf-8",
         )
+    if "coverage-integrator" in reviewers:
         (reviews_dir / "coverage-integrator.md").write_text(
             "# Coverage Integrator\n\n## Covered Perspectives\n\n## Missing Perspectives\n\n## Cross-Council Conflicts\n\n## Chairman Inputs\n",
             encoding="utf-8",
         )
+    for reviewer in DEEP_REVIEWERS:
+        if reviewer in reviewers:
+            (reviews_dir / reviewer_filename(reviewer)).write_text(
+                f"# {reviewer}\n\n## Ranking\n\n## Blockers\n\n## Verification\n", encoding="utf-8"
+            )
     if frontend_review:
         for filename, reviewer in FRONTEND_REVIEWER_FILES.items():
             (reviews_dir / filename).write_text(
@@ -2864,7 +2901,7 @@ def init_session(
     )
     final_sections = REQUIRED_FORGE_FINAL_SECTIONS.copy() if session_type == "forge" else REQUIRED_FINAL_SECTIONS.copy()
     if frontend_review:
-        final_sections.insert(final_sections.index("## Audit Notes"), "## Frontend Evidence")
+        final_sections.append("## Frontend Evidence")
     (session_dir / "final.md").write_text("# Chairman Synthesis\n\n" + "\n\n".join(final_sections) + "\n", encoding="utf-8")
     record_invocation_log(session_dir, storage_root, metadata)
     return session_dir
@@ -2958,7 +2995,7 @@ def validate_session(session_dir: Path) -> dict[str, Any]:
             problems.append(f"invalid reviews example: {exc}")
 
     if not metadata.get("skill_review") and metadata.get("session_type") != "forge":
-        expected_reviewers = metadata.get("reviewers") or BASE_REVIEWERS
+        expected_reviewers = metadata.get("reviewers", BASE_REVIEWERS)
         for reviewer in expected_reviewers:
             filename = reviewer_filename(reviewer)
             path = session_dir / "reviews" / filename
@@ -3017,6 +3054,7 @@ def validate_runtime_contract(root: Path) -> list[str]:
         skill_dir / "agents" / "openai.yaml",
         root / "scripts" / "codex_council.py",
         root / "scripts" / "council_cells.py",
+        root / "scripts" / "council_interview.py",
     ]
     required_paths.extend(references_dir / filename for filename in REQUIRED_REFERENCES)
     required_paths.extend(hyper_dir / filename for filename in REQUIRED_HYPER_FILES)
@@ -3217,19 +3255,49 @@ def render_decision_runtime_result(result: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def configure_run(args: argparse.Namespace, parser: argparse.ArgumentParser) -> None:
+    legacy = (args.mode, args.token_budget, args.panel, args.router)
+    if args.effort and any(legacy):
+        parser.error("--effort replaces --mode, --token-budget, --panel and --router; choose one interface")
+    if args.session_type == "forge" and (args.frontend_review or args.skill_review):
+        parser.error("Forge designs the proposal; use a separate Council session for frontend or skill review")
+    if args.brief:
+        try:
+            interview = council_interview.read_brief(Path(args.brief))
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
+        if interview["status"] != "ready":
+            parser.error("brief has open decisions; run interview --input and resolve the next round")
+        args.brief = interview["brief"]
+    if not any(legacy):
+        args.effort = args.effort or "mid"
+    args.mode = args.mode or "standard"
+    args.token_budget = args.token_budget or "compact"
+    args.panel = args.panel or "full"
+    args.router = args.router or "off"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Codex Council session and scoring utilities")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    interview_parser = subparsers.add_parser("interview", help="Show the next independent decisions in a brief")
+    interview_source = interview_parser.add_mutually_exclusive_group(required=True)
+    interview_source.add_argument("--input", type=Path, help="Local JSON decision brief")
+    interview_source.add_argument("--start", metavar="OUTCOME", help="Print an editable greenfield starter as JSON")
+    interview_parser.add_argument("--json", action="store_true")
+
     init_parser = subparsers.add_parser("init", help="Create a council session folder")
     init_parser.add_argument("--topic", required=True)
+    init_parser.add_argument("--effort", choices=tuple(EFFORTS), help="Execution preset (default: mid)")
+    init_parser.add_argument("--brief", help="Settled interview JSON to include in this session")
     init_parser.add_argument("--root", default=".", help="Workspace/project root being analyzed; not used for session storage")
     init_parser.add_argument("--session-root", help="Override local session storage root")
-    init_parser.add_argument("--mode", choices=sorted(MODES), default="standard")
+    init_parser.add_argument("--mode", choices=sorted(MODES), default=None)
     init_parser.add_argument("--type", dest="session_type", choices=sorted(SESSION_TYPES), default="general")
     init_parser.add_argument("--skill-review", action="store_true", help="Use compact 3-lens skill/tool review panel")
-    init_parser.add_argument("--panel", choices=sorted(PANELS), default="full", help="Optional advisory panel shape")
-    init_parser.add_argument("--router", choices=("off", "auto"), default="off", help="Optional advisory budget router")
+    init_parser.add_argument("--panel", choices=sorted(PANELS), default=None, help="Optional advisory panel shape")
+    init_parser.add_argument("--router", choices=("off", "auto"), default=None, help="Optional advisory budget router")
     init_parser.add_argument("--max-agents", type=int, help="Advisory maximum agent count; never silently overrides hard gates")
     init_parser.add_argument("--early-exit", action="store_true", help="Record that early exit is allowed when convergence is obvious")
     init_parser.add_argument("--delta-from", help="Optional prior session path for targeted/delta review metadata")
@@ -3250,7 +3318,7 @@ def main() -> None:
     init_parser.add_argument(
         "--token-budget",
         choices=sorted(TOKEN_BUDGETS),
-        default="compact",
+        default=None,
         help="Token profile for session scaffolding",
     )
     init_parser.add_argument(
@@ -3271,17 +3339,20 @@ def main() -> None:
 
     estimate_parser = subparsers.add_parser("estimate", help="Estimate a council session before running it")
     estimate_parser.add_argument("--topic", required=True)
-    estimate_parser.add_argument("--mode", choices=sorted(MODES), default="standard")
+    estimate_parser.add_argument("--effort", choices=tuple(EFFORTS), help="Execution preset (default: mid)")
+    estimate_parser.add_argument("--brief", help="Settled interview JSON to include in this session")
+    estimate_parser.add_argument("--mode", choices=sorted(MODES), default=None)
     estimate_parser.add_argument("--type", dest="session_type", choices=sorted(SESSION_TYPES), default="general")
     estimate_parser.add_argument("--skill-review", action="store_true")
-    estimate_parser.add_argument("--panel", choices=sorted(PANELS), default="full")
-    estimate_parser.add_argument("--router", choices=("off", "auto"), default="off")
+    estimate_parser.add_argument("--panel", choices=sorted(PANELS), default=None)
+    estimate_parser.add_argument("--router", choices=("off", "auto"), default=None)
     estimate_parser.add_argument("--max-agents", type=int)
     estimate_parser.add_argument("--early-exit", action="store_true")
-    estimate_parser.add_argument("--token-budget", choices=sorted(TOKEN_BUDGETS), default="compact")
+    estimate_parser.add_argument("--token-budget", choices=sorted(TOKEN_BUDGETS), default=None)
     estimate_parser.add_argument("--frontend-review", action="store_true")
     estimate_parser.add_argument("--context-tokens", type=int, default=0)
     estimate_parser.add_argument("--config-root", help="Directory for local consumer profile/history")
+    estimate_parser.add_argument("--details", action="store_true", help="Show the full estimate and component breakdown")
     estimate_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
 
     profile_parser = subparsers.add_parser("profile", help="Manage local consumer profile and compact history")
@@ -3406,6 +3477,7 @@ def main() -> None:
     alters_parser.add_argument("--risk-posture")
     alters_parser.add_argument("--evidence-preference")
     alters_parser.add_argument("--extra-check", action="append", default=[])
+    alters_parser.add_argument("--question", help="Bounded design question to raise with the lead when unresolved")
     alters_parser.add_argument("--instruction", help="Short bounded advisory instruction")
     alters_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
 
@@ -3418,6 +3490,26 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    if args.command == "interview":
+        try:
+            if args.start is not None:
+                print(json.dumps(council_interview.architecture_brief(args.start), indent=2))
+                return
+            state = council_interview.read_brief(args.input)
+        except (OSError, ValueError) as exc:
+            parser.error(str(exc))
+        if args.json:
+            print(json.dumps(state, ensure_ascii=False, indent=2))
+        else:
+            print(state["brief"])
+            for node in state["frontier"]:
+                print(f"[{node['id']}] {node['question']}")
+                if "recommendation" in node:
+                    print(f"  Suggested: {node['recommendation']}")
+            print(f"Status: {state['status']}")
+        return
+    if args.command in {"init", "estimate"}:
+        configure_run(args, parser)
     if args.command == "init":
         config_root = Path(args.config_root).expanduser() if args.config_root else None
         session_type, frontend_review, skill_review = normalize_session_options(
@@ -3430,6 +3522,8 @@ def main() -> None:
         estimate = estimate_pre_session(
             args.topic,
             mode=args.mode,
+            effort=args.effort,
+            brief=args.brief or "",
             token_budget=args.token_budget,
             frontend_review=frontend_review,
             session_type=session_type,
@@ -3456,6 +3550,8 @@ def main() -> None:
             args.topic,
             Path(args.root).expanduser().resolve(),
             mode=args.mode,
+            effort=args.effort,
+            brief=args.brief or "",
             frontend_review=frontend_review,
             token_budget=args.token_budget,
             session_type=session_type,
@@ -3473,10 +3569,10 @@ def main() -> None:
         )
         if args.banner:
             active_panel = estimate.get("panel", args.panel)
-            print(render_council_banner(args.mode, args.token_budget, frontend_review, skill_review, session_type, active_panel))
+            print(render_council_banner(estimate["mode"], estimate["token_budget"], frontend_review, skill_review, session_type, active_panel, effort=args.effort))
         if args.announce:
             active_panel = estimate.get("panel", args.panel)
-            print(render_dispatch_announcement(args.mode, args.token_budget, frontend_review, skill_review, session_type, active_panel))
+            print(render_dispatch_announcement(estimate["mode"], estimate["token_budget"], frontend_review, skill_review, session_type, active_panel))
         print(path)
         return
 
@@ -3490,6 +3586,8 @@ def main() -> None:
         result = estimate_pre_session(
             args.topic,
             mode=args.mode,
+            effort=args.effort,
+            brief=args.brief or "",
             token_budget=args.token_budget,
             frontend_review=frontend_review,
             session_type=session_type,
@@ -3502,7 +3600,12 @@ def main() -> None:
             max_agents=args.max_agents,
             early_exit=args.early_exit,
         )
-        print(json.dumps(result, indent=2) if args.json else render_pre_session_estimate(result))
+        if args.json:
+            print(json.dumps(result, indent=2))
+        elif args.effort and not args.details:
+            print(render_estimate_summary(result))
+        else:
+            print(render_pre_session_estimate(result))
         return
 
     if args.command == "profile":
@@ -3753,6 +3856,7 @@ def main() -> None:
                     args.risk_posture,
                     args.evidence_preference,
                     args.extra_check,
+                    args.question,
                     args.instruction,
                 )
             ):
@@ -3765,6 +3869,7 @@ def main() -> None:
                     evidence_preference=args.evidence_preference,
                     extra_checks=args.extra_check,
                     instruction=args.instruction,
+                    question=args.question,
                 )
             else:
                 entry = data.get("alters", {}).get(role_id)
@@ -3785,6 +3890,7 @@ def main() -> None:
                 evidence_preference=args.evidence_preference,
                 extra_checks=args.extra_check,
                 instruction=args.instruction,
+                question=args.question,
             )
             print(json.dumps(result, indent=2) if args.json else render_alter_preview(result["entry"]) + f"\n\nSaved: {result['path']}")
             return

@@ -16,10 +16,9 @@ ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
 SITE_URL = "https://ercoledevs.github.io/codex-council/"
 NAV_LINKS = [
-    "use-cases.html",
-    "examples.html",
-    "wiki.html",
-    "usage.html",
+    "index.html", "usage.html", "architecture.html", "use-cases.html",
+    "mind.html", "forge.html", "wiki.html#method", "hyper.html", "alters.html",
+    "wiki.html", "examples.html", "runtime.html", "limits.html",
 ]
 CELL_COMMANDS = [
     "project",
@@ -207,25 +206,12 @@ class DocsTests(unittest.TestCase):
                 self.assertEqual(len(parsed.ids), len(set(parsed.ids)))
 
     def test_navigation_order_is_consistent(self):
-        location_parent = {
-            "alters.html": "wiki.html",
-            "runtime.html": "wiki.html",
-            "limits.html": "wiki.html",
-        }
         for page, parsed in self.parsed.items():
-            with self.subTest(page=str(page.relative_to(ROOT))):
+            with self.subTest(page=page):
                 self.assertEqual(parsed.nav_links, NAV_LINKS)
-                if page.name in NAV_LINKS:
-                    self.assertEqual(parsed.nav_current, [page.name])
-                    self.assertEqual(parsed.nav_aria_current, [page.name])
-                else:
-                    self.assertEqual(parsed.nav_current, [])
-                    self.assertEqual(parsed.nav_aria_current, [])
-                expected_location = location_parent.get(page.name)
-                self.assertEqual(
-                    parsed.nav_location,
-                    [expected_location] if expected_location else [],
-                )
+                expected = [] if page.name == "404.html" else [page.name]
+                self.assertEqual(parsed.nav_current, expected)
+                self.assertEqual(parsed.nav_aria_current, expected)
 
     def test_every_page_defaults_to_dark_and_preserves_the_saved_theme(self):
         bootstrap = (
@@ -240,38 +226,19 @@ class DocsTests(unittest.TestCase):
             with self.subTest(page=str(page.relative_to(ROOT))):
                 self.assertIn(bootstrap, source)
 
-    def test_homepages_are_compact_product_landings(self):
-        expected_positioning = {
-            "index.html": (
-                "Take an idea to reviewed, verified code.",
-                "Hyper applies the authorized change",
-            ),
-            "it/index.html": (
-                "Dall’idea al codice revisionato e verificato.",
-                "Hyper applica la modifica autorizzata",
-            ),
-        }
-        for relative, expected in expected_positioning.items():
-            page = DOCS / relative
-            source = page.read_text(encoding="utf-8")
-            parsed = self.parsed[page]
-            text = " ".join("".join(parsed.text).split())
-            with self.subTest(page=relative):
-                self.assertRegex(
-                    source,
-                    r'<body[^>]*class="[^"]*\bhome-noir\b[^"]*"',
-                )
-                self.assertEqual(parsed.tags["section"], 3)
-                for workflow in ("Council", "Forge", "Mind", "Hyper"):
-                    self.assertIn(workflow, text)
-                for phrase in expected:
-                    self.assertIn(phrase, text)
-                workflow_bento = source.split('<div class="workflow-bento">', 1)[1].split(
-                    '<div class="proof-strip"', 1
-                )[0]
-                self.assertLess(workflow_bento.index("<h3>Forge"), workflow_bento.index("<h3>Council"))
-                self.assertLess(workflow_bento.index("<h3>Council"), workflow_bento.index("<h3>Mind"))
-                self.assertLess(workflow_bento.index("<h3>Mind"), workflow_bento.index("<h3>Hyper"))
+    def test_handbook_home_links_workflows_install_and_worked_scenarios(self):
+        for folder in (DOCS, DOCS / "it"):
+            page = self.parsed[folder / "index.html"]
+            self.assertEqual(page.tags["h1"], 1)
+            for fragment in ("queue", "tenant", "events"):
+                self.assertIn(f"architecture.html#{fragment}", page.hrefs)
+            self.assertIn("usage.html#install", page.hrefs)
+            guide = self.parsed[folder / "architecture.html"]
+            self.assertTrue({"effort", "research", "cases", "interview"}.issubset(guide.ids))
+            for effort in ("simple", "mid", "ultra"):
+                self.assertIn(effort, guide.text)
+            for workflow in ("Mind", "Forge", "Council", "Hyper"):
+                self.assertIn(workflow, page.text)
 
     def test_language_and_hreflang_contract(self):
         for english in self.root_pages:
@@ -294,14 +261,15 @@ class DocsTests(unittest.TestCase):
                         {"en": en_url, "it": it_url, "x-default": en_url},
                     )
 
-    def test_runtime_banner_is_identical_and_eighty_columns(self):
+    def test_runtime_banner_matches_the_cli(self):
         banners = []
         for path in (DOCS / "runtime.html", DOCS / "it" / "runtime.html"):
             banner = "".join(self.parsed[path].ascii_text).strip("\n")
             lines = banner.splitlines()
             with self.subTest(page=str(path.relative_to(ROOT))):
-                self.assertEqual(len(lines), 14)
-                self.assertTrue(all(len(line) == 80 for line in lines))
+                from scripts.codex_council import render_council_banner
+                self.assertEqual(banner, render_council_banner("standard", "compact", panel="triad", effort="mid"))
+                self.assertTrue(all(len(line) <= 64 for line in lines))
             banners.append(banner)
         self.assertEqual(banners[0], banners[1])
 
@@ -726,12 +694,12 @@ class DocsTests(unittest.TestCase):
             with self.subTest(page=relative):
                 self.assertIn('<a href="hyper.html">', source)
 
-    def test_font_query_strings_are_html_escaped(self):
+    def test_typography_works_offline(self):
         for page in self.all_pages:
-            source = page.read_text(encoding="utf-8")
-            with self.subTest(page=str(page.relative_to(ROOT))):
-                self.assertNotIn("&display=swap", source)
-                self.assertIn("&amp;display=swap", source)
+            with self.subTest(page=page):
+                source = page.read_text(encoding="utf-8")
+                self.assertNotIn("fonts.googleapis.com", source)
+                self.assertNotIn("fonts.gstatic.com", source)
 
     def test_custom_404_resolves_assets_from_the_pages_root(self):
         self.assertEqual(self.parsed[DOCS / "404.html"].base_href, "/codex-council/")

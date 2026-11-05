@@ -1,7 +1,7 @@
 {
   "name": "codex-council",
-  "version": "1.1.0",
-  "description": "End-to-end Codex development workflows from proposal design and structured review to authorized implementation and evidence-backed verification.",
+  "version": "1.2.0",
+  "description": "Design complex features from scratch with adaptive interviews, bounded specialist review and verified implementation.",
   "author": {
     "name": "ercoledevs",
     "url": "https://github.com/ercoledevs"
@@ -21,8 +21,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Codex Council",
-    "shortDescription": "From proposal to reviewed, verified code in Codex.",
-    "longDescription": "Codex Council gives Codex a controlled development pipeline: Forge turns goals and constraints into an implementation proposal, Council challenges it through isolated roles and anonymous review, Mind coordinates the gates, and Hyper applies authorized repository changes with Solo or Relay routing, one writer, executed checks, and mandatory falsification. Relay adds bounded read-only explorers and a fresh verifier. Local estimates, evidence artifacts, health and stats tooling, Alters, and the experimental non-authoritative Decision Runtime are included.",
+    "shortDescription": "Architecture design and review",
+    "longDescription": "Mind guides adaptive architecture interviews. Forge turns settled decisions into a proposal, Council challenges it at simple, mid or ultra effort, and Hyper builds the authorized scope with executed checks. Local briefs, estimates, role tuning and optional shadow replay keep decisions traceable.",
     "developerName": "ercoledevs",
     "category": "Productivity",
     "capabilities": [
@@ -39,7 +39,7 @@
       "Use Codex Council to review this change for blockers and verification.",
       "Project this completed session into the experimental Decision Runtime."
     ],
-    "brandColor": "#111827",
+    "brandColor": "#EDA95D",
     "composerIcon": "./assets/icon.png",
     "logo": "./assets/logo.png"
   }

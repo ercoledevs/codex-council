@@ -93,3 +93,13 @@ Applied tactics:
 - Reduce output tokens first while preserving blockers, dissent, confidence, and verification.
 - Load references lazily instead of putting every schema into `SKILL.md`.
 - Escalate reasoning/profile only for risk, ambiguity, or irreversible work.
+
+## Architecture interview and routing (November 2026)
+
+- SWE-Clar evaluates requirements understanding separately from implementation on 100 greenfield tasks. The plugin records an acceptance example before the build and verifies it afterwards. This October preprint uses a simulated client. [Li et al.](https://arxiv.org/abs/2610.31854)
+- Suri et al. evaluate structured clarification for tool parameters. We adapt their focus on uncertainty that affects an action to asking design-changing questions. [ACL Findings 2026](https://aclanthology.org/2026.findings-acl.2028/)
+- Kim et al. observe different coordination outcomes on sequential and decomposable tasks. Our effort presets and bounded independent assignments are design choices inspired by that result. [April 2026 revision](https://arxiv.org/abs/2512.08296)
+- Obaidi et al. compare human interviews, focus groups and surveys for explainability requirements. Their survey results include redundant needs. We consolidate overlapping specialist questions before the user sees them. [Requirements Engineering 2025](https://doi.org/10.1109/RE63999.2025.00025)
+- The SEI Quality Attribute Workshop prioritizes and refines stakeholder scenarios. We ask for observable behavior under failure and turn agreed targets into tests. [SEI method report](https://www.sei.cmu.edu/library/quality-attribute-workshops-qaws-third-edition/)
+
+For a plugin evaluation, compare the same task, model, inputs and acceptance gates across efforts. Record elapsed time, questions answered, quality, and measured usage when available. Report local heuristics separately.

@@ -25,7 +25,7 @@ python3 <plugin-root>/scripts/codex_council.py alters show --role <role>
 ```
 
 3. If tuning exists, summarize it before asking for changes: purpose, updated time, estimated added tokens.
-4. Ask one question at a time:
+4. Ask for a real decision this member should improve. Use the [adaptive interview](../codex-council/references/architecture-interview.md) for ambiguous trade-offs. Preview a concrete extra question the tuned member would raise. Ask only what is still open:
    - What should this member emphasize more?
    - Should the style be more direct, stricter, calmer, more beginner-friendly, or more evidence-driven?
    - Is there a domain focus, risk posture, evidence preference, or extra check to add?
@@ -48,6 +48,7 @@ python3 <plugin-root>/scripts/codex_council.py alters configure --role <role> [f
 - `--tone`
 - `--risk-posture`
 - `--evidence-preference`
+- `--question` — one recurring design choice to raise only while unresolved
 - `--extra-check`
 - `--instruction`
 

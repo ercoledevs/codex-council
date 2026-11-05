@@ -4,12 +4,12 @@ Use this for the full council stage order. Keep `SKILL.md` as the routing kernel
 
 ## Stage 0: Consumer Safety Preflight
 
-If the local consumer profile is missing, ask the user for plan, typical Codex model, reasoning effort, and optional self-declared 5-hour/weekly budget. Store it only with consent. The local file stores compact aggregates, never raw prompts/transcripts.
+Use the default local estimate. Offer profile calibration only when the user wants budget planning. Store it only with consent. The local file stores compact aggregates, never raw prompts/transcripts.
 
-Before Standard/Deep dispatch, estimate locally:
+Before dispatch, estimate locally:
 
 ```bash
-python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --mode <mode> --token-budget <budget>
+python3 <plugin-root>/scripts/codex_council.py estimate --topic "<topic>" --effort mid
 ```
 
 Show the estimate/range in chat and ask whether to proceed. `expanded` must not run unless the user explicitly accepts the warning, or CLI receives `--confirm-expanded`.
@@ -26,7 +26,7 @@ For chat council runs, paste the compact ASCII council table directly in chat be
 
 For direct terminal scaffold runs, add `--banner` to print the same table in stdout. Do not use it in automation that expects path-only stdout.
 
-Use `--announce` when a terminal run should print a one-line dispatch status, for example `standard panel: dispatched 6 members, 2 reviewers (compact)`.
+Use `--announce` when a terminal run should print a one-line dispatch status, for example `standard panel: planned 6 members, 2 reviewers (compact)`.
 
 `init --root <workspace>` uses `<workspace>` only as the analyzed project. Store session artifacts in plugin-local `<plugin-root>/.codex-council/sessions/` by default, never in the project. Use the printed session path for validation/stats. Override only with `--session-root` or `CODEX_COUNCIL_SESSION_ROOT`.
 
@@ -44,7 +44,7 @@ If local role tuning exists, disclose active tuned alters before dispatch. Tunin
 
 ## Stage 1: Independent First Opinions
 
-Dispatch six agents in parallel for Standard/Deep mode, or three agents for `--skill-review`:
+Read the accepted session roster. A full panel draws from the six roles below; simple and mid normally use one and three respectively. Run waves within the host limit:
 
 - Ada Lovelace - Principal Architect
 - Grace Hopper - Reliability Engineer
@@ -84,7 +84,7 @@ After all first-opinion agents finish, retrieve their outputs and close the comp
 
 ## Stage 2: Anonymous Review
 
-Strip role/agent names and label outputs Candidate A-F. Review locally in Standard mode unless Deep mode is needed.
+Strip role/agent names and label outputs Candidate A-F. Rank only available candidates. A solo run reports a single opinion and its verification needs.
 
 Required review output:
 
@@ -107,7 +107,7 @@ python3 <plugin-root>/scripts/codex_council.py score --input <reviews.json>
 
 The script requires every non-excluded reviewer to score every candidate. Missing scores are invalid coverage, not a token-saving shortcut.
 
-Standard scaffold includes `performance-impact-reviewer` and `coverage-integrator`. Deep mode adds rubric, bias, and implementation reviewers. Skill-review mode skips reviewers by default to stay cheap.
+Use the resolved roster in the estimate and session manifest. Simple normally has zero reviewers, mid has a coverage integrator, and ultra has five reviewers. Full legacy standard sessions have two reviewers. Frontend review adds Leonardo; skill panels use three members without a separate reviewer.
 
 ## Stage 4: Optional Frontend Evidence
 

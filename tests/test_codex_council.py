@@ -194,7 +194,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertIn("coverage-integrator", metadata["reviewers"])
             self.assertEqual(metadata["session_type"], "general")
             self.assertEqual(metadata["synthesis_contract"], "separate_synthesis_pass")
-            self.assertIn("dispatched 6 members, 2 reviewers", metadata["dispatch_line"])
+            self.assertIn("planned 6 members, 2 reviewers", metadata["dispatch_line"])
             self.assertIn("Token Profile: compact", (session / "brief.md").read_text(encoding="utf-8"))
             self.assertTrue((session / "preflight-estimate.json").exists())
             self.assertTrue((session / "preflight-estimate.md").exists())
@@ -482,7 +482,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertEqual(metadata["reviewers"], [])
             self.assertIn("Hedy Lamarr - Product Invention Strategist", metadata["roles"])
             self.assertIn("John von Neumann - Performance and Complexity Optimizer", metadata["roles"])
-            self.assertIn("dispatched 5 members, 0 reviewers", metadata["dispatch_line"])
+            self.assertIn("planned 5 members, 0 reviewers", metadata["dispatch_line"])
             self.assertTrue((session / "members" / "01-fuller-systems-imagination.md").exists())
             prompt = (session / "prompts" / "members" / "01-fuller.md").read_text(encoding="utf-8")
             self.assertIn("Codex Forge", prompt)
@@ -623,9 +623,18 @@ class CodexCouncilSessionTests(unittest.TestCase):
 
     def test_strict_validation_accepts_clean_plugin_contract(self):
         plugin_root = Path(__file__).resolve().parents[1]
-        result = validate_plugin(plugin_root, strict=True)
-        self.assertTrue(result["ok"], result["problems"])
-        self.assertTrue((plugin_root / "README.md").exists())
+        # Test the distribution. Finder metadata in a developer checkout is incidental.
+        with tempfile.TemporaryDirectory() as tmp:
+            package = Path(tmp)
+            for folder in (".codex-plugin", "assets", "skills", "scripts", "tests", "docs"):
+                shutil.copytree(plugin_root / folder, package / folder,
+                                ignore=shutil.ignore_patterns(".DS_Store", "__pycache__"))
+            for name in ("README.md", "PROVENANCE.md"):
+                shutil.copyfile(plugin_root / name, package / name)
+            result = validate_plugin(package, strict=True)
+            self.assertTrue(result["ok"], result["problems"])
+            (package / "assets/.DS_Store").touch()
+            self.assertIn("package contains .DS_Store files", validate_plugin(package, strict=True)["problems"])
 
     def test_runtime_contract_fails_fast_on_missing_reference(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -772,30 +781,14 @@ class CodexCouncilSessionTests(unittest.TestCase):
             self.assertTrue(all(ord(character) < 128 for character in with_banner.stdout))
             self.assertTrue(Path(with_banner.stdout.strip().splitlines()[-1]).exists())
 
-    def test_banner_is_centered_modern_and_never_truncates_session_counts(self):
-        banner = cc.render_council_banner(
-            "standard",
-            "expanded",
-            session_type="architecture",
-        )
-        lines = banner.splitlines()
-        self.assertTrue(lines)
-        self.assertTrue(all(len(line) == 80 for line in lines))
-        for line in lines[1:-1]:
-            inner = line[2:-2]
-            self.assertEqual(inner, inner.strip().center(len(inner)))
-        self.assertIn("INDEPENDENT / ANONYMOUS / EVIDENCE-LED", banner)
-        self.assertIn("FIRST OPINIONS > ANONYMOUS REVIEW > CHAIRMAN VERDICT", banner)
-        self.assertIn("MEMBERS 06 / REVIEWERS 02 / RUNNERS 00", banner)
-
-        forge_banner = cc.render_council_banner(
-            "standard",
-            "expanded",
-            session_type="forge",
-        )
-        self.assertTrue(all(len(line) == 80 for line in forge_banner.splitlines()))
-        self.assertIn("[VON NEUMANN]", forge_banner)
-        self.assertIn("DIVERGE > SYNTHESIZE > RE-BRIEF > CONVERGE", forge_banner)
+    def test_banner_fits_narrow_terminals_and_matches_the_selected_panel(self):
+        for kind, panel, count in [("general", "triad", 3), ("forge", "full", 5), ("general", "solo", 1)]:
+            banner = cc.render_council_banner("standard", "compact", session_type=kind, panel=panel)
+            self.assertEqual(len(banner.splitlines()), 3)
+            self.assertTrue(banner.isascii())
+            self.assertLessEqual(max(map(len, banner.splitlines())), 64)
+            self.assertIn(f"{count} member", banner)
+            self.assertIn(panel, banner)
 
     def test_session_stats_are_estimated_and_privacy_scoped(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -1231,7 +1224,7 @@ class CodexCouncilSessionTests(unittest.TestCase):
         banner_path = plugin_root / "skills" / "codex-mind" / "references" / "brain-banner.md"
         banner = banner_path.read_text(encoding="utf-8")
         self.assertIn("```", banner)
-        self.assertIn("((()))", banner)  # the ASCII brain art is present
+        self.assertIn((plugin_root / "docs/assets/brain.txt").read_text().strip(), banner)
 
     def test_mind_hyper_stage_is_optional_bundled_and_has_own_preflight(self):
         plugin_root = Path(__file__).resolve().parents[1]

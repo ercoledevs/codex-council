@@ -4,7 +4,7 @@ Use this only when choosing how Codex Council should combine roles or internal c
 
 ## Architecture Decision
 
-Mode: Standard.
+Effort: mid.
 
 Packs: Implementation Strategist, Test And Regression Sentinel, Contrarian Simplifier.
 
@@ -12,7 +12,7 @@ Prompt: "Council review this architecture decision. Preserve dissent and give im
 
 ## Bug Or Regression
 
-Mode: Fast unless root cause is unclear, then Standard.
+Effort: simple unless root cause is unclear, then mid.
 
 Packs: Test And Regression Sentinel, Contrarian Simplifier.
 
@@ -20,7 +20,7 @@ Prompt: "Council review this bugfix plan for root-cause evidence and regression 
 
 ## Plugin Or Skill Change
 
-Mode: `--type skill --skill-review` for focused skill/tool usability. Use Standard when architecture, security, packaging, or performance risk needs the full six-member council.
+Effort: `--type skill --skill-review` for focused skill/tool usability. For wider architecture, security or performance risk, open a separate ordinary Council review at ultra effort. The skill panel always has three lenses.
 
 Packs: Implementation Strategist, Operator UX Reviewer, Governance And Audit Officer, Performance Impact Analyst.
 
@@ -30,7 +30,7 @@ Skill-review lenses: skill engineer, UX-for-tools, non-expert adoption.
 
 ## Performance-Sensitive Change
 
-Mode: Standard. Deep if performance risk can cause outage, timeout, data backlog, cost blowup, missed SLA, or user-visible latency/jank.
+Effort: mid. ultra if performance risk can cause outage, timeout, data backlog, cost blowup, missed SLA, or user-visible latency/jank.
 
 Packs: Performance Impact Analyst, Test And Regression Sentinel, Contrarian Simplifier.
 
@@ -38,7 +38,7 @@ Prompt: "Council review this change for latency, throughput, memory, cost, scali
 
 ## Frontend Or UX Review
 
-Mode: Standard with `--type frontend` or `--frontend-review`; Deep if the change affects checkout, auth, payments, permissions, destructive actions, accessibility-critical flows, or production release.
+Effort: mid with `--type frontend` or `--frontend-review`; ultra if the change affects checkout, auth, payments, permissions, destructive actions, accessibility-critical flows, or production release.
 
 Optional reviewer: Leonardo da Vinci - Brutally Honest UX/UI Critic.
 
@@ -50,15 +50,15 @@ Prompt: "Council frontend review this change. Activate Leonardo for brutal UX/UI
 
 ## Release Or Completion Gate
 
-Mode: Deep for irreversible, migration, security, or data-loss risk.
+Effort: ultra for irreversible, migration, security, or data-loss risk.
 
 Packs: Test And Regression Sentinel, Governance And Audit Officer.
 
-Prompt: "Deep Council: review release readiness, blockers, verification evidence, and rollback signals."
+Prompt: "ultra Council: review release readiness, blockers, verification evidence, and rollback signals."
 
 ## Jury Go/No-Go
 
-Mode: Standard with `--type decision` unless security, migration, data loss, or compliance is involved, then Deep.
+Effort: mid with `--type decision` unless security, migration, data loss, or compliance is involved, then ultra.
 
 Packs: Governance And Audit Officer, Test And Regression Sentinel, Contrarian Simplifier.
 
@@ -66,7 +66,7 @@ Prompt: "Council jury: give a go/no-go decision, required blockers, dissent, con
 
 ## Token-Sensitive Review
 
-Mode: Fast or Standard compact.
+Effort: simple or mid compact.
 
 Packs: Token And Context Optimizer, Contrarian Simplifier.
 
@@ -76,7 +76,7 @@ Before dispatch, run a preflight estimate and ask acceptance. If the local consu
 
 ## Session Closeout Stats
 
-Mode: Any scaffolded session.
+Effort: Any scaffolded session.
 
 Prompt: "Generate Codex Council session stats. Compare pre_execution_estimate and post_execution_estimate, keep artifact_only_tokens separate, and do not imply actual Codex token usage."
 
@@ -86,7 +86,7 @@ Use `--raw-bundle` only for audit handoff; it writes relative artifact paths, no
 
 ## Offline Decision Runtime Evaluation
 
-Mode: no new council dispatch. Use only after a completed session and explicit opt-in.
+Effort: no new council dispatch. Use only after a completed session and explicit opt-in.
 
 Prompt: "Project this completed session into the shadow Decision Runtime, compare
 Decision Cell with frontier.jsonl, preserve legacy authority, and report determinism,
